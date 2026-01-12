@@ -1,0 +1,39 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "WPILib: Build Robot Code",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        "build",
+        "-Dorg.gradle.java.home=/home/echo/wpilib/2025/jdk"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "WPILib: Deploy Robot Code",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        "deploy",
+        "-Dorg.gradle.java.home=/home/echo/wpilib/2025/jdk"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "WPILib: Simulate Robot Code",
+      "type": "shell",
+      "command": "./gradlew",
+      "args": [
+        "simulateExternalJavaRelease",
+       
+        "-Dorg.gradle.java.home=/home/echo/wpilib/2025/jdk"
+      ],
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}

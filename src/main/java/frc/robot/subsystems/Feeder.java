@@ -4,15 +4,11 @@
 
 package frc.robot.subsystems;
 
-import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class Turret extends SubsystemBase {
-  SparkMax turretRotationMotor = new SparkMax(10, SparkMax.MotorType.kBrushless);
-  SparkMax flywheelMotor = new SparkMax(11, SparkMax.MotorType.kBrushless);
-  /** Creates a new Turret. */
-  public Turret() {}
+public class Feeder extends SubsystemBase {
+  /** Creates a new Feeder. */
+  public Feeder() {}
 
   @Override
   public void periodic() {
