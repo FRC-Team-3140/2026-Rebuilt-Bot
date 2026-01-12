@@ -56,7 +56,7 @@ public class SwerveModule extends SubsystemBase {
 
     private SimpleMotorFeedforward driveFeedforward = new SimpleMotorFeedforward(0.084706 * .712, 2.4433 * .712,
             0.10133 * .712);
-    // realised the feedforward was off by a factor of .712, corrected it
+
     private TrapezoidProfile.Constraints constraints = new TrapezoidProfile.Constraints(Constants.Bot.maxChassisSpeed,
             Constants.Bot.maxAcceleration);
 
@@ -116,11 +116,8 @@ public class SwerveModule extends SubsystemBase {
     public void periodic() {
         // setAngle(0);
         // turnPID.calculate(getTurnEncoder().getAbsolutePosition());
-        accelerationLimiter = new SlewRateLimiter(Constants.Bot.maxAcceleration,
-                -Constants.Bot.maxAcceleration, 0);
-        constraints = new TrapezoidProfile.Constraints(Constants.Bot.maxChassisSpeed,
-                Constants.Bot.maxAcceleration);
-        drivePID.setConstraints(constraints);
+        // Fixed: Removed accelerationLimiter reset - it was resetting to 0 every cycle causing progressive slowdown
+        // Fixed: Removed constraint recreation - it's already set in constructor and doesn't need to be recreated
         NetworkTableInstance.getDefault().getTable("Angle").getEntry(moduleID)
                 .setDouble(turnEncoder.getAbsolutePosition());
     }
