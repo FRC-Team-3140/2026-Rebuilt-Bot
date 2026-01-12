@@ -48,6 +48,9 @@ public final class Constants {
     // BR
     public static final int BRNeo = 7;
     public static final int BRVortex = 8;
+
+    public static final int turrentROtation = 9;
+    public static final int flywheelMotor = 10;
   }
 
   public static class SensorIDs {

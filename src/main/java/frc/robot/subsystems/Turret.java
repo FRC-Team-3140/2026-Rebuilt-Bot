@@ -6,11 +6,19 @@ package frc.robot.subsystems;
 
 import com.revrobotics.spark.SparkMax;
 
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Turret extends SubsystemBase {
   SparkMax turretRotationMotor = new SparkMax(10, SparkMax.MotorType.kBrushless);
   SparkMax flywheelMotor = new SparkMax(11, SparkMax.MotorType.kBrushless);
+
+  public PIDController flywheelPID;
+  public ProfiledPIDController rotationProfiledPID;
+
+  public TrapezoidProfile.Constraints rotationConstraints = new TrapezoidProfile.Constraints(50, 25);
   /** Creates a new Turret. */
   public Turret() {}
 

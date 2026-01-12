@@ -5,14 +5,13 @@
 package frc.robot;
 
 
-import org.littletonrobotics.junction.LoggedRobot;
-
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotController;
+import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.swerveDrive.SetSwerveStates;
@@ -30,7 +29,7 @@ import frc.robot.subsystems.odometry.NavXSim;
  * package after creating
  * this project, you must also update the Main.java file in the project.
  */
-public class Robot extends LoggedRobot {
+public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
   private final RobotContainer m_robotContainer;
