@@ -1,6 +1,7 @@
 package frc.robot.subsystems.odometry;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import frc.robot.subsystems.SwerveDrive;
 
 public class NavXSim {
     private static NavXSim instance;
@@ -35,6 +36,8 @@ public class NavXSim {
     }
 
     public boolean isMoving() {
-        return Math.abs(angularVelocity) > 1e-3;
+        return SwerveDrive.getInstance().getRobotRelativeSpeeds().omegaRadiansPerSecond + 
+               SwerveDrive.getInstance().getRobotRelativeSpeeds().vxMetersPerSecond + 
+               SwerveDrive.getInstance().getRobotRelativeSpeeds().vyMetersPerSecond > 0.01;
     }
 }

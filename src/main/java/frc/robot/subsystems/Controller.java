@@ -4,6 +4,8 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -12,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
+import frc.robot.commands.swerveDrive.Align;
 import frc.robot.libs.NetworkTables;
 import edu.wpi.first.wpilibj.XboxController;
 
@@ -167,6 +170,9 @@ public class Controller extends SubsystemBase {
     if (secondaryController.getLeftStickButton() && secondaryController.getRightStickButton()) {
       updateControlMode();
       return;
+    }
+    if(primaryController.getAButtonPressed()) {
+      new Align(new Pose2d(10.0, 10.0, new Rotation2d(100.0))).schedule();
     }
     secondarySetpointCommands();
   }

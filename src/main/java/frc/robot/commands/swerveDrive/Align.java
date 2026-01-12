@@ -21,9 +21,9 @@ public class Align extends SequentialCommandGroup {
   private final double transI = 0;
   private final double transD = 0;
 
-  private final double rotP = 1;
+  private final double rotP = 2;
   private final double rotI = 0;
-  private final double rotD = 0;
+  private final double rotD = 0.5;
 
   private final PIDController xPID;
   private final PIDController yPID;
@@ -54,8 +54,7 @@ public class Align extends SequentialCommandGroup {
 
     thetaPID.enableContinuousInput(-Math.PI, Math.PI);
 
-    addCommands(new AlignCommand(targetPose),
-        new Drive(1000, false, 0.7, 0, 0), new SetSwerveStates(swerveDrive, true));
+    addCommands(new AlignCommand(targetPose), new SetSwerveStates(swerveDrive, true));
   }
 
   public Align() {
@@ -113,9 +112,20 @@ public class Align extends SequentialCommandGroup {
       if (startTime + maxDuration < Timer.getFPGATimestamp())
         return true;
       if ((currentPose.getTranslation().getDistance(targetPose.getTranslation()) < transTolerance &&
-          Math.abs(currentPose.getRotation().getRadians() - currentPose.getRotation().getRadians()) < rotTolerance) ||
-          !odometry.isMoving())
+          Math.abs(currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians()) < rotTolerance)) {
+        if (!odometry.isMoving()) {
+          System.out.println("Align ending because odometry is not moving");
+        } 
+        if (currentPose.getTranslation().getDistance(targetPose.getTranslation()) < transTolerance) {
+          System.out.println("Align ending because within translation tolerance");
+        } 
+        if (currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians() < rotTolerance) {
+          System.out.println("Align ending because within rotation tolerance");
+        }
+
+        System.out.println();
         return true;
+      }
       return false;
     }
   }

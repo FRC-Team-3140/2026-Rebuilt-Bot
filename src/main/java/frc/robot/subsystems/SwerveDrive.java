@@ -36,6 +36,11 @@ public class SwerveDrive extends SubsystemBase {
   // private Camera camera = Camera.getInstance();
   public static Odometry odometry;
 
+  /////// AI CODE ///////
+  // Simulation-only rotational momentum
+  private double simCurrentRotationalVelocity = 0;
+  /////// END AI CODE ///////
+
   public final Translation2d[] locations = {
       new Translation2d(Constants.Bot.botLength, Constants.Bot.botLength),
       new Translation2d(Constants.Bot.botLength, -Constants.Bot.botLength),
@@ -142,6 +147,11 @@ public class SwerveDrive extends SubsystemBase {
       xSpeed *= -1;
       ySpeed *= -1;
       rot *= -1;
+      
+      /////// AI CODE ///////
+      // Apply rotational momentum (simulation only)
+      rot = applyRotationalMomentum(rot);
+      /////// END AI CODE ///////
     }
 
     ChassisSpeeds.discretize(new ChassisSpeeds(xSpeed, ySpeed, rot), .02);
@@ -157,6 +167,45 @@ public class SwerveDrive extends SubsystemBase {
       modules[i].setStates(swerveModuleStates[i]);
     }
   }
+
+  /////// AI CODE ///////
+  /**
+   * Applies rotational momentum for realistic turn coast-down (simulation only)
+   * @param desiredRot Target rotational velocity (rad/s)
+   * @return Rotational velocity after applying momentum
+   */
+  private double applyRotationalMomentum(double desiredRot) {
+    double rotDifference = desiredRot - simCurrentRotationalVelocity;
+    double dt = 0.02; // 20ms loop time
+    
+    if (Math.abs(desiredRot) > Math.abs(simCurrentRotationalVelocity)) {
+        // Accelerating rotation - fast response
+        double maxAccelStep = Constants.Bot.maxChassisTurnSpeed * 10 * dt; // Fast rotation accel
+        double accelStep = Math.min(Math.abs(rotDifference), maxAccelStep);
+        simCurrentRotationalVelocity += Math.signum(rotDifference) * accelStep;
+    } else {
+        // Decelerating rotation - apply slow decel + drag
+        double maxDecelStep = Constants.Bot.simMaxRotationalDeceleration * dt;
+        double dragForce = simCurrentRotationalVelocity * Constants.Bot.simDragCoefficient;
+        
+        double decelStep = Math.min(Math.abs(rotDifference), maxDecelStep);
+        simCurrentRotationalVelocity -= Math.signum(simCurrentRotationalVelocity) * 
+            (decelStep + Math.abs(dragForce));
+        
+        // Clamp to zero at very low speeds to avoid drift
+        if (Math.abs(simCurrentRotationalVelocity) < 0.01) {
+            simCurrentRotationalVelocity = 0;
+        }
+        
+        // If we've reached the desired speed, clamp to it
+        if (Math.abs(simCurrentRotationalVelocity - desiredRot) < 0.01) {
+            simCurrentRotationalVelocity = desiredRot;
+        }
+    }
+    
+    return simCurrentRotationalVelocity;
+  }
+  /////// END AI CODE ///////
 
   public void driveRobotRelative(ChassisSpeeds speeds) {
     drive(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, false);

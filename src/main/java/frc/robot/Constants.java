@@ -71,7 +71,7 @@ public final class Constants {
 
     // In meters per second, determined from the free speed of the bot via
     // SwerveDriveSpecialties
-    public static final double maxChassisSpeed = 6;
+    public static final double maxChassisSpeed = 5.36448;
     public static final double maxModuleSpeed = maxChassisSpeed / (Math.PI * wheelDiameter);
     public static final double maxTurnSpeed = Double.MAX_VALUE; // These are basically infinite for our purposes
     public static final double maxAcceleration = 2500;
@@ -80,6 +80,19 @@ public final class Constants {
     // the module from the center, divided by 2 pi to convert to radians
     public static final double maxChassisTurnSpeed = maxChassisSpeed / botRadius;
     public static final double encoderRotationToMeters = Math.PI * wheelDiameter / gearRatio;
+
+    /////// AI CODE ///////
+    // Simulation-only momentum constants for realistic coast-down behavior
+    public static final double simMaxDeceleration = 100; // m/s² for translation coast-down
+    public static final double simMaxRotationalDeceleration = Math.toRadians(1200); // rad/s² for rotation
+    public static final double simDragCoefficient = 0.05; // Friction/drag coefficient (0.01-0.1)
+    
+    // Simulation-only PID tuning (much softer to reduce oscillation in fast sim updates)
+    public static final double simDriveP = 0.0005; // Very low P - rely mostly on feedforward
+    public static final double simDriveI = 0.0;    // No integral term
+    public static final double simDriveD = 0.00001; // Minimal D for damping only
+    public static final double simTurnP = 0.003;   // Reduced turn P for smoother rotation
+    /////// END AI CODE ///////
 
     // Swerve Module Base Angles
     // TODO: Update for this configuration

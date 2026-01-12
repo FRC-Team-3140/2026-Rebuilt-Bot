@@ -91,14 +91,27 @@ public class SwerveModule extends SubsystemBase {
 
         driveEncoder = driveMotor.getEncoder();
 
-        turnPID = new PIDController(turnP, 0, 0);
+        /////// AI CODE ///////
+        // Use simulation-specific PID values if in simulation for smoother response
+        if (RobotBase.isSimulation()) {
+            turnPID = new PIDController(Constants.Bot.simTurnP, 0, 0);
+        } else {
+            turnPID = new PIDController(turnP, 0, 0);
+        }
+        /////// END AI CODE ///////
 
         // we don't use I or D since P works well enough
         turnPID.enableContinuousInput(0, 360);
         turnPID.setTolerance(turnSetpointTolerance, turnVelocityTolerance);
 
+        /////// AI CODE ///////
         // determined from a SYSID scan
-        drivePID = new ProfiledPIDController(0.005, 0, 0.0005, constraints);
+        if (RobotBase.isSimulation()) {
+            drivePID = new ProfiledPIDController(Constants.Bot.simDriveP, Constants.Bot.simDriveI, Constants.Bot.simDriveD, constraints);
+        } else {
+            drivePID = new ProfiledPIDController(0.005, 0, 0.0005, constraints);
+        }
+        /////// END AI CODE ///////
         drivePID.setConstraints(constraints);
         drivePID.setTolerance(driveSetpointTolerance);
 
@@ -124,6 +137,12 @@ public class SwerveModule extends SubsystemBase {
 
     SlewRateLimiter accelerationLimiter = new SlewRateLimiter(Constants.Bot.maxAcceleration,
             -Constants.Bot.maxAcceleration, 0);
+
+    /////// AI CODE ///////
+    // Simulation-only momentum tracking
+    private double simCurrentSpeed = 0; // Current simulated wheel speed
+    private double simPreviousMeasuredVelocity = 0; // For velocity smoothing
+    /////// END AI CODE ///////
 
     public void setStates(SwerveModuleState state) {
         double currentAngle = turnEncoder.getAbsolutePosition();
@@ -172,20 +191,76 @@ public class SwerveModule extends SubsystemBase {
 
     public void setDriveSpeed(double velocity) {
         // velocity is desired wheel speed in meters/second
-        drivePID.setGoal(new State(velocity, 0));
+        /////// AI CODE ///////
+        double targetVelocity = velocity;
+        
+        // Apply momentum simulation if in simulation mode
+        if (RobotBase.isSimulation()) {
+            targetVelocity = applySimulationMomentum(velocity);
+        }
+        /////// END AI CODE ///////
+        
+        drivePID.setGoal(new State(targetVelocity, 0));
 
         // driveEncoder.getVelocity() returns RPM -> convert to meters/sec:
         // measuredVelocity = (RPM / 60) * metersPerWheelRotation
         double measuredVelocity = driveEncoder.getVelocity() * Constants.Bot.encoderRotationToMeters / 60.0;
 
+        /////// AI CODE ///////
+        // Apply velocity smoothing in simulation to reduce oscillation
+        if (RobotBase.isSimulation()) {
+            // Exponential moving average with alpha = 0.3 (70% previous, 30% new)
+            measuredVelocity = 0.7 * simPreviousMeasuredVelocity + 0.3 * measuredVelocity;
+            simPreviousMeasuredVelocity = measuredVelocity;
+        }
+        /////// END AI CODE ///////
+
         // Feedforward (expects m/s) + PID (measurement in m/s)
-        double voltage = driveFeedforward.calculate(velocity) + drivePID.calculate(measuredVelocity);
+        double voltage = driveFeedforward.calculate(targetVelocity) + drivePID.calculate(measuredVelocity);
 
         driveMotor.setVoltage(voltage);
 
-        NetworkTableInstance.getDefault().getTable(moduleID).getEntry("Set Speed").setDouble(velocity);
+        NetworkTableInstance.getDefault().getTable(moduleID).getEntry("Set Speed").setDouble(targetVelocity);
         NetworkTableInstance.getDefault().getTable(moduleID).getEntry("Actual Speed").setDouble(measuredVelocity);
     }
+
+    /////// AI CODE ///////
+    /**
+     * Applies momentum simulation for realistic coast-down behavior (simulation only)
+     * @param desiredSpeed Target speed commanded by driver
+     * @return Speed after applying momentum/deceleration limits
+     */
+    private double applySimulationMomentum(double desiredSpeed) {
+        double speedDifference = desiredSpeed - simCurrentSpeed;
+        double dt = 0.02; // 20ms loop time
+        
+        if (Math.abs(desiredSpeed) > Math.abs(simCurrentSpeed)) {
+            // Accelerating - use fast acceleration with limiter
+            double limitedSpeed = accelerationLimiter.calculate(desiredSpeed);
+            simCurrentSpeed = limitedSpeed;
+        } else {
+            // Decelerating - apply slow deceleration + drag
+            double maxDecelStep = Constants.Bot.simMaxDeceleration * dt;
+            double dragForce = simCurrentSpeed * Constants.Bot.simDragCoefficient;
+            
+            // Move toward desired speed, but limited by decel rate + drag
+            double decelStep = Math.min(Math.abs(speedDifference), maxDecelStep);
+            simCurrentSpeed -= Math.signum(simCurrentSpeed) * (decelStep + Math.abs(dragForce));
+            
+            // Clamp to zero at very low speeds to avoid drift
+            if (Math.abs(simCurrentSpeed) < 0.01) {
+                simCurrentSpeed = 0;
+            }
+            
+            // If we've reached the desired speed, clamp to it (but only if moving in same direction)
+            if (Math.abs(simCurrentSpeed - desiredSpeed) < 0.01) {
+                simCurrentSpeed = desiredSpeed;
+            }
+        }
+        
+        return simCurrentSpeed;
+    }
+    /////// END AI CODE ///////
 
     public void setTurnSpeed(double speed) {
         speed = Math.max(Math.min(speed, Constants.Bot.maxTurnSpeed), -Constants.Bot.maxTurnSpeed);
