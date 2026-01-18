@@ -4,9 +4,22 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.spark.SparkMax;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 public class Feeder extends SubsystemBase {
+
+
+  private static Feeder m_instance = null;
+  public static Feeder getInstance() {
+    if (m_instance == null) {
+      m_instance = new Feeder();
+    }
+    return m_instance;
+  }
+
   /** Creates a new Feeder. */
   public Feeder() {}
 

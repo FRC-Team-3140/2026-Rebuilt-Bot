@@ -7,6 +7,16 @@ package frc.robot.subsystems;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Climber extends SubsystemBase {
+
+  private static Climber m_Instance = null;
+  public static Climber getInstance() {
+    if (m_Instance == null) {
+      m_Instance = new Climber();
+    }
+    return m_Instance;
+  }
+
+
   /** Creates a new Climber. */
   public Climber() {}
 

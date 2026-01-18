@@ -112,7 +112,7 @@ public class Align extends SequentialCommandGroup {
       if (startTime + maxDuration < Timer.getFPGATimestamp())
         return true;
       if ((currentPose.getTranslation().getDistance(targetPose.getTranslation()) < transTolerance &&
-          Math.abs(currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians()) < rotTolerance)) {
+          Math.abs((currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians()) % (Math.PI * 2)) < rotTolerance)) {
         if (!odometry.isMoving()) {
           System.out.println("Align ending because odometry is not moving");
         } 

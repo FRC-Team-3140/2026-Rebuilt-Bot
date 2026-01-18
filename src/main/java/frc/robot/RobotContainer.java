@@ -5,16 +5,22 @@
 package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 
+import edu.wpi.first.wpilibj.smartdashboard.Mechanism2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
+import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import frc.robot.commands.swerveDrive.Align;
 import frc.robot.commands.swerveDrive.Drive;
 import frc.robot.sensors.Camera;
-import frc.robot.subsystems.*;
+import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Controller;
+import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.Intake;
+import frc.robot.subsystems.SwerveDrive;
+import frc.robot.subsystems.TestRunner;
+import frc.robot.subsystems.Turret;
 import frc.robot.subsystems.odometry.Odometry;
 
 /**
@@ -31,13 +37,18 @@ public class RobotContainer {
 
   // The robot's subsystems and commands are defined here...
   public static SwerveDrive swerveDrive = SwerveDrive.getInstance();
-  public static TestRunner testRunner = TestRunner.getInstance();
-  public static Controller controller = Controller.getInstance();
-  public static Odometry odometry = Odometry.getInstance();
   public static Camera camera = Camera.getInstance();
+  public static Odometry odometry = Odometry.getInstance();
+  public static Controller controller = Controller.getInstance();
+  public static Turret turret = Turret.getInstance();
+  public static Feeder feeder = Feeder.getInstance();
+  public static Intake intake = Intake.getInstance();
+  public static Climber climber = Climber.getInstance();
+
+  public static TestRunner testRunner = TestRunner.getInstance();
 
   private SendableChooser<Command> PathPlanner = new SendableChooser<>();
-
+  
   // WARNING: These booleans will override auto selectiosn!
   private boolean pushAutoMode = false;
 
@@ -53,9 +64,9 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   private RobotContainer() {
-
     PathPlanner.setDefaultOption("Normal - No PathPlanner", null);
     PathPlanner.addOption("Mobility", AutoBuilder.buildAuto("Simple Mobility"));
+    SmartDashboard.putData("PathPlanner", PathPlanner);
   }
 
   /**

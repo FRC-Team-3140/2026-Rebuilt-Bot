@@ -37,4 +37,16 @@ public class Vector2 {
     public Vector2 lerp(Vector2 other, double alpha) {
         return new Vector2((other.X - X) * alpha + X, (other.Y - Y) * alpha + Y);
     }
+
+    public double dot(Vector2 other) {
+        return X*other.X + Y*other.Y;
+    }
+
+    public double magnitude() {
+        return Math.sqrt(magSq());
+    }
+
+    public double magSq() {
+        return X*X + Y*Y;
+    }
 }

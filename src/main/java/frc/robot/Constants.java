@@ -29,28 +29,37 @@ import frc.robot.libs.FlipPose;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  public static final boolean replay = true;
   //public static final Logger.SimulationMode simMode = Logger.SimulationMode.REPLAY;
   public static class MotorIDs {
     /* Swerve Drive Motors: */
     // FL
-    public static final int FLNeo = 1;
-    public static final int FLVortex = 2;
+    public static final int FLNeo = 1; // NEO 1
+    public static final int FLVortex = 2; // VORTEX 1
 
     // FR
-    public static final int FRNeo = 3;
-    public static final int FRVortex = 4;
+    public static final int FRNeo = 3; // NEO 2
+    public static final int FRVortex = 4; // VORTEX 2
 
     // BL
-    public static final int BLNeo = 5;
-    public static final int BLVortex = 6;
+    public static final int BLNeo = 5; // NEO 3
+    public static final int BLVortex = 6; // VORTEX 3
 
     // BR
-    public static final int BRNeo = 7;
-    public static final int BRVortex = 8;
+    public static final int BRNeo = 7; // NEO 4
+    public static final int BRVortex = 8; // VORTEX 4
 
-    public static final int turrentROtation = 9;
-    public static final int flywheelMotor = 10;
+    public static final int turretRotation = 9; // NEO 5
+    public static final int flywheelMotor = 10; // VORTEX 5
+    public static final int hoodMotor = 11; // MINI 1
+
+    public static final int intakeMotor = 12; // MINI 2
+    public static final int intakeArmMotor = 13; // NEO 6
+
+    public static final int feederMotor = 14; // NEO 7
+    public static final int rollerMotor = 15; // NEO 8
+
+    public static final int climberLeftMotor = 16; // NEO 9
+    public static final int climberRightMotor = 17; // NEO 10 
   }
 
   public static class SensorIDs {
@@ -63,6 +72,42 @@ public final class Constants {
 
     public static final int BR = 3;
 
+  }
+
+  public static class MotorSpeeds {
+      public static class Intake {
+        public static final double intakeSpeed = 0.7;
+        public static final double outtakeSpeed = -0.7;
+
+        public static final double agitateSpeed = 0.1;
+      }
+  }
+
+  public static class PID {
+    public static class Turret {
+      public static final double flywheelP = 0.0002;
+      public static final double flywheelI = 0.0;
+      public static final double flywheelD = 0.0;
+
+      public static final double hoodP = 0.005;
+      public static final double hoodI = 0.0;
+      public static final double hoodD = 0.0;
+
+      public static final double rotationP = 0.02;
+      public static final double rotationI = 0.0;
+      public static final double rotationD = 0.001; 
+    }
+    public static class Intake {}
+  }
+
+  public static class CurrentLimits {
+    public static class Turret {
+      public static final int flywheelLimit = 40;
+      public static final int hoodLimit = 15;
+      public static final int turretLimit = 20;
+    }
+    public static class Intake {}
+    public static class Feeder {}
   }
 
   public static class Bot {
@@ -190,9 +235,6 @@ public final class Constants {
     public static final String Test = "Dev";
     public static final String Debug = "Debug";
     public static final String Misc = "Misc";
-  }
-
-  public static class MotorSpeeds {
   }
 
   public static class LED {
