@@ -1,6 +1,5 @@
 package frc.robot.libs;
 
-import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Optional;
 
@@ -21,6 +20,7 @@ public class ShotPredictor {
         public double ShotSpeed;
         public double TravelTime;
         public Vector2 AimPosition;
+        public double ShotAngle;
 
         public Result() {
 
@@ -66,6 +66,7 @@ public class ShotPredictor {
 
         Result result = new Result();
         result.TravelTime = travelTime;
+        result.ShotAngle = shotAngle;
         result.ShotSpeed =
             (Math.sqrt(botSpeedSq*travelTime*travelTime + targetDistance*targetDistance + 2*travelTime*dot))
             /(travelTime*Math.cos(Math.toRadians(shotAngle)));

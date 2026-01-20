@@ -21,6 +21,8 @@ public class CustomOdometry extends Odometry {
     private Double lastStatesT = null;
     private Double lastUpdateT = null;
     private boolean knowsPosition = false;
+    private Vector2 botVelocity = new Vector2();
+    private double angularVelocity = 0;
 
     protected CustomOdometry() {
         super();
