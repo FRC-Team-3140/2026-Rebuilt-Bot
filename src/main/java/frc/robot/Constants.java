@@ -95,7 +95,8 @@ public final class Constants {
 
       public static final double rotationP = 0.02;
       public static final double rotationI = 0.0;
-      public static final double rotationD = 0.001; 
+      public static final double rotationD = 0.001;
+
     }
     public static class Intake {}
   }
@@ -171,6 +172,15 @@ public final class Constants {
   }
 
   public static class Limits {
+    public static class Turret {
+      public static final double minAngle = 45; // degrees above horizontal
+      public static final double maxAngle = 80;
+      public static final double maxAngularVelocity = 30; // degrees per second
+
+      public static final double nearMinAngle = 75; // minimum angle when near the goal. Makes sure the shot arcs
+      public static final double nearInterpRange = 4; // the range where the min angle starts to interpolate to the nearMinAngle
+      public static final double nearRange = 2; // the range where the min angle is the nearMinAngle
+    }
   }
 
   public static class Controller {

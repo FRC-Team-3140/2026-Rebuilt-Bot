@@ -1,5 +1,7 @@
 package frc.robot.libs;
 
+import java.util.Vector;
+
 public class Vector2 {
     public final double X;
     public final double Y;
@@ -48,5 +50,9 @@ public class Vector2 {
 
     public double magSq() {
         return X*X + Y*Y;
+    }
+
+    public Vector2 rotate(double rads) {
+        return new Vector2(X*Math.cos(rads) - Y*Math.sin(rads), X*Math.sin(rads) + Y*Math.cos(rads));
     }
 }

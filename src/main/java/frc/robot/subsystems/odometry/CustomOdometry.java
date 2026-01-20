@@ -4,6 +4,7 @@
 
 package frc.robot.subsystems.odometry;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -21,7 +22,9 @@ public class CustomOdometry extends Odometry {
     private Double lastStatesT = null;
     private Double lastUpdateT = null;
     private boolean knowsPosition = false;
+
     private Vector2 botVelocity = new Vector2();
+    private Vector2 botAcceleration = new Vector2();
     private double angularVelocity = 0;
 
     protected CustomOdometry() {
@@ -73,16 +76,18 @@ public class CustomOdometry extends Odometry {
         return angle;
     }
 
-    private Vector2 calculateEncoderDelta(SwerveModuleState[] states) {
+    private Pair<Vector2, Vector2> calculateEncoderDelta(SwerveModuleState[] states) {
         if (lastStates == null || lastStatesT == null) {
             lastStates = states;
             lastStatesT = Timer.getFPGATimestamp();
-            return new Vector2();
+            return new Pair<Vector2,Vector2>(new Vector2(), new Vector2());
         }
 
         Vector2 delta = new Vector2();
         double tc = Timer.getFPGATimestamp() - lastStatesT;
         lastStatesT += tc;
+
+        Vector2 velocity = new Vector2();
 
         for (int i = 0; i < states.length; i++) {
             double a0 = lastStates[i].angle.getRadians() + getAngle();
@@ -92,6 +97,8 @@ public class CustomOdometry extends Odometry {
             double v0 = lastStates[i].speedMetersPerSecond;
             double vf = states[i].speedMetersPerSecond;
             double dv = vf - v0;
+
+            velocity = (new Vector2(Math.cos(af), Math.sin(af))).mult(vf).add(velocity);
 
             //////////// UNFANCY CALCULUS FREE BASIC CODE (less accurate)
             // double angle = states[i].angle.getRadians() + getAngle();
@@ -108,11 +115,13 @@ public class CustomOdometry extends Odometry {
                                     + dv / (da * da) * (Math.sin(af) - Math.sin(a0)))));
         }
 
+        velocity.div(states.length);
+
         lastStates = states;
 
         delta = delta.div(states.length);
 
-        return delta;
+        return new Pair<Vector2,Vector2>(delta, velocity);
     }
 
     public void update() {
@@ -129,6 +138,18 @@ public class CustomOdometry extends Odometry {
     @Override
     public Pose2d getPose() {
         return super.getPose();
+    }
+
+    public double getAngularVelocity() {
+        return angularVelocity;
+    }
+
+    public Vector2 getBotVelocity() {
+        return botVelocity;
+    }
+
+    public Vector2 getBotAcceleration() {
+        return botAcceleration;
     }
 
     public void resetGyro() {
@@ -178,13 +199,21 @@ public class CustomOdometry extends Odometry {
         // move the position based on the delta calculated from the encoders
         double rotation = caluclateRotationDelta();
         angle += rotation;
+        angularVelocity = rotation/deltaTime;
 
         SwerveDrive drive = SwerveDrive.getInstance();
         SwerveModuleState[] states = new SwerveModuleState[drive.modules.length];
         for (int i = 0; i < drive.modules.length; i++) {
             states[i] = drive.modules[i].getState();
         }
-        Vector2 delta = calculateEncoderDelta(states);
+        Pair<Vector2, Vector2> result = calculateEncoderDelta(states);
+        Vector2 delta = result.getFirst();
+
+        Vector2 lastBotVelocity = botVelocity;
+        botAcceleration = botVelocity.sub(lastBotVelocity).div(deltaTime);
+
+        botVelocity = result.getSecond();
+
         position = position.add(delta);
     }
 
