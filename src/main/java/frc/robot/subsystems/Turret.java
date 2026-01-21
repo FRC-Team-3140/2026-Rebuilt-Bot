@@ -202,6 +202,7 @@ public class Turret extends SubsystemBase {
     if (lastUpdateTimestamp == 0) {
       lastUpdateTimestamp = Timer.getFPGATimestamp();
       // first update, setup
+      // TODO: read hood setpoint from encoder so that predict can work properly
     } else {
       double t = Timer.getFPGATimestamp();
       double deltaTime = t - lastUpdateTimestamp;
