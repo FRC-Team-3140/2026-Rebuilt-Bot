@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems;
 import java.util.Optional;
-import java.util.Vector;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;

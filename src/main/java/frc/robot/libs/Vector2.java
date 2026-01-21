@@ -1,7 +1,5 @@
 package frc.robot.libs;
 
-import java.util.Vector;
-
 public class Vector2 {
     public final double X;
     public final double Y;
