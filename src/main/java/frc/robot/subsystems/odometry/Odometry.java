@@ -34,6 +34,10 @@ abstract public class Odometry extends SubsystemBase {
     return inst;
   }
 
+  public double getAngularVelocity() {
+    return Math.toRadians(gyro.getRate());
+  }
+
   protected Odometry() {
     if (!RobotBase.isSimulation()) {
       gyro = new AHRS(NavXComType.kMXP_SPI);

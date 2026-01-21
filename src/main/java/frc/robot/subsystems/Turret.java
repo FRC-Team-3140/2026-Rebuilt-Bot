@@ -17,6 +17,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.AnalogEncoder;
 import edu.wpi.first.wpilibj.Timer;
@@ -112,7 +114,7 @@ public class Turret extends SubsystemBase {
     
   }
 
-  private Pair<Vector2, Vector2> getFutureState(double dt) {
+  private Pair<Pose2d, Vector2> getFutureState(double dt) {
     CustomOdometry odometry = Odometry.getInstance();
     Vector2 futureBotVelocity = odometry.getBotVelocity().add(odometry.getBotAcceleration().mult(dt));
 
@@ -137,7 +139,7 @@ public class Turret extends SubsystemBase {
     Vector2 futureTurretVelocity = futureBotVelocity.add(centripetalVelocity);
     Vector2 shotOrigin = futureBotPosition.add(rotatedTurretPosition);
     
-    return new Pair<Vector2,Vector2>(shotOrigin, futureTurretVelocity);
+    return new Pair<Pose2d,Vector2>(new Pose2d(shotOrigin.X, shotOrigin.Y, new Rotation2d(futureRotation)), futureTurretVelocity);
   }
 
   private void predict(double deltaTime) {
@@ -146,8 +148,10 @@ public class Turret extends SubsystemBase {
     double targetHeight = 2; //TODO: make this correct
     Vector2 goalPosition = new Vector2(); //TODO: this too
 
-    Pair<Vector2, Vector2> futureStatePair = getFutureState(predictForwardTime);
-    Vector2 futureShotOrigin = futureStatePair.getFirst();
+    Pair<Pose2d, Vector2> futureStatePair = getFutureState(predictForwardTime);
+    Pose2d futurePose = futureStatePair.getFirst();
+    Vector2 futureShotOrigin = new Vector2(futurePose.getX(), futurePose.getY());
+    double futureRotation = futurePose.getRotation().getRadians();
     Vector2 futureTurretVelocity = futureStatePair.getSecond();
 
     Vector2 relativeTargetPosition = goalPosition.sub(futureShotOrigin);
@@ -175,7 +179,7 @@ public class Turret extends SubsystemBase {
       // If anything it'd be easier to convert the setpoint before feeding it to the motor.
       hoodSetpoint = result.get().ShotAngle;
       flywheelSetpoint = result.get().ShotSpeed; //TODO: convert this to RPM
-      
+      turretSetpoint = Math.toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
     }
   }
 

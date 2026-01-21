@@ -25,7 +25,6 @@ public class CustomOdometry extends Odometry {
 
     private Vector2 botVelocity = new Vector2();
     private Vector2 botAcceleration = new Vector2();
-    private double angularVelocity = 0;
 
     protected CustomOdometry() {
         super();
@@ -54,6 +53,11 @@ public class CustomOdometry extends Odometry {
         return new Rotation2d(getAngle());
     }
 
+    @Override
+    public double getAngularVelocity() {
+        return super.getAngularVelocity();
+    }
+
     public Vector2 getPosition() {
         return position == null ? new Vector2() : position;
     }
@@ -65,15 +69,15 @@ public class CustomOdometry extends Odometry {
     public void recalibrateCameraPose() {
     }
 
-    private double optimizeAngle(double baseline, double angle) {
-        while (Math.abs(angle - baseline) > Math.PI) {
-            if (baseline > angle) {
-                angle += Math.PI * 2;
+    private double optimizeAngle(double baseline, double a) {
+        while (Math.abs(a - baseline) > Math.PI) {
+            if (baseline > a) {
+                a += Math.PI * 2;
             } else {
-                angle -= Math.PI * 2;
+                a -= Math.PI * 2;
             }
         }
-        return angle;
+        return a;
     }
 
     private Pair<Vector2, Vector2> calculateEncoderDelta(SwerveModuleState[] states) {
@@ -140,10 +144,6 @@ public class CustomOdometry extends Odometry {
         return super.getPose();
     }
 
-    public double getAngularVelocity() {
-        return angularVelocity;
-    }
-
     public Vector2 getBotVelocity() {
         return botVelocity;
     }
@@ -199,7 +199,6 @@ public class CustomOdometry extends Odometry {
         // move the position based on the delta calculated from the encoders
         double rotation = caluclateRotationDelta();
         angle += rotation;
-        angularVelocity = rotation/deltaTime;
 
         SwerveDrive drive = SwerveDrive.getInstance();
         SwerveModuleState[] states = new SwerveModuleState[drive.modules.length];
