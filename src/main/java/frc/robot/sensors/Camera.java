@@ -11,6 +11,9 @@ import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.simulation.PhotonCameraSim;
+import org.photonvision.simulation.SimCameraProperties;
+import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -19,6 +22,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -38,19 +42,25 @@ public class Camera extends SubsystemBase {
   private Pose2d lastPose = new Pose2d();
   private Pose2d estimatedPose = new Pose2d();
 
-  private PhotonCamera front = new PhotonCamera("front");
-  private PhotonCamera back = new PhotonCamera("back");
+  private PhotonCamera left = new PhotonCamera("left");
+  private PhotonCamera right = new PhotonCamera("right");
 
-  private Transform3d frontToBot = new Transform3d(Constants.CameraConstants.frontOffsetToCenter, 0, 0,
-      new Rotation3d(0, (5 * Math.PI / 36), 0));
-  private Transform3d backToBot = new Transform3d(Constants.CameraConstants.backOffsetToCenter, 0,
-      Constants.CameraConstants.backOffsetToCenterVert, new Rotation3d(0, 0, Math.PI));
+  private Transform3d leftToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter, Constants.CameraConstants.offsetToCenterVert,
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-90)));
+  private Transform3d rightToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,  Constants.CameraConstants.offsetToCenterVert, 
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(90)));
 
   private AprilTagFieldLayout layout = FieldAprilTags.getInstance().field;
   private PhotonPoseEstimator frontEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS,
-      frontToBot);
+      leftToBot);
   private PhotonPoseEstimator backEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS,
-      backToBot);
+      rightToBot);
+
+  VisionSystemSim visionSim = new VisionSystemSim("main");
+  SimCameraProperties cameraProp = new SimCameraProperties();
+  PhotonCameraSim leftCameraSim = new PhotonCameraSim(left, cameraProp);
+  PhotonCameraSim rightCameraSim = new PhotonCameraSim(right, cameraProp);
+
 
   // private boolean tooFar = false;
   /**
@@ -101,11 +111,25 @@ public class Camera extends SubsystemBase {
    *                                       AprilTags.
    */
   private Camera() {
+    visionSim.addAprilTags(layout);
 
+    cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(100));
+    cameraProp.setCalibError(0.25, 0.08);
+    cameraProp.setFPS(20);
+    cameraProp.setAvgLatencyMs(35);
+    cameraProp.setLatencyStdDevMs(5);
+
+    visionSim.addCamera(leftCameraSim, leftToBot);
+    visionSim.addCamera(rightCameraSim, rightToBot);
+    leftCameraSim.enableDrawWireframe(true);
+    rightCameraSim.enableDrawWireframe(true);
   }
 
   @Override
   public void periodic() {
+    if(RobotBase.isSimulation()) {
+      visionSim.update(Odometry.getInstance().getPose());
+    }
     if (((Timer.getFPGATimestamp() - lastIteration)) > delayTime) {
       isConnected();
 
@@ -114,14 +138,14 @@ public class Camera extends SubsystemBase {
   }
 
   public boolean isConnected() {
-    connected = (front.isConnected() && back.isConnected());
+    connected = (left.isConnected() && right.isConnected());
     return connected;
   }
 
   public Integer getClosestApriltag() {
     if (connected) {
-      PhotonTrackedTarget frontTarget = front.getLatestResult().getBestTarget();
-      PhotonTrackedTarget backTarget = back.getLatestResult().getBestTarget();
+      PhotonTrackedTarget frontTarget = left.getLatestResult().getBestTarget();
+      PhotonTrackedTarget backTarget = right.getLatestResult().getBestTarget();
 
       if (frontTarget == null && backTarget == null) {
         return null;
@@ -161,8 +185,8 @@ public class Camera extends SubsystemBase {
     if (connected) {
       Pose2d curPose = Odometry.getInstance().getPose();
 
-      PhotonPipelineResult frontResult = front.getLatestResult();
-      PhotonPipelineResult backResult = back.getLatestResult();
+      PhotonPipelineResult frontResult = left.getLatestResult();
+      PhotonPipelineResult backResult = right.getLatestResult();
 
       if (frontResult.hasTargets()) {
         double frontDistance = FieldAprilTags.getInstance().getTagPose(frontResult.getBestTarget().getFiducialId())
@@ -281,8 +305,8 @@ public class Camera extends SubsystemBase {
 
   public int[] getDetectedTags() {
     if (connected) {
-      List<PhotonTrackedTarget> detectedTags = front.getLatestResult().targets;
-      List<PhotonTrackedTarget> detectedTagsBack = back.getLatestResult().targets;
+      List<PhotonTrackedTarget> detectedTags = left.getLatestResult().targets;
+      List<PhotonTrackedTarget> detectedTagsBack = right.getLatestResult().targets;
 
       if (detectedTags.size() == 0)
         return null;

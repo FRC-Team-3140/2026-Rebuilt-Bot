@@ -36,8 +36,12 @@ public class NavXSim {
     }
 
     public boolean isMoving() {
-        return SwerveDrive.getInstance().getRobotRelativeSpeeds().omegaRadiansPerSecond + 
-               SwerveDrive.getInstance().getRobotRelativeSpeeds().vxMetersPerSecond + 
-               SwerveDrive.getInstance().getRobotRelativeSpeeds().vyMetersPerSecond > 0.01;
+        return SwerveDrive.getInstance().getRobotRelativeSpeeds().omegaRadiansPerSecond +
+                SwerveDrive.getInstance().getRobotRelativeSpeeds().vxMetersPerSecond +
+                SwerveDrive.getInstance().getRobotRelativeSpeeds().vyMetersPerSecond > 0.01;
+    }
+
+    public double getRate() {
+        return angularVelocity;
     }
 }

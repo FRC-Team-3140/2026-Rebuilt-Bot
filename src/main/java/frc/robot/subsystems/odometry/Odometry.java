@@ -35,7 +35,10 @@ abstract public class Odometry extends SubsystemBase {
   }
 
   public double getAngularVelocity() {
-    return Math.toRadians(gyro.getRate());
+    if(!RobotBase.isSimulation()) {
+      return Math.toRadians(gyro.getRate());
+    }
+    return NavXSim.getInstance().getRate();
   }
 
   protected Odometry() {

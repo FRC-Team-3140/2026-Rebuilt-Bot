@@ -18,23 +18,23 @@ public class Quartic {
     }
 
     public double Evaluate(double x) {
-        return this.a*Math.pow(x,4) + this.b*Math.pow(x,3) + this.c*Math.pow(x, 2) + this.d*(x) + this.e;
+        return this.a * Math.pow(x, 4) + this.b * Math.pow(x, 3) + this.c * Math.pow(x, 2) + this.d * (x) + this.e;
     }
 
     public double EvaluateDerivative(double x) {
-        return 4*this.a*Math.pow(x,3) + 3*this.b*Math.pow(x,2) + 2*this.c*x + this.d;
+        return 4 * this.a * Math.pow(x, 3) + 3 * this.b * Math.pow(x, 2) + 2 * this.c * x + this.d;
     }
 
     public Optional<Double> FindRoot(double guess, int maxIterations, double maxError) {
         // newton approximation
-        for (int i = 0; i < maxIterations; i ++) {
+        for (int i = 0; i < maxIterations; i++) {
             double height = Evaluate(guess);
             double slope = EvaluateDerivative(guess);
 
             if (slope == 0) {
                 guess += 0.001;
             } else {
-                guess -= height/slope;
+                guess -= height / slope;
             }
         }
 

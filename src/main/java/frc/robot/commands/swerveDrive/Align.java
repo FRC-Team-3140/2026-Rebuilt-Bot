@@ -6,12 +6,10 @@ package frc.robot.commands.swerveDrive;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.odometry.Odometry;
-import frc.robot.libs.FieldAprilTags;
 import frc.robot.libs.LoggedCommand;
 import frc.robot.libs.NetworkTables;
 
@@ -69,12 +67,6 @@ public class Align extends SequentialCommandGroup {
 
     @Override
     public void initialize() {
-      if (targetPose == null) {
-        targetPose = FieldAprilTags.getInstance().getTagPose(
-            FieldAprilTags.getInstance().getClosestReefAprilTag(
-                Odometry.getInstance().getPose(),
-                DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue)).aprilTag.ID);
-      }
 
       xPID.setSetpoint(targetPose.getX());
       yPID.setSetpoint(targetPose.getY());
@@ -112,13 +104,14 @@ public class Align extends SequentialCommandGroup {
       if (startTime + maxDuration < Timer.getFPGATimestamp())
         return true;
       if ((currentPose.getTranslation().getDistance(targetPose.getTranslation()) < transTolerance &&
-          Math.abs((currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians()) % (Math.PI * 2)) < rotTolerance)) {
+          Math.abs((currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians())
+              % (Math.PI * 2)) < rotTolerance)) {
         if (!odometry.isMoving()) {
           System.out.println("Align ending because odometry is not moving");
-        } 
+        }
         if (currentPose.getTranslation().getDistance(targetPose.getTranslation()) < transTolerance) {
           System.out.println("Align ending because within translation tolerance");
-        } 
+        }
         if (currentPose.getRotation().getRadians() - targetPose.getRotation().getRadians() < rotTolerance) {
           System.out.println("Align ending because within rotation tolerance");
         }

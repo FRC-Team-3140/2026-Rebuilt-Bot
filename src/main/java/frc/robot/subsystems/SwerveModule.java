@@ -107,7 +107,8 @@ public class SwerveModule extends SubsystemBase {
         /////// AI CODE ///////
         // determined from a SYSID scan
         if (RobotBase.isSimulation()) {
-            drivePID = new ProfiledPIDController(Constants.Bot.simDriveP, Constants.Bot.simDriveI, Constants.Bot.simDriveD, constraints);
+            drivePID = new ProfiledPIDController(Constants.Bot.simDriveP, Constants.Bot.simDriveI,
+                    Constants.Bot.simDriveD, constraints);
         } else {
             drivePID = new ProfiledPIDController(0.005, 0, 0.0005, constraints);
         }
@@ -129,8 +130,10 @@ public class SwerveModule extends SubsystemBase {
     public void periodic() {
         // setAngle(0);
         // turnPID.calculate(getTurnEncoder().getAbsolutePosition());
-        // Fixed: Removed accelerationLimiter reset - it was resetting to 0 every cycle causing progressive slowdown
-        // Fixed: Removed constraint recreation - it's already set in constructor and doesn't need to be recreated
+        // Fixed: Removed accelerationLimiter reset - it was resetting to 0 every cycle
+        // causing progressive slowdown
+        // Fixed: Removed constraint recreation - it's already set in constructor and
+        // doesn't need to be recreated
         NetworkTableInstance.getDefault().getTable("Angle").getEntry(moduleID)
                 .setDouble(turnEncoder.getAbsolutePosition());
     }
@@ -193,13 +196,13 @@ public class SwerveModule extends SubsystemBase {
         // velocity is desired wheel speed in meters/second
         /////// AI CODE ///////
         double targetVelocity = velocity;
-        
+
         // Apply momentum simulation if in simulation mode
         if (RobotBase.isSimulation()) {
             targetVelocity = applySimulationMomentum(velocity);
         }
         /////// END AI CODE ///////
-        
+
         drivePID.setGoal(new State(targetVelocity, 0));
 
         // driveEncoder.getVelocity() returns RPM -> convert to meters/sec:
@@ -226,14 +229,16 @@ public class SwerveModule extends SubsystemBase {
 
     /////// AI CODE ///////
     /**
-     * Applies momentum simulation for realistic coast-down behavior (simulation only)
+     * Applies momentum simulation for realistic coast-down behavior (simulation
+     * only)
+     * 
      * @param desiredSpeed Target speed commanded by driver
      * @return Speed after applying momentum/deceleration limits
      */
     private double applySimulationMomentum(double desiredSpeed) {
         double speedDifference = desiredSpeed - simCurrentSpeed;
         double dt = 0.02; // 20ms loop time
-        
+
         if (Math.abs(desiredSpeed) > Math.abs(simCurrentSpeed)) {
             // Accelerating - use fast acceleration with limiter
             double limitedSpeed = accelerationLimiter.calculate(desiredSpeed);
@@ -242,22 +247,23 @@ public class SwerveModule extends SubsystemBase {
             // Decelerating - apply slow deceleration + drag
             double maxDecelStep = Constants.Bot.simMaxDeceleration * dt;
             double dragForce = simCurrentSpeed * Constants.Bot.simDragCoefficient;
-            
+
             // Move toward desired speed, but limited by decel rate + drag
             double decelStep = Math.min(Math.abs(speedDifference), maxDecelStep);
             simCurrentSpeed -= Math.signum(simCurrentSpeed) * (decelStep + Math.abs(dragForce));
-            
+
             // Clamp to zero at very low speeds to avoid drift
             if (Math.abs(simCurrentSpeed) < 0.01) {
                 simCurrentSpeed = 0;
             }
-            
-            // If we've reached the desired speed, clamp to it (but only if moving in same direction)
+
+            // If we've reached the desired speed, clamp to it (but only if moving in same
+            // direction)
             if (Math.abs(simCurrentSpeed - desiredSpeed) < 0.01) {
                 simCurrentSpeed = desiredSpeed;
             }
         }
-        
+
         return simCurrentSpeed;
     }
     /////// END AI CODE ///////

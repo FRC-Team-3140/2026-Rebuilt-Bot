@@ -4,13 +4,13 @@
 
 package frc.robot;
 
-
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -25,7 +25,8 @@ import edu.wpi.first.math.util.Units;
  * constants are needed, to reduce verbosity.
  */
 public final class Constants {
-  //public static final Logger.SimulationMode simMode = Logger.SimulationMode.REPLAY;
+  public static final Mode simMode = Mode.SIM; // Mode.REPLAY to replay
+
   public static class MotorIDs {
     /* Swerve Drive Motors: */
     // FL
@@ -55,7 +56,7 @@ public final class Constants {
     public static final int rollerMotor = 15; // NEO 8
 
     public static final int climberLeftMotor = 16; // NEO 9
-    public static final int climberRightMotor = 17; // NEO 10 
+    public static final int climberRightMotor = 17; // NEO 10
   }
 
   public static class SensorIDs {
@@ -68,15 +69,20 @@ public final class Constants {
 
     public static final int BR = 3;
 
+    // Climber Limit Switches
+    public static final int climberLimitSwitchLeft = 4;
+
+    public static final int cllimberLimitSwitchRight = 5;
+
   }
 
   public static class MotorSpeeds {
-      public static class Intake {
-        public static final double intakeSpeed = 0.7;
-        public static final double outtakeSpeed = -0.7;
+    public static class Intake {
+      public static final double intakeSpeed = 0.7;
+      public static final double outtakeSpeed = -0.7;
 
-        public static final double agitateSpeed = 0.1;
-      }
+      public static final double agitateSpeed = 0.1;
+    }
   }
 
   public static class PID {
@@ -94,7 +100,9 @@ public final class Constants {
       public static final double rotationD = 0.001;
 
     }
-    public static class Intake {}
+
+    public static class Intake {
+    }
   }
 
   public static class CurrentLimits {
@@ -103,8 +111,12 @@ public final class Constants {
       public static final int hoodLimit = 15;
       public static final int turretLimit = 20;
     }
-    public static class Intake {}
-    public static class Feeder {}
+
+    public static class Intake {
+    }
+
+    public static class Feeder {
+    }
   }
 
   public static class Bot {
@@ -131,12 +143,13 @@ public final class Constants {
     public static final double simMaxDeceleration = 100; // m/s² for translation coast-down
     public static final double simMaxRotationalDeceleration = Math.toRadians(1200); // rad/s² for rotation
     public static final double simDragCoefficient = 0.05; // Friction/drag coefficient (0.01-0.1)
-    
-    // Simulation-only PID tuning (much softer to reduce oscillation in fast sim updates)
+
+    // Simulation-only PID tuning (much softer to reduce oscillation in fast sim
+    // updates)
     public static final double simDriveP = 0.0005; // Very low P - rely mostly on feedforward
-    public static final double simDriveI = 0.0;    // No integral term
+    public static final double simDriveI = 0.0; // No integral term
     public static final double simDriveD = 0.00001; // Minimal D for damping only
-    public static final double simTurnP = 0.003;   // Reduced turn P for smoother rotation
+    public static final double simTurnP = 0.003; // Reduced turn P for smoother rotation
     /////// END AI CODE ///////
 
     // Swerve Module Base Angles
@@ -174,7 +187,8 @@ public final class Constants {
       public static final double maxAngularVelocity = 30; // degrees per second
 
       public static final double nearMinAngle = 75; // minimum angle when near the goal. Makes sure the shot arcs
-      public static final double nearInterpRange = 4; // the range where the min angle starts to interpolate to the nearMinAngle
+      public static final double nearInterpRange = 4; // the range where the min angle starts to interpolate to the
+                                                      // nearMinAngle
       public static final double nearRange = 2; // the range where the min angle is the nearMinAngle
     }
   }
@@ -191,9 +205,10 @@ public final class Constants {
 
   public static class CameraConstants {
     // public static final double maxTimeBeteweenFrames = 0.1;
-    public static final double frontOffsetToCenter = Units.inchesToMeters(13);
-    public static final double backOffsetToCenter = -Units.inchesToMeters(13);
-    public static final double backOffsetToCenterVert = -Units.inchesToMeters(19);
+    public static final double leftOffsetToCenter = -Units.inchesToMeters(13);
+    public static final double rightOffsetToCenter = Units.inchesToMeters(13);
+    public static final double offsetToCenterVert = Units.inchesToMeters(10);
+    public static final double pitch = Math.toRadians(-30);
     public static final double maxDistCutoff = 2;
     public static final double minAmbiguity = 0.05;
   }
@@ -223,8 +238,6 @@ public final class Constants {
         Units.degreesToRadians(720));
   }
 
-
-
   public static class Odometry {
     public static final double TagCorrectionSpeed = 0.75;
   }
@@ -249,4 +262,16 @@ public final class Constants {
     public static final int RainbowSpan = 5;
   }
 
+  public static final Mode currentMode = RobotBase.isReal() ? Mode.REAL : simMode;
+
+  public static enum Mode {
+    /** Running on a real robot. */
+    REAL,
+
+    /** Running a physics simulator. */
+    SIM,
+
+    /** Replaying from a log file. */
+    REPLAY
+  }
 }

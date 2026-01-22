@@ -39,7 +39,7 @@ public class Vector2 {
     }
 
     public double dot(Vector2 other) {
-        return X*other.X + Y*other.Y;
+        return X * other.X + Y * other.Y;
     }
 
     public double magnitude() {
@@ -47,10 +47,10 @@ public class Vector2 {
     }
 
     public double magSq() {
-        return X*X + Y*Y;
+        return X * X + Y * Y;
     }
 
     public Vector2 rotate(double rads) {
-        return new Vector2(X*Math.cos(rads) - Y*Math.sin(rads), X*Math.sin(rads) + Y*Math.cos(rads));
+        return new Vector2(X * Math.cos(rads) - Y * Math.sin(rads), X * Math.sin(rads) + Y * Math.cos(rads));
     }
 }

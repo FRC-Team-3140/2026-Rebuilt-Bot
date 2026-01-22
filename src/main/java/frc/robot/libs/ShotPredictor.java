@@ -34,7 +34,8 @@ public class ShotPredictor {
         DesiredShotVelocity = desiredShotVelocity;
     }
 
-    public static Optional<Result> Predict(double shotAngle, Vector2 botVelocity, double verticalVelocity, Vector2 relativeTargetPosition, double targetHeight) {
+    public static Optional<Result> Predict(double shotAngle, Vector2 botVelocity, double verticalVelocity,
+            Vector2 relativeTargetPosition, double targetHeight) {
         // If you want to understand the math (kinda)
         // https://www.overleaf.com/read/dfcbwtvytpms#32640b
         double botSpeedSq = botVelocity.magSq();
@@ -44,14 +45,15 @@ public class ShotPredictor {
         tansq *= tansq;
 
         Quartic q = new Quartic(
-            0.25*gravity*gravity,
-            verticalVelocity*gravity,
-            verticalVelocity*verticalVelocity - targetHeight*gravity - tansq*botSpeedSq,
-            -(2*targetHeight*verticalVelocity + 2*tansq*dot),
-            targetHeight*targetHeight - tansq*targetDistance*targetDistance
-        );
+                0.25 * gravity * gravity,
+                verticalVelocity * gravity,
+                verticalVelocity * verticalVelocity - targetHeight * gravity - tansq * botSpeedSq,
+                -(2 * targetHeight * verticalVelocity + 2 * tansq * dot),
+                targetHeight * targetHeight - tansq * targetDistance * targetDistance);
 
-        double guess = (verticalVelocity + Math.sqrt(verticalVelocity*verticalVelocity - 2*gravity*targetDistance*tansq))/(-gravity) + 2;
+        double guess = (verticalVelocity
+                + Math.sqrt(verticalVelocity * verticalVelocity - 2 * gravity * targetDistance * tansq)) / (-gravity)
+                + 2;
         Optional<Double> quarticResult = q.FindRoot(guess, NewtonRepetitions, maxNewtonError);
 
         if (quarticResult.isEmpty()) {
@@ -67,33 +69,34 @@ public class ShotPredictor {
         Result result = new Result();
         result.TravelTime = travelTime;
         result.ShotAngle = shotAngle;
-        result.ShotSpeed =
-            (Math.sqrt(botSpeedSq*travelTime*travelTime + targetDistance*targetDistance + 2*travelTime*dot))
-            /(travelTime*Math.cos(Math.toRadians(shotAngle)));
+        result.ShotSpeed = (Math
+                .sqrt(botSpeedSq * travelTime * travelTime + targetDistance * targetDistance + 2 * travelTime * dot))
+                / (travelTime * Math.cos(Math.toRadians(shotAngle)));
         result.AimPosition = relativeTargetPosition.add(botVelocity.mult(-travelTime));
 
         return Optional.of(result);
     }
 
-    public Optional<Result> Update(boolean loose, double currentAngle, double deltaTime, Vector2 botVelocity, double verticalVelocity, Vector2 relativeTargetPosition, double targetHeight) {
-        double min = loose ? MinAngle : Math.max(MinAngle, currentAngle - deltaTime*MaxAngleVelocity);
-        double max = loose ? MaxAngle : Math.min(MaxAngle, currentAngle + deltaTime*MaxAngleVelocity);
+    public Optional<Result> Update(boolean loose, double currentAngle, double deltaTime, Vector2 botVelocity,
+            double verticalVelocity, Vector2 relativeTargetPosition, double targetHeight) {
+        double min = loose ? MinAngle : Math.max(MinAngle, currentAngle - deltaTime * MaxAngleVelocity);
+        double max = loose ? MaxAngle : Math.min(MaxAngle, currentAngle + deltaTime * MaxAngleVelocity);
 
         double finalAngle = currentAngle;
         HashMap<Double, Optional<Result>> cache = new HashMap<Double, Optional<Result>>();
 
         // repetitively close in on the best angle by repeating the process
-        for (int i = 0; i < updateRepetitions; i ++) {
-            
+        for (int i = 0; i < updateRepetitions; i++) {
+
             double bestAngle = 0;
             double bestErr = Double.MAX_VALUE;
 
             // divide the interval into sections and find the best one
-            double halfStepSize = (max - min)/(updateSteps*2);
-            for (double angle = min + halfStepSize; angle < max; angle += 2*halfStepSize) {
+            double halfStepSize = (max - min) / (updateSteps * 2);
+            for (double angle = min + halfStepSize; angle < max; angle += 2 * halfStepSize) {
                 Optional<Result> resultOpt = cache.containsKey(angle)
-                    ? cache.get(angle)
-                    : Predict(angle, botVelocity, verticalVelocity, relativeTargetPosition, targetHeight);
+                        ? cache.get(angle)
+                        : Predict(angle, botVelocity, verticalVelocity, relativeTargetPosition, targetHeight);
 
                 cache.put(angle, resultOpt);
 

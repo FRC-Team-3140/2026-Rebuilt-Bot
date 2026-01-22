@@ -10,8 +10,9 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.commands.swerveDrive.Drive;
+import frc.robot.libs.FieldAprilTags;
 import frc.robot.sensors.Camera;
-import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Controller;
 import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Intake;
@@ -34,13 +35,14 @@ public class RobotContainer {
 
   // The robot's subsystems and commands are defined here...
   public static SwerveDrive swerveDrive = SwerveDrive.getInstance();
+  public static FieldAprilTags fieldAprilTags = FieldAprilTags.getInstance();
   public static Camera camera = Camera.getInstance();
   public static Odometry odometry = Odometry.getInstance();
   public static Controller controller = Controller.getInstance();
   public static Turret turret = Turret.getInstance();
   public static Feeder feeder = Feeder.getInstance();
   public static Intake intake = Intake.getInstance();
-  public static Climber climber = Climber.getInstance();
+  public static Climbers climber = Climbers.getInstance();
 
   public static TestRunner testRunner = TestRunner.getInstance();
 
