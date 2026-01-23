@@ -7,6 +7,7 @@ package frc.robot.sensors;
 import java.util.List;
 import java.util.Optional;
 
+import org.littletonrobotics.junction.Logger;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -15,6 +16,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.MultiTargetPNPResult;
+import org.photonvision.targeting.PhotonPipelineMetadata;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
@@ -45,24 +47,24 @@ public class Camera extends SubsystemBase {
   private Pose2d lastPose = new Pose2d();
   private Pose2d estimatedPose = new Pose2d();
 
-  private PhotonCamera left = new PhotonCamera("left");
-  private PhotonCamera right = new PhotonCamera("right");
+  private PhotonCamera one = new PhotonCamera("one");
+  private PhotonCamera two = new PhotonCamera("two");
 
-  private Transform3d leftToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter, Constants.CameraConstants.offsetToCenterVert,
+  private Transform3d oneToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter, Constants.CameraConstants.offsetToCenterVert,
       new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-90)));
-  private Transform3d rightToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,  Constants.CameraConstants.offsetToCenterVert, 
+  private Transform3d twoToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,  Constants.CameraConstants.offsetToCenterVert, 
       new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(90)));
 
   private AprilTagFieldLayout layout = FieldAprilTags.getInstance().field;
-  private PhotonPoseEstimator frontEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      leftToBot);
-  private PhotonPoseEstimator backEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-      rightToBot);
+  private PhotonPoseEstimator oneEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      oneToBot);
+  private PhotonPoseEstimator twoEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      twoToBot);
 
   VisionSystemSim visionSim = new VisionSystemSim("main");
   SimCameraProperties cameraProp = new SimCameraProperties();
-  PhotonCameraSim leftCameraSim = new PhotonCameraSim(left, cameraProp);
-  PhotonCameraSim rightCameraSim = new PhotonCameraSim(right, cameraProp);
+  PhotonCameraSim oneCameraSim = new PhotonCameraSim(one, cameraProp);
+  PhotonCameraSim twoCameraSim = new PhotonCameraSim(two, cameraProp);
 
 
   // private boolean tooFar = false;
@@ -122,14 +124,11 @@ public class Camera extends SubsystemBase {
     cameraProp.setAvgLatencyMs(35);
     cameraProp.setLatencyStdDevMs(5);
 
-    visionSim.addCamera(leftCameraSim, leftToBot);
-    visionSim.addCamera(rightCameraSim, rightToBot);
-    leftCameraSim.enableDrawWireframe(true);
-    rightCameraSim.enableDrawWireframe(true);
+    visionSim.addCamera(oneCameraSim, oneToBot);
+    visionSim.addCamera(twoCameraSim, twoToBot);
 
-    frontEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
-    backEstimator
-       .setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    oneEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    twoEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
   }
 
   @Override
@@ -142,181 +141,110 @@ public class Camera extends SubsystemBase {
 
       lastIteration = Timer.getFPGATimestamp();
     }
-    frontEstimator.addHeadingData(Timer.getFPGATimestamp(), Odometry.getInstance().getRotation());
-    backEstimator.addHeadingData(Timer.getFPGATimestamp(), Odometry.getInstance().getRotation());
+
+    oneEstimator.addHeadingData(Timer.getFPGATimestamp(), Odometry.getInstance().getRotation());
+    twoEstimator.addHeadingData(Timer.getFPGATimestamp(), Odometry.getInstance().getRotation());
+
+    if (connected || RobotBase.isSimulation()) {
+      Pose3d estimatedPoseOne = Pose3d.kZero, estimatedPoseTwo = Pose3d.kZero;
+      Pose2d curPose = Odometry.getInstance().getPose();
+
+
+      List<PhotonPipelineResult> firstCameraResults = one.getAllUnreadResults();
+      List<PhotonPipelineResult> secondCameraResults = two.getAllUnreadResults();
+
+      oneEstimator.setReferencePose(curPose);
+      twoEstimator.setReferencePose(curPose);
+
+      if (firstCameraResults.size() != 0) {
+        for (PhotonPipelineResult result : firstCameraResults) {
+          Optional<MultiTargetPNPResult> multiResult = result.getMultiTagResult();
+          if (multiResult.isPresent() && multiResult.get().estimatedPose.bestReprojErr < Constants.CameraConstants.maxReprojectionError) {
+            Optional<EstimatedRobotPose> pose = 
+              oneEstimator.update(new PhotonPipelineResult(result.metadata,
+                    result.getTargets(),
+                    multiResult));
+            if (pose.isPresent()) estimatedPoseOne = pose.get().estimatedPose; 
+          }
+        }
+      }
+      if (secondCameraResults.size() != 0) {
+        for (PhotonPipelineResult result : secondCameraResults) {
+          Optional<MultiTargetPNPResult> multiResult = result.getMultiTagResult();
+          if (multiResult.isPresent() && multiResult.get().estimatedPose.bestReprojErr < Constants.CameraConstants.maxReprojectionError) {
+            Optional<EstimatedRobotPose> pose = 
+              twoEstimator.update(new PhotonPipelineResult(result.metadata,
+                    result.getTargets(),
+                    multiResult));
+            if (pose.isPresent()) estimatedPoseTwo = pose.get().estimatedPose; 
+          }
+        }
+      }
+
+      setDebugPoses(estimatedPoseOne != Pose3d.kZero, estimatedPoseTwo != Pose3d.kZero, estimatedPoseOne, estimatedPoseTwo);
+      if (estimatedPoseOne != Pose3d.kZero && estimatedPoseTwo != Pose3d.kZero) {
+        estimatedPose = new Pose2d(
+            (estimatedPoseOne.getX() + estimatedPoseTwo.getX()) / 2,
+            (estimatedPoseOne.getY() + estimatedPoseTwo.getY()) / 2,
+            new Rotation2d((estimatedPoseOne.getRotation().getAngle() + estimatedPoseTwo.getRotation().getAngle()) / 2));
+      } else if (estimatedPoseOne != Pose3d.kZero) {
+        estimatedPose = new Pose2d(estimatedPoseOne.getX(), estimatedPoseOne.getY(), estimatedPoseOne.getRotation().toRotation2d());
+      } else if (estimatedPoseTwo != Pose3d.kZero) {
+        estimatedPose = new Pose2d(estimatedPoseTwo.getX(), estimatedPoseTwo.getY(), estimatedPoseTwo.getRotation().toRotation2d());
+      } else {
+        estimatedPose = Pose2d.kZero;
+      }
+    }
   }
 
   public boolean isConnected() {
-    connected = (left.isConnected() && right.isConnected());
+    connected = (one.isConnected() && two.isConnected());
     return connected;
   }
 
   public Integer getClosestApriltag() {
     if (connected) {
-      PhotonTrackedTarget frontTarget = left.getLatestResult().getBestTarget();
-      PhotonTrackedTarget backTarget = right.getLatestResult().getBestTarget();
+      PhotonTrackedTarget oneTarget = one.getLatestResult().getBestTarget();
+      PhotonTrackedTarget twoTarget = two.getLatestResult().getBestTarget();
 
-      if (frontTarget == null && backTarget == null) {
+      if (oneTarget == null && twoTarget == null) {
         return null;
-      } else if (frontTarget == null) {
-        return backTarget.getFiducialId();
-      } else if (backTarget == null) {
-        return frontTarget.getFiducialId();
+      } else if (oneTarget == null) {
+        return twoTarget.getFiducialId();
+      } else if (twoTarget == null) {
+        return oneTarget.getFiducialId();
       } else {
-        double frontDistance = frontTarget.getBestCameraToTarget().getTranslation().getNorm();
-        double backDistance = backTarget.getBestCameraToTarget().getTranslation().getNorm();
-        return frontDistance < backDistance ? frontTarget.getFiducialId() : backTarget.getFiducialId();
+        double oneDistance = oneTarget.getBestCameraToTarget().getTranslation().getNorm();
+        double twoDistance = twoTarget.getBestCameraToTarget().getTranslation().getNorm();
+        return oneDistance < twoDistance ? oneTarget.getFiducialId() : twoTarget.getFiducialId();
       }
     } else {
       return null;
     }
   }
 
-  private void setDebugPoses(boolean front, boolean back, Pose2d pose) {
-    if (front) {
-      NetworkTables.frontCameraPose.setDoubleArray(new double[] {
-        pose.getX(),
-          pose.getY(),
-          pose.getRotation().getDegrees() });
+  private void setDebugPoses(boolean one, boolean two, Pose3d onePose, Pose3d twoPose) {
+    if(one) {
+      NetworkTables.oneCameraPose.setDoubleArray(new double[] {
+        onePose.getX(),
+          onePose.getY(),
+          Math.toDegrees(onePose.getRotation().getAngle())});
+      Logger.recordOutput("Odometry/cameraOnePrediction", onePose.toPose2d());  
     }
-    if (back) {
-      NetworkTables.backCameraPose.setDoubleArray(new double[] {
-        pose.getX(),
-          pose.getY(),
-          pose.getRotation().getDegrees() });
+    if (two) {
+      NetworkTables.twoCameraPose.setDoubleArray(new double[] {
+        twoPose.getX(),
+          twoPose.getY(),
+          Math.toDegrees(twoPose.getRotation().getAngle())});
+      Logger.recordOutput("Odometry/cameraTwoPrediction", twoPose.toPose2d());  
     }
-
   }
 
   // ignoreRepeats should be true on any getPoseFromCamera call that is not the
   // first call of the method within a rio loop.
-  public Pose2d getPoseFromCamera(double distanceCutoff) {
+  public Pose2d getPoseFromCamera() {
     if (connected || RobotBase.isSimulation()) {
-
-      Pose2d curPose = Odometry.getInstance().getPose();
-
-
-      List<PhotonPipelineResult> firstCameraResults = left.getAllUnreadResults();
-      List<PhotonPipelineResult> secondCameraResults = right.getAllUnreadResults();
-
-      frontEstimator.setReferencePose(curPose);
-      backEstimator.setReferencePose(curPose);
-
-      if (firstCameraResults.size() != 0) {
-        for (PhotonPipelineResult result : firstCameraResults) {
-          Optional<MultiTargetPNPResult> multiResult = result.getMultiTagResult();
-
-          if (multiResult.isPresent()) {
-            Transform3d fieldToCamera = multiResult.get().estimatedPose.best;
-            frontEstimator.update(cameraResult)
-              frontEstimator.update(new PhotonPipelineResult);
-            frontEstimator.update(fieldToCamera);
-          }
-        }
-        double frontDistance = FieldAprilTags.getInstance().getTagPose(frontResult.getBestTarget().getFiducialId())
-          .getTranslation().getDistance(curPose.getTranslation());
-      }
-      if (backResult.hasTargets()) {
-        double backDistance = FieldAprilTags.getInstance().getTagPose(backResult.getBestTarget().getFiducialId())
-          .getTranslation().getDistance(curPose.getTranslation());
-
-        if (backDistance > distanceCutoff)
-          backResult = new PhotonPipelineResult();
-      }
-      if (frontResult.hasTargets() && backResult.hasTargets()) {
-
-        Optional<EstimatedRobotPose> frontPoseOpt = Optional.empty();
-        Optional<EstimatedRobotPose> backPoseOpt = Optional.empty();
-        if (frontResult.getBestTarget().getPoseAmbiguity() < Constants.CameraConstants.minAmbiguity) {
-          frontPoseOpt = frontEstimator.update(frontResult);
-          if (ignoreRepeats && frontPoseOpt.isEmpty()) {
-            return lastPose;
-          }
-        }
-        if (backResult.getBestTarget().getPoseAmbiguity() < Constants.CameraConstants.minAmbiguity) {
-          backPoseOpt = backEstimator.update(backResult);
-          if (ignoreRepeats && backPoseOpt.isEmpty()) {
-            return lastPose;
-          }
-        }
-
-        if (frontPoseOpt.isPresent() && backPoseOpt.isPresent()) {
-          Pose2d frontPoseEstimation = frontPoseOpt.get().estimatedPose.toPose2d();
-          Pose2d backPoseEstimation = backPoseOpt.get().estimatedPose.toPose2d();
-          setDebugPoses(true, false, frontPoseEstimation);
-          setDebugPoses(false, true, backPoseEstimation);
-          double avgX = (frontPoseEstimation.getX() + backPoseEstimation.getX()) / 2;
-          double avgY = (frontPoseEstimation.getY() + backPoseEstimation.getY()) / 2;
-          double avgRot = (frontPoseEstimation.getRotation().getRadians()
-              + backPoseEstimation.getRotation().getRadians()) / 2;
-
-          estimatedPose = new Pose2d(avgX, avgY, new Rotation2d(avgRot));
-
-          if (estimatedPose.getX() != lastPose.getX() || estimatedPose.getY() != lastPose.getY() || ignoreRepeats) {
-            lastPose = estimatedPose;
-            return estimatedPose;
-          } else {
-            return null;
-          }
-        } else {
-
-          return null;
-        }
-      } else if (frontResult.hasTargets()) {
-        frontEstimator.setReferencePose(curPose);
-        Optional<EstimatedRobotPose> frontPoseOpt = Optional.empty();
-
-        if (frontResult.getBestTarget().getPoseAmbiguity() < Constants.CameraConstants.minAmbiguity) {
-          frontPoseOpt = frontEstimator.update(frontResult);
-          if (ignoreRepeats && frontPoseOpt.isEmpty()) {
-            return lastPose;
-          }
-        }
-
-        if (frontPoseOpt.isPresent()) {
-
-          estimatedPose = frontPoseOpt.get().estimatedPose.toPose2d();
-          setDebugPoses(true, false, estimatedPose);
-          if (estimatedPose.getX() != lastPose.getX() || estimatedPose.getY() != lastPose.getY() || ignoreRepeats) {
-
-            lastPose = estimatedPose;
-            return estimatedPose;
-          } else {
-
-            return null;
-          }
-        }
-
-      } else if (backResult.hasTargets()) {
-        backEstimator.setReferencePose(curPose);
-        Optional<EstimatedRobotPose> backPoseOpt = Optional.empty();
-
-        if (backResult.getBestTarget().getPoseAmbiguity() < Constants.CameraConstants.minAmbiguity) {
-          backPoseOpt = backEstimator.update(backResult);
-          if (ignoreRepeats && backPoseOpt.isEmpty()) {
-            return lastPose;
-          }
-        }
-
-        if (backPoseOpt.isPresent()) {
-          estimatedPose = backPoseOpt.get().estimatedPose.toPose2d();
-          setDebugPoses(true, false, estimatedPose);
-
-          if (estimatedPose.getX() != lastPose.getX() || estimatedPose.getY() != lastPose.getY() || ignoreRepeats) {
-            lastPose = estimatedPose;
-            return estimatedPose;
-          } else {
-
-            return null;
-          }
-        }
-      } else {
-
-        return null;
-      }
-    } else {
-
-      return null;
+      return estimatedPose;
     }
 
     return null;
@@ -324,20 +252,20 @@ public class Camera extends SubsystemBase {
 
   public int[] getDetectedTags() {
     if (connected) {
-      List<PhotonTrackedTarget> detectedTags = left.getLatestResult().targets;
-      List<PhotonTrackedTarget> detectedTagsBack = right.getLatestResult().targets;
+      List<PhotonTrackedTarget> detectedTagsOne = one.getLatestResult().targets;
+      List<PhotonTrackedTarget> detectedTagsTwo = two.getLatestResult().targets;
 
-      if (detectedTags.size() == 0)
+      if (detectedTagsOne.size() == 0)
         return null;
 
-      int[] detectedTagsInt = new int[detectedTags.size() + detectedTagsBack.size()];
+      int[] detectedTagsInt = new int[detectedTagsOne.size() + detectedTagsOne.size()];
 
-      for (int i = 0; i < detectedTags.size(); i++) {
-        detectedTagsInt[i] = (int) detectedTags.get(i).getFiducialId();
+      for (int i = 0; i < detectedTagsOne.size(); i++) {
+        detectedTagsInt[i] = (int) detectedTagsOne.get(i).getFiducialId();
       }
 
-      for (int i = 0; i < detectedTagsBack.size(); i++) {
-        detectedTagsInt[i + detectedTags.size()] = (int) detectedTagsBack.get(i).getFiducialId();
+      for (int i = 0; i < detectedTagsTwo.size(); i++) {
+        detectedTagsInt[i + detectedTagsOne.size()] = (int) detectedTagsTwo.get(i).getFiducialId();
       }
 
       return detectedTagsInt;

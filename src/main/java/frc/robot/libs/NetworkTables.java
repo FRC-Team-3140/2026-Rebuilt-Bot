@@ -27,8 +27,8 @@ public class NetworkTables {
     
     // Former Camera average position on dev board.
     public static NetworkTableEntry pathplannerGoalPose = devBoard.getEntry("cameraPose_ad");
-    public static NetworkTableEntry backCameraPose = devBoard.getEntry("backCameraPose_ad");
-    public static NetworkTableEntry frontCameraPose = devBoard.getEntry("frontCameraPose_ad");
+    public static NetworkTableEntry oneCameraPose = devBoard.getEntry("oneCameraPose_ad");
+    public static NetworkTableEntry twoCameraPose = devBoard.getEntry("twoCameraPose_ad");
 
     public static NetworkTableEntry measuredSwerveStates_da = devBoard.getEntry("measuredStates_da");
     public static NetworkTableEntry desiredSwerveStates_da = devBoard.getEntry("desiredStates_da");

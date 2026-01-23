@@ -61,9 +61,8 @@ abstract public class Odometry extends SubsystemBase {
     }
   }
 
-  protected Pose2d calculatePoseFromTags(boolean ignoreMaxDistance, boolean ignoreRepeats) {
-    return Camera.getInstance().getPoseFromCamera(
-        ignoreMaxDistance ? Integer.MAX_VALUE : Constants.CameraConstants.maxDistCutoff, ignoreRepeats);
+  protected Pose2d calculatePoseFromTags() {
+    return Camera.getInstance().getPoseFromCamera();
   }
 
   abstract public double getX();
