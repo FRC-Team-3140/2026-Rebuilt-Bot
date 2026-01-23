@@ -10,9 +10,9 @@ import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.controller.PIDController;
@@ -27,11 +27,11 @@ import edu.wpi.first.wpilibj.smartdashboard.MechanismLigament2d;
 import edu.wpi.first.wpilibj.smartdashboard.MechanismRoot2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
 import frc.robot.Constants;
+import frc.robot.libs.FlipPose;
 import frc.robot.libs.ShotPredictor;
-import frc.robot.libs.Vector2;
 import frc.robot.libs.ShotPredictor.Result;
+import frc.robot.libs.Vector2;
 import frc.robot.subsystems.odometry.CustomOdometry;
 import frc.robot.subsystems.odometry.Odometry;
 
@@ -71,6 +71,8 @@ public class Turret extends SubsystemBase {
 
   Mechanism2d turret = new Mechanism2d(26, 18);
 
+  private boolean spinup = false;
+
   private static Turret m_instance = null;
 
   public static Turret getInstance() {
@@ -102,14 +104,13 @@ public class Turret extends SubsystemBase {
 
     turretConfig.smartCurrentLimit(Constants.CurrentLimits.Turret.turretLimit);
 
-    turretRotationMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-    hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    turretRotationMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     hoodRoot.append(hoodBody);
     SmartDashboard.putData("Shooter Hood", hood);
 
     hoodPID.setSetpoint(hoodSetpoint);
-
   }
 
   private Pair<Pose2d, Vector2> getFutureState(double dt) {
@@ -143,8 +144,8 @@ public class Turret extends SubsystemBase {
   private void predict(double deltaTime) {
     shotPredictor.DesiredShotVelocity = desiredVelocity; // incase we want to change desired velocity
 
-    double targetHeight = 2; // TODO: make this correct
-    Vector2 goalPosition = new Vector2(); // TODO: this too
+    double targetHeight = 2; // TODO: make this correct (relative to turret)
+    Vector2 goalPosition = FlipPose.flipVectorIfRed(new Vector2(4.625, 4.025));
 
     Pair<Pose2d, Vector2> futureStatePair = getFutureState(predictForwardTime);
     Pose2d futurePose = futureStatePair.getFirst();
@@ -198,6 +199,14 @@ public class Turret extends SubsystemBase {
     }
   }
 
+  public void setFlywheelActive(boolean active) {
+    spinup = active;
+  }
+
+  public boolean getFlywheelActive() {
+    return spinup;
+  }
+
   @Override
   public void periodic() {
     if (lastUpdateTimestamp == 0) {
@@ -217,6 +226,11 @@ public class Turret extends SubsystemBase {
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.get()));
     turretRotationMotor.set(rotationProfiledPID.calculate(turretEncoder.get()));
-    flywheelMotor.set(flywheelPID.calculate(flywheelMotor.getEncoder().getVelocity()));
+
+    if (spinup) {
+      flywheelMotor.set(flywheelPID.calculate(flywheelMotor.getEncoder().getVelocity()));
+    } else {
+      flywheelMotor.set(0);
+    }
   }
 }

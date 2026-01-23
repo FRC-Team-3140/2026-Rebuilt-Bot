@@ -19,7 +19,14 @@ public class Controller extends SubsystemBase {
   private static Controller instance = null;
 
   public final XboxController primaryController;
+
+  private boolean rightTriggerTriggeredPrimary = false;
+  private boolean leftTriggerTriggeredPrimary = false;
+
   public final XboxController secondaryController;
+
+  private boolean rightTriggerTriggeredSecondary = false;
+  private boolean leftTriggerTriggeredSecondary = false;
 
   /** Creates a new Controller. */
   public Controller(int primary, int secondary) {
@@ -27,7 +34,8 @@ public class Controller extends SubsystemBase {
     secondaryController = new XboxController(secondary);
   }
 
-  private final double deadband = .1;
+  private final double deadband = 0.1;
+  private final double triggerThreshold = 0.5;
 
   private final boolean testing = false;
 
@@ -47,6 +55,40 @@ public class Controller extends SubsystemBase {
           Constants.Controller.SecondaryDriverControllerPort);
     }
     return instance;
+  }
+
+  public boolean getLeftTriggerTriggered(controllers controller) {
+    XboxController contr = (controller == controllers.PRIMARY ? primaryController : secondaryController);
+
+    boolean trigger = contr.getLeftTriggerAxis() > triggerThreshold;
+
+    if (trigger) {
+      if (controller == controllers.PRIMARY) {
+        leftTriggerTriggeredPrimary = true;
+      } else {
+        leftTriggerTriggeredSecondary = true;
+      }
+      return trigger;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean getRightTriggerTriggered(controllers controller) {
+    XboxController contr = (controller == controllers.PRIMARY ? primaryController : secondaryController);
+
+    boolean trigger = contr.getRightTriggerAxis() > triggerThreshold;
+
+    if (trigger) {
+      if (controller == controllers.PRIMARY) {
+        rightTriggerTriggeredPrimary = true;
+      } else {
+        rightTriggerTriggeredSecondary = true;
+      }
+      return trigger;
+    } else {
+      return false;
+    }
   }
 
   public double getLeftX(controllers controller) {
@@ -146,6 +188,51 @@ public class Controller extends SubsystemBase {
     return curControlMode;
   }
 
+  /**
+   * Reusable controls for all modes go here.
+   *
+   * <p>
+   * 
+   * Mapped Buttons:
+   * <ol>
+   * <li>Y - Reset Gyro</li>
+   * <li>A - Deploy Intake</li>
+   * <li>B - Stow Intake</li>
+   * <li>Left Bumper - Intake</li>
+   * <li>Right Bumper - Spinup Flywheel</li>
+   * <li>Start - Recalibrate Camera Pose</li>
+   * </ol>
+   */
+  private void reusableDefaultControls() {
+    if (primaryController.getYButtonPressed()) {
+      SwerveDrive.odometry.resetGyro();
+    }
+
+    if (primaryController.getStartButtonPressed()) {
+      RobotContainer.odometry.recalibrateCameraPose();
+    }
+
+    if (primaryController.getLeftBumperButtonPressed()) {
+      Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
+    }
+
+    if (primaryController.getRightBumperButtonPressed()) {
+      Turret.getInstance().setFlywheelActive(true);
+    }
+
+    if (primaryController.getRightBumperButtonReleased()) {
+      Turret.getInstance().setFlywheelActive(false);
+    }
+
+    if (primaryController.getBButtonPressed()) {
+      Intake.getInstance().stow();
+    }
+
+    if (primaryController.getAButtonPressed()) {
+      Intake.getInstance().deploy();
+    }
+  }
+
   private void updateControlMode() {
     if (secondaryController.getRightBumperButtonPressed()) {
       curControlMode = ControlMode.MANUAL;
@@ -155,7 +242,7 @@ public class Controller extends SubsystemBase {
       curControlMode = ControlMode.AUTO;
       System.out.println("Control Mode: " + curControlMode);
       setRumbleBoth(controllers.SECONDARY, 0.1, 1);
-    } else if (secondaryController.getRightTriggerAxis() > 0.5 && secondaryController.getLeftTriggerAxis() > 0.5) {
+    } else if (getLeftTriggerTriggered(controllers.SECONDARY) && getRightTriggerTriggered(controllers.SECONDARY)) {
       curControlMode = ControlMode.OHNO_MANUAL;
       System.out.println("Control Mode: " + curControlMode);
       setRumbleBoth(controllers.SECONDARY, 0.1, 1);
@@ -168,28 +255,14 @@ public class Controller extends SubsystemBase {
       return;
     }
 
-    if (primaryController.getLeftBumperButtonPressed()) {
-      // TODO: Intake
-    }
+    reusableDefaultControls();
 
-    if (primaryController.getRightBumperButtonPressed()) {
-      // TODO: Spinup Flywheel
-    }
-
-    if (primaryController.getRightTriggerAxis() > 0.5 && primaryController.getRightBumperButton()) {
+    if (primaryController.getRightTriggerAxis() > triggerThreshold && Turret.getInstance().getFlywheelActive()) {
       // TODO: Shoot
     }
 
-    if (primaryController.getLeftTriggerAxis() > 0.5) {
+    if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
       // TODO: Climb
-    }
-
-    if (primaryController.getYButtonPressed()) {
-      // TODO: Stow Intake
-    }
-
-    if (primaryController.getAButtonPressed()) {
-      // TODO: Deploy Intake
     }
   }
 
@@ -199,28 +272,10 @@ public class Controller extends SubsystemBase {
       return;
     }
 
-    if (primaryController.getLeftBumperButtonPressed()) {
-      // TODO: Intake
-    }
+    reusableDefaultControls();
 
-    if (primaryController.getRightBumperButtonPressed()) {
-      // TODO: Spinup Flywheel
-    }
-
-    if (primaryController.getRightTriggerAxis() > 0.5 && primaryController.getRightBumperButton()) {
-      // TODO: Shoot
-    }
-
-    if (primaryController.getLeftTriggerAxis() > 0.5) {
+    if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
       // TODO: Climb with primary && Climb Manually With Secondary
-    }
-
-    if (primaryController.getYButtonPressed()) {
-      // TODO: Stow Intake
-    }
-
-    if (primaryController.getAButtonPressed()) {
-      // TODO: Deploy Intake
     }
 
     // TODO: Turn Turret manually without camera
@@ -232,28 +287,12 @@ public class Controller extends SubsystemBase {
       return;
     }
 
-    if (primaryController.getLeftBumperButtonPressed()) {
-      // TODO: Intake
-    }
-
-    if (primaryController.getRightBumperButtonPressed()) {
-      // TODO: Spinup Flywheel
-    }
-
-    if (primaryController.getRightTriggerAxis() > 0.5 && primaryController.getRightBumperButton()) {
+    if (primaryController.getRightTriggerAxis() > triggerThreshold && primaryController.getRightBumperButton()) {
       // TODO: Shoot
     }
 
-    if (primaryController.getLeftTriggerAxis() > 0.5) {
+    if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
       // TODO: Climb Manually With Secondary
-    }
-
-    if (primaryController.getYButtonPressed()) {
-      // TODO: Stow Intake
-    }
-
-    if (primaryController.getAButtonPressed()) {
-      // TODO: Deploy Intake
     }
 
     // TODO: Turn Turret manually without camera
@@ -268,14 +307,6 @@ public class Controller extends SubsystemBase {
     if (testing) {
       testingMode();
       return;
-    }
-
-    if (primaryController.getYButtonPressed()) {
-      SwerveDrive.odometry.resetGyro();
-    }
-
-    if (primaryController.getStartButtonPressed()) {
-      RobotContainer.odometry.recalibrateCameraPose();
     }
 
     switch (curControlMode) {
@@ -294,6 +325,22 @@ public class Controller extends SubsystemBase {
       default:
         // Integral to the code base DO NOT CHANGE! (Copilot did it!)
         throw new IllegalStateException("Invalid control mode: \n Nuh uh, no way, not gonna happen");
+    }
+
+    if (leftTriggerTriggeredPrimary && primaryController.getLeftTriggerAxis() < triggerThreshold) {
+      leftTriggerTriggeredPrimary = false;
+    }
+
+    if (rightTriggerTriggeredPrimary && primaryController.getRightTriggerAxis() < triggerThreshold) {
+      rightTriggerTriggeredPrimary = false;
+    }
+
+    if (leftTriggerTriggeredSecondary && secondaryController.getLeftTriggerAxis() < triggerThreshold) {
+      leftTriggerTriggeredSecondary = false;
+    }
+
+    if (rightTriggerTriggeredSecondary && secondaryController.getRightTriggerAxis() < triggerThreshold) {
+      rightTriggerTriggeredSecondary = false;
     }
   }
 }

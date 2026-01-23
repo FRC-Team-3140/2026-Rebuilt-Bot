@@ -7,15 +7,26 @@ package frc.robot.subsystems;
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.libs.AbsoluteEncoder;
 
 public class Intake extends SubsystemBase {
+  private SparkMax intakeArmMotor = new SparkMax(Constants.MotorIDs.intakeArmMotor, SparkMax.MotorType.kBrushless);
+  private SparkMax intakeRollerMotor = new SparkMax(Constants.MotorIDs.intakeMotor, SparkMax.MotorType.kBrushless);
 
-  private SparkMax intakeMotor = new SparkMax(Constants.MotorIDs.intakeMotor, SparkMax.MotorType.kBrushless);
+  private AbsoluteEncoder intakeEncoder = new AbsoluteEncoder(Constants.SensorIDs.intakeEncoder, 0);
+
+  private double intakeSetpoint = 0;
+
+  private PIDController intakePID = new PIDController(
+      Constants.PID.Intake.intakeP,
+      Constants.PID.Intake.intakeI,
+      Constants.PID.Intake.intakeD);
 
   private static Intake m_instance = null;
 
@@ -31,11 +42,38 @@ public class Intake extends SubsystemBase {
     SparkMaxConfig config = new SparkMaxConfig();
     config.idleMode(IdleMode.kBrake);
 
-    intakeMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    intakeArmMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+  }
+
+  public void deploy() {
+    intakeSetpoint = Constants.Limits.Intake.deployedPosition;
+  }
+
+  public void stow() {
+    intakeSetpoint = Constants.Limits.Intake.stowedPosition;
+  }
+
+  /**
+   * No need to pass in negative speed, method handles that (Ignores passed sign)
+   * 
+   * @param speed
+   */
+  public void intake(double speed) {
+    intakeRollerMotor.set(Math.abs(speed));
+  }
+
+  /**
+   * No need to pass in negative speed, method handles that (Ignores passed sign)
+   * 
+   * @param speed
+   */
+  public void outtake(double speed) {
+    intakeRollerMotor.set(-Math.abs(speed));
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    intakeArmMotor.set(intakePID.calculate(intakeEncoder.getAbsolutePosition(), intakeSetpoint));
   }
 }
