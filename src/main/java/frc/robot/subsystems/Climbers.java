@@ -4,8 +4,12 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -20,6 +24,33 @@ public class Climbers extends SubsystemBase {
   private final DigitalInput climberLimitSwitchL = new DigitalInput(Constants.SensorIDs.climberLimitSwitchLeft);
   private final DigitalInput climberLimitSwitchR = new DigitalInput(Constants.SensorIDs.cllimberLimitSwitchRight);
 
+  private final SparkMaxConfig lConfig = new SparkMaxConfig();
+  private final SparkMaxConfig rConfig = new SparkMaxConfig();
+
+  // Climber objects
+  public class climber {
+    public final SparkMax motor;
+    public final SparkMaxConfig config;
+    public final DigitalInput limitSwitch;
+
+    private climber(SparkMax motor, SparkMaxConfig config, DigitalInput limitSwitch) {
+      this.motor = motor;
+      this.config = config;
+      this.limitSwitch = limitSwitch;
+    }
+
+    public void setSpeed(double speed) {
+      motor.set(speed);
+    }
+
+    public boolean getLimitSwitch() {
+      return !limitSwitch.get(); // Inverted because limit switch returns false when pressed
+    }
+  }
+
+  public final climber LEFT = new climber(lClimber, lConfig, climberLimitSwitchL);
+  public final climber RIGHT = new climber(rClimber, rConfig, climberLimitSwitchR);
+
   public static Climbers getInstance() {
     if (m_Instance == null) {
       m_Instance = new Climbers();
@@ -28,25 +59,14 @@ public class Climbers extends SubsystemBase {
     return m_Instance;
   }
 
-  public static class climber {
-    public static final climber LEFT = new climber();
-    public static final climber RIGHT = new climber();
-  }
-
   /** Creates a new Climber. */
   public Climbers() {
+    // Configure Motors
+    lConfig.inverted(true).smartCurrentLimit(20).idleMode(IdleMode.kBrake);
+    rConfig.inverted(true).smartCurrentLimit(20).idleMode(IdleMode.kBrake);
 
-    lClimber.setInverted(true);
-    rClimber.setInverted(false);
-  }
-
-  // Helpers
-  public boolean getClimberLimitSwitchL() {
-    return climberLimitSwitchL.get();
-  }
-
-  public boolean getClimberLimitSwitchR() {
-    return climberLimitSwitchR.get();
+    lClimber.configure(lConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    rClimber.configure(rConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
   }
 
   @Override

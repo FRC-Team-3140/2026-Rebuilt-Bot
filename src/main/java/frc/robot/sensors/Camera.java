@@ -50,6 +50,7 @@ public class Camera extends SubsystemBase {
   private PhotonCamera one = new PhotonCamera("one");
   private PhotonCamera two = new PhotonCamera("two");
 
+<<<<<<< HEAD
   private Transform3d oneToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter, Constants.CameraConstants.offsetToCenterVert,
       new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-90)));
   private Transform3d twoToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,  Constants.CameraConstants.offsetToCenterVert, 
@@ -60,12 +61,26 @@ public class Camera extends SubsystemBase {
       oneToBot);
   private PhotonPoseEstimator twoEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       twoToBot);
+=======
+  private Transform3d leftToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter,
+      Constants.CameraConstants.offsetToCenterVert,
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-90)));
+  private Transform3d rightToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,
+      Constants.CameraConstants.offsetToCenterVert,
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(90)));
+
+  private AprilTagFieldLayout layout = FieldAprilTags.getInstance().field;
+  private PhotonPoseEstimator frontEstimator = new PhotonPoseEstimator(layout,
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      leftToBot);
+  private PhotonPoseEstimator backEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+      rightToBot);
+>>>>>>> 4a7a243c6ad1a8113d3115e1532ca0907569aebe
 
   VisionSystemSim visionSim = new VisionSystemSim("main");
   SimCameraProperties cameraProp = new SimCameraProperties();
   PhotonCameraSim oneCameraSim = new PhotonCameraSim(one, cameraProp);
   PhotonCameraSim twoCameraSim = new PhotonCameraSim(two, cameraProp);
-
 
   // private boolean tooFar = false;
   /**
@@ -127,13 +142,19 @@ public class Camera extends SubsystemBase {
     visionSim.addCamera(oneCameraSim, oneToBot);
     visionSim.addCamera(twoCameraSim, twoToBot);
 
+<<<<<<< HEAD
     oneEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
     twoEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+=======
+    frontEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    backEstimator
+        .setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+>>>>>>> 4a7a243c6ad1a8113d3115e1532ca0907569aebe
   }
 
   @Override
   public void periodic() {
-    if(RobotBase.isSimulation()) {
+    if (RobotBase.isSimulation()) {
       visionSim.update(Odometry.getInstance().getPose());
     }
     if (((Timer.getFPGATimestamp() - lastIteration)) > delayTime) {
@@ -223,6 +244,7 @@ public class Camera extends SubsystemBase {
     }
   }
 
+<<<<<<< HEAD
   private void setDebugPoses(boolean one, boolean two, Pose3d onePose, Pose3d twoPose) {
     if(one) {
       NetworkTables.oneCameraPose.setDoubleArray(new double[] {
@@ -237,6 +259,20 @@ public class Camera extends SubsystemBase {
           twoPose.getY(),
           Math.toDegrees(twoPose.getRotation().getAngle())});
       Logger.recordOutput("Odometry/cameraTwoPrediction", twoPose.toPose2d());  
+=======
+  private void setDebugPoses(boolean front, boolean back, Pose2d pose) {
+    if (front) {
+      NetworkTables.frontCameraPose.setDoubleArray(new double[] {
+          pose.getX(),
+          pose.getY(),
+          pose.getRotation().getDegrees() });
+    }
+    if (back) {
+      NetworkTables.backCameraPose.setDoubleArray(new double[] {
+          pose.getX(),
+          pose.getY(),
+          pose.getRotation().getDegrees() });
+>>>>>>> 4a7a243c6ad1a8113d3115e1532ca0907569aebe
     }
   }
 

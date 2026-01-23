@@ -8,8 +8,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class Feeder extends SubsystemBase {
 
-
   private static Feeder m_instance = null;
+
   public static Feeder getInstance() {
     if (m_instance == null) {
       m_instance = new Feeder();
@@ -18,7 +18,8 @@ public class Feeder extends SubsystemBase {
   }
 
   /** Creates a new Feeder. */
-  public Feeder() {}
+  public Feeder() {
+  }
 
   @Override
   public void periodic() {

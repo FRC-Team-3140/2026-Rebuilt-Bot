@@ -1,16 +1,17 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
 import com.revrobotics.sim.SparkAbsoluteEncoderSim;
 import com.revrobotics.sim.SparkFlexSim;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.sim.SparkRelativeEncoderSim;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -73,19 +74,21 @@ public class SwerveModule extends SubsystemBase {
         this.turnMotorID = turnMotorID;
         this.driveMotorID = driveMotorID;
 
-        SparkMaxConfig motorConfig = new SparkMaxConfig();
+        SparkFlexConfig driveMotorConfig = new SparkFlexConfig();
 
-        motorConfig.idleMode(IdleMode.kBrake).inverted(driveInverted).smartCurrentLimit(40);
+        driveMotorConfig.idleMode(IdleMode.kBrake).inverted(driveInverted).smartCurrentLimit(40);
 
         driveMotor = new SparkFlex(driveMotorID, MotorType.kBrushless);
 
-        driveMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        driveMotor.configure(driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        motorConfig.idleMode(IdleMode.kBrake).inverted(false).smartCurrentLimit(30);
+        SparkMaxConfig turnMotorConfig = new SparkMaxConfig();
+
+        driveMotorConfig.idleMode(IdleMode.kBrake).inverted(false).smartCurrentLimit(30);
 
         turnMotor = new SparkMax(turnMotorID, MotorType.kBrushless);
 
-        turnMotor.configure(motorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        turnMotor.configure(turnMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
         turnEncoder = new AbsoluteEncoder(analogID, baseAngle);
 

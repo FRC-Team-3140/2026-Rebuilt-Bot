@@ -47,9 +47,6 @@ public class RobotContainer {
   public static TestRunner testRunner = TestRunner.getInstance();
 
   private SendableChooser<Command> PathPlanner = new SendableChooser<>();
-  
-  // WARNING: These booleans will override auto selectiosn!
-  private boolean pushAutoMode = false;
 
   // Get the singleton instance or create it if it doesn't exist
   public static RobotContainer getInstance() {
@@ -74,7 +71,7 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    //if (pushAutoMode)
-      return new Drive(10000000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0);
+    // if (pushAutoMode)
+    return new Drive(10000000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0);
   }
 }

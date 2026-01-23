@@ -4,9 +4,8 @@
 
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -14,16 +13,13 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
-import frc.robot.commands.swerveDrive.Align;
 import frc.robot.libs.NetworkTables;
-import edu.wpi.first.wpilibj.XboxController;
 
 public class Controller extends SubsystemBase {
   private static Controller instance = null;
 
   public final XboxController primaryController;
   public final XboxController secondaryController;
-
 
   /** Creates a new Controller. */
   public Controller(int primary, int secondary) {
@@ -171,10 +167,30 @@ public class Controller extends SubsystemBase {
       updateControlMode();
       return;
     }
-    if(primaryController.getAButtonPressed()) {
-      new Align(new Pose2d(10.0, 10.0, new Rotation2d(100.0))).schedule();
+
+    if (primaryController.getLeftBumperButtonPressed()) {
+      // TODO: Intake
     }
-    secondarySetpointCommands();
+
+    if (primaryController.getRightBumperButtonPressed()) {
+      // TODO: Spinup Flywheel
+    }
+
+    if (primaryController.getRightTriggerAxis() > 0.5 && primaryController.getRightBumperButton()) {
+      // TODO: Shoot
+    }
+
+    if (primaryController.getLeftTriggerAxis() > 0.5) {
+      // TODO: Climb
+    }
+
+    if (primaryController.getYButtonPressed()) {
+      // TODO: Stow Intake
+    }
+
+    if (primaryController.getAButtonPressed()) {
+      // TODO: Deploy Intake
+    }
   }
 
   private void ManualMode() {
@@ -182,7 +198,32 @@ public class Controller extends SubsystemBase {
       updateControlMode();
       return;
     }
-    secondarySetpointCommands();
+
+    if (primaryController.getLeftBumperButtonPressed()) {
+      // TODO: Intake
+    }
+
+    if (primaryController.getRightBumperButtonPressed()) {
+      // TODO: Spinup Flywheel
+    }
+
+    if (primaryController.getRightTriggerAxis() > 0.5 && primaryController.getRightBumperButton()) {
+      // TODO: Shoot
+    }
+
+    if (primaryController.getLeftTriggerAxis() > 0.5) {
+      // TODO: Climb with primary && Climb Manually With Secondary
+    }
+
+    if (primaryController.getYButtonPressed()) {
+      // TODO: Stow Intake
+    }
+
+    if (primaryController.getAButtonPressed()) {
+      // TODO: Deploy Intake
+    }
+
+    // TODO: Turn Turret manually without camera
   }
 
   private void OHNOManualMode() {
@@ -190,35 +231,36 @@ public class Controller extends SubsystemBase {
       updateControlMode();
       return;
     }
-  }
 
-  private void secondarySetpointCommands() {
+    if (primaryController.getLeftBumperButtonPressed()) {
+      // TODO: Intake
+    }
+
+    if (primaryController.getRightBumperButtonPressed()) {
+      // TODO: Spinup Flywheel
+    }
+
+    if (primaryController.getRightTriggerAxis() > 0.5 && primaryController.getRightBumperButton()) {
+      // TODO: Shoot
+    }
+
+    if (primaryController.getLeftTriggerAxis() > 0.5) {
+      // TODO: Climb Manually With Secondary
+    }
+
+    if (primaryController.getYButtonPressed()) {
+      // TODO: Stow Intake
+    }
+
+    if (primaryController.getAButtonPressed()) {
+      // TODO: Deploy Intake
+    }
+
+    // TODO: Turn Turret manually without camera
   }
 
   private void testingMode() {
-    // endEffector.algaeIntakeRotateMotorN.set(-getRightY(controllers.SECONDARY) *
-    // 0.25);
-    // endEffector.algaeIntakeMotorN.set(-getLeftY(controllers.SECONDARY));
-
-    // if (secondaryController.getXButtonPressed()) {
-    // endEffector.setAlgaeIntakeAngle(Constants.AlgaeIntakeAngles.max);
-    // }
-
-    // if (secondaryController.getAButtonPressed()) {
-    // endEffector.setAlgaeIntakeAngle(Constants.AlgaeIntakeAngles.max/2);
-    // }
-
-    // if (secondaryController.getBButtonPressed()) {
-    // endEffector.setAlgaeIntakeAngle(Constants.AlgaeIntakeAngles.min);
-    // }
-
-    // if (secondaryController.getXButtonPressed()) {
-    // new PositionFromDashTest(NetworkTables.loc_s.getString("L4")).schedule();
-    // }
-    // for(int i = 0; i < 4; i++) {
-    // SwerveDrive.getInstance().modules[i].turnMotor.set(getRightX(controllers.PRIMARY));
-    // }
-    // new Constants.ReefPoses().reefCoralPosesBlue.get(0),
+    System.out.println("Testing Mode Active - Controller Periodic Function");
   }
 
   public void periodic() {
