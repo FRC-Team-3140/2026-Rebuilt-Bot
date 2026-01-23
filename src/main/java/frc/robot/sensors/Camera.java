@@ -14,11 +14,13 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
+import org.photonvision.targeting.MultiTargetPNPResult;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
@@ -28,6 +30,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.libs.FieldAprilTags;
 import frc.robot.libs.NetworkTables;
+import frc.robot.subsystems.Controller.controllers;
 import frc.robot.subsystems.odometry.Odometry;
 
 public class Camera extends SubsystemBase {
@@ -51,9 +54,9 @@ public class Camera extends SubsystemBase {
       new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(90)));
 
   private AprilTagFieldLayout layout = FieldAprilTags.getInstance().field;
-  private PhotonPoseEstimator frontEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS,
+  private PhotonPoseEstimator frontEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       leftToBot);
-  private PhotonPoseEstimator backEstimator = new PhotonPoseEstimator(layout, PoseStrategy.AVERAGE_BEST_TARGETS,
+  private PhotonPoseEstimator backEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       rightToBot);
 
   VisionSystemSim visionSim = new VisionSystemSim("main");
@@ -123,6 +126,10 @@ public class Camera extends SubsystemBase {
     visionSim.addCamera(rightCameraSim, rightToBot);
     leftCameraSim.enableDrawWireframe(true);
     rightCameraSim.enableDrawWireframe(true);
+
+    frontEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+    backEstimator
+       .setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
   }
 
   @Override
@@ -135,6 +142,8 @@ public class Camera extends SubsystemBase {
 
       lastIteration = Timer.getFPGATimestamp();
     }
+    frontEstimator.addHeadingData(Timer.getFPGATimestamp(), Odometry.getInstance().getRotation());
+    backEstimator.addHeadingData(Timer.getFPGATimestamp(), Odometry.getInstance().getRotation());
   }
 
   public boolean isConnected() {
@@ -166,13 +175,13 @@ public class Camera extends SubsystemBase {
   private void setDebugPoses(boolean front, boolean back, Pose2d pose) {
     if (front) {
       NetworkTables.frontCameraPose.setDoubleArray(new double[] {
-          pose.getX(),
+        pose.getX(),
           pose.getY(),
           pose.getRotation().getDegrees() });
     }
     if (back) {
       NetworkTables.backCameraPose.setDoubleArray(new double[] {
-          pose.getX(),
+        pose.getX(),
           pose.getY(),
           pose.getRotation().getDegrees() });
     }
@@ -181,30 +190,40 @@ public class Camera extends SubsystemBase {
 
   // ignoreRepeats should be true on any getPoseFromCamera call that is not the
   // first call of the method within a rio loop.
-  public Pose2d getPoseFromCamera(double distanceCutoff, boolean ignoreRepeats) {
-    if (connected) {
+  public Pose2d getPoseFromCamera(double distanceCutoff) {
+    if (connected || RobotBase.isSimulation()) {
+
       Pose2d curPose = Odometry.getInstance().getPose();
 
-      PhotonPipelineResult frontResult = left.getLatestResult();
-      PhotonPipelineResult backResult = right.getLatestResult();
 
-      if (frontResult.hasTargets()) {
-        double frontDistance = FieldAprilTags.getInstance().getTagPose(frontResult.getBestTarget().getFiducialId())
-            .getTranslation().getDistance(curPose.getTranslation());
-        if (frontDistance > distanceCutoff) {
-          frontResult = new PhotonPipelineResult();
+      List<PhotonPipelineResult> firstCameraResults = left.getAllUnreadResults();
+      List<PhotonPipelineResult> secondCameraResults = right.getAllUnreadResults();
+
+      frontEstimator.setReferencePose(curPose);
+      backEstimator.setReferencePose(curPose);
+
+      if (firstCameraResults.size() != 0) {
+        for (PhotonPipelineResult result : firstCameraResults) {
+          Optional<MultiTargetPNPResult> multiResult = result.getMultiTagResult();
+
+          if (multiResult.isPresent()) {
+            Transform3d fieldToCamera = multiResult.get().estimatedPose.best;
+            frontEstimator.update(cameraResult)
+              frontEstimator.update(new PhotonPipelineResult);
+            frontEstimator.update(fieldToCamera);
+          }
         }
+        double frontDistance = FieldAprilTags.getInstance().getTagPose(frontResult.getBestTarget().getFiducialId())
+          .getTranslation().getDistance(curPose.getTranslation());
       }
       if (backResult.hasTargets()) {
         double backDistance = FieldAprilTags.getInstance().getTagPose(backResult.getBestTarget().getFiducialId())
-            .getTranslation().getDistance(curPose.getTranslation());
+          .getTranslation().getDistance(curPose.getTranslation());
 
         if (backDistance > distanceCutoff)
           backResult = new PhotonPipelineResult();
       }
       if (frontResult.hasTargets() && backResult.hasTargets()) {
-        frontEstimator.setReferencePose(curPose);
-        backEstimator.setReferencePose(curPose);
 
         Optional<EstimatedRobotPose> frontPoseOpt = Optional.empty();
         Optional<EstimatedRobotPose> backPoseOpt = Optional.empty();
