@@ -27,7 +27,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 public final class Constants {
   public static final Mode simMode = Mode.SIM; // Mode.REPLAY to replay
   public static class SIM {
-    public static final double odometryDrift = 0.1;
+    public static final double odometryDrift = 0.025;
   }
 
   public static class MotorIDs {
@@ -212,7 +212,7 @@ public final class Constants {
     public static final double rightOffsetToCenter = Units.inchesToMeters(13);
     public static final double offsetToCenterVert = Units.inchesToMeters(10);
     public static final double pitch = Math.toRadians(-30);
-    public static final double maxReprojectionError = 0.2;
+    public static final double maxReprojectionError = 0.35;
   }
 
   public static class PathplannerConstants {
@@ -241,7 +241,7 @@ public final class Constants {
   }
 
   public static class Odometry {
-    public static final double TagCorrectionSpeed = 3;
+    public static final double TagCorrectionSpeed = 5;
     public static final double maxCorrectionDistance = 1;
   }
 
