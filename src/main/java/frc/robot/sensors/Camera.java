@@ -48,13 +48,16 @@ public class Camera extends SubsystemBase {
   private PhotonCamera left = new PhotonCamera("left");
   private PhotonCamera right = new PhotonCamera("right");
 
-  private Transform3d leftToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter, Constants.CameraConstants.offsetToCenterVert,
+  private Transform3d leftToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter,
+      Constants.CameraConstants.offsetToCenterVert,
       new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-90)));
-  private Transform3d rightToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,  Constants.CameraConstants.offsetToCenterVert, 
+  private Transform3d rightToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,
+      Constants.CameraConstants.offsetToCenterVert,
       new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(90)));
 
   private AprilTagFieldLayout layout = FieldAprilTags.getInstance().field;
-  private PhotonPoseEstimator frontEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+  private PhotonPoseEstimator frontEstimator = new PhotonPoseEstimator(layout,
+      PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       leftToBot);
   private PhotonPoseEstimator backEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
       rightToBot);
@@ -63,7 +66,6 @@ public class Camera extends SubsystemBase {
   SimCameraProperties cameraProp = new SimCameraProperties();
   PhotonCameraSim leftCameraSim = new PhotonCameraSim(left, cameraProp);
   PhotonCameraSim rightCameraSim = new PhotonCameraSim(right, cameraProp);
-
 
   // private boolean tooFar = false;
   /**
@@ -129,12 +131,12 @@ public class Camera extends SubsystemBase {
 
     frontEstimator.setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
     backEstimator
-       .setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
+        .setPrimaryStrategy(PoseStrategy.AVERAGE_BEST_TARGETS);
   }
 
   @Override
   public void periodic() {
-    if(RobotBase.isSimulation()) {
+    if (RobotBase.isSimulation()) {
       visionSim.update(Odometry.getInstance().getPose());
     }
     if (((Timer.getFPGATimestamp() - lastIteration)) > delayTime) {
@@ -175,13 +177,13 @@ public class Camera extends SubsystemBase {
   private void setDebugPoses(boolean front, boolean back, Pose2d pose) {
     if (front) {
       NetworkTables.frontCameraPose.setDoubleArray(new double[] {
-        pose.getX(),
+          pose.getX(),
           pose.getY(),
           pose.getRotation().getDegrees() });
     }
     if (back) {
       NetworkTables.backCameraPose.setDoubleArray(new double[] {
-        pose.getX(),
+          pose.getX(),
           pose.getY(),
           pose.getRotation().getDegrees() });
     }

@@ -18,6 +18,7 @@ public class Intake extends SubsystemBase {
   private SparkMax intakeMotor = new SparkMax(Constants.MotorIDs.intakeMotor, SparkMax.MotorType.kBrushless);
 
   private static Intake m_instance = null;
+
   public static Intake getInstance() {
     if (m_instance == null) {
       m_instance = new Intake();

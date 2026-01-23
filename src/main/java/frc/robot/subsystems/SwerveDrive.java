@@ -147,7 +147,7 @@ public class SwerveDrive extends SubsystemBase {
       xSpeed *= -1;
       ySpeed *= -1;
       rot *= -1;
-      
+
       /////// AI CODE ///////
       // Apply rotational momentum (simulation only)
       rot = applyRotationalMomentum(rot);
@@ -171,38 +171,39 @@ public class SwerveDrive extends SubsystemBase {
   /////// AI CODE ///////
   /**
    * Applies rotational momentum for realistic turn coast-down (simulation only)
+   * 
    * @param desiredRot Target rotational velocity (rad/s)
    * @return Rotational velocity after applying momentum
    */
   private double applyRotationalMomentum(double desiredRot) {
     double rotDifference = desiredRot - simCurrentRotationalVelocity;
     double dt = 0.02; // 20ms loop time
-    
+
     if (Math.abs(desiredRot) > Math.abs(simCurrentRotationalVelocity)) {
-        // Accelerating rotation - fast response
-        double maxAccelStep = Constants.Bot.maxChassisTurnSpeed * 10 * dt; // Fast rotation accel
-        double accelStep = Math.min(Math.abs(rotDifference), maxAccelStep);
-        simCurrentRotationalVelocity += Math.signum(rotDifference) * accelStep;
+      // Accelerating rotation - fast response
+      double maxAccelStep = Constants.Bot.maxChassisTurnSpeed * 10 * dt; // Fast rotation accel
+      double accelStep = Math.min(Math.abs(rotDifference), maxAccelStep);
+      simCurrentRotationalVelocity += Math.signum(rotDifference) * accelStep;
     } else {
-        // Decelerating rotation - apply slow decel + drag
-        double maxDecelStep = Constants.Bot.simMaxRotationalDeceleration * dt;
-        double dragForce = simCurrentRotationalVelocity * Constants.Bot.simDragCoefficient;
-        
-        double decelStep = Math.min(Math.abs(rotDifference), maxDecelStep);
-        simCurrentRotationalVelocity -= Math.signum(simCurrentRotationalVelocity) * 
-            (decelStep + Math.abs(dragForce));
-        
-        // Clamp to zero at very low speeds to avoid drift
-        if (Math.abs(simCurrentRotationalVelocity) < 0.01) {
-            simCurrentRotationalVelocity = 0;
-        }
-        
-        // If we've reached the desired speed, clamp to it
-        if (Math.abs(simCurrentRotationalVelocity - desiredRot) < 0.01) {
-            simCurrentRotationalVelocity = desiredRot;
-        }
+      // Decelerating rotation - apply slow decel + drag
+      double maxDecelStep = Constants.Bot.simMaxRotationalDeceleration * dt;
+      double dragForce = simCurrentRotationalVelocity * Constants.Bot.simDragCoefficient;
+
+      double decelStep = Math.min(Math.abs(rotDifference), maxDecelStep);
+      simCurrentRotationalVelocity -= Math.signum(simCurrentRotationalVelocity) *
+          (decelStep + Math.abs(dragForce));
+
+      // Clamp to zero at very low speeds to avoid drift
+      if (Math.abs(simCurrentRotationalVelocity) < 0.01) {
+        simCurrentRotationalVelocity = 0;
+      }
+
+      // If we've reached the desired speed, clamp to it
+      if (Math.abs(simCurrentRotationalVelocity - desiredRot) < 0.01) {
+        simCurrentRotationalVelocity = desiredRot;
+      }
     }
-    
+
     return simCurrentRotationalVelocity;
   }
   /////// END AI CODE ///////
@@ -289,9 +290,11 @@ public class SwerveDrive extends SubsystemBase {
       System.err.println("To many or too few swerve module states. NOT SETTING!");
     }
   }
+
   public Pose2d getPose() {
     return odometry.getPose();
   }
+
   public void resetPose(Pose2d pose) {
     odometry.resetPose(pose);
   }

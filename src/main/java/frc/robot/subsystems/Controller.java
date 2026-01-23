@@ -24,7 +24,6 @@ public class Controller extends SubsystemBase {
   public final XboxController primaryController;
   public final XboxController secondaryController;
 
-
   /** Creates a new Controller. */
   public Controller(int primary, int secondary) {
     primaryController = new XboxController(primary);
@@ -171,7 +170,7 @@ public class Controller extends SubsystemBase {
       updateControlMode();
       return;
     }
-    if(primaryController.getAButtonPressed()) {
+    if (primaryController.getAButtonPressed()) {
       new Align(new Pose2d(10.0, 10.0, new Rotation2d(100.0))).schedule();
     }
     secondarySetpointCommands();

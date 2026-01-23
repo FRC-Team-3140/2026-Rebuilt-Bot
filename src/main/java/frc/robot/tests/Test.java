@@ -7,6 +7,7 @@ package frc.robot.tests;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import frc.robot.subsystems.TestRunner;
 import frc.robot.subsystems.TestRunner.TestType;
+
 /** An interface for all tests that can be run via the dev dashboard */
 public class Test {
     public boolean running = false;

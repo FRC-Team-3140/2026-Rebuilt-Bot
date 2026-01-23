@@ -84,7 +84,7 @@ public class CustomOdometry extends Odometry {
         if (lastStates == null || lastStatesT == null) {
             lastStates = states;
             lastStatesT = Timer.getFPGATimestamp();
-            return new Pair<Vector2,Vector2>(new Vector2(), new Vector2());
+            return new Pair<Vector2, Vector2>(new Vector2(), new Vector2());
         }
 
         Vector2 delta = new Vector2();
@@ -125,7 +125,7 @@ public class CustomOdometry extends Odometry {
 
         delta = delta.div(states.length);
 
-        return new Pair<Vector2,Vector2>(delta, velocity);
+        return new Pair<Vector2, Vector2>(delta, velocity);
     }
 
     public void update() {

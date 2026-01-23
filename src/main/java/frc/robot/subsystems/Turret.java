@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems;
+
 import java.util.Optional;
 
 import com.revrobotics.PersistMode;
@@ -53,11 +54,10 @@ public class Turret extends SubsystemBase {
   double flywheelSetpoint = 0; // RPM
   double turretSetpoint = 0; // degrees
   ShotPredictor shotPredictor = new ShotPredictor(
-    Constants.Limits.Turret.minAngle,
-    Constants.Limits.Turret.maxAngle,
-    Constants.Limits.Turret.maxAngularVelocity,
-    desiredVelocity
-  );
+      Constants.Limits.Turret.minAngle,
+      Constants.Limits.Turret.maxAngle,
+      Constants.Limits.Turret.maxAngularVelocity,
+      desiredVelocity);
 
   public PIDController flywheelPID;
   public PIDController hoodPID;
@@ -72,6 +72,7 @@ public class Turret extends SubsystemBase {
   Mechanism2d turret = new Mechanism2d(26, 18);
 
   private static Turret m_instance = null;
+
   public static Turret getInstance() {
     if (m_instance == null) {
       m_instance = new Turret();
@@ -79,18 +80,17 @@ public class Turret extends SubsystemBase {
     return m_instance;
   }
 
-
   /** Creates a new Turret. */
   public Turret() {
     flywheelPID = new PIDController(Constants.PID.Turret.flywheelP,
-                                    Constants.PID.Turret.flywheelI, 
-                                    Constants.PID.Turret.flywheelD);
+        Constants.PID.Turret.flywheelI,
+        Constants.PID.Turret.flywheelD);
     hoodPID = new PIDController(Constants.PID.Turret.hoodP,
-                                Constants.PID.Turret.hoodI,
-                                Constants.PID.Turret.hoodD);
-    rotationProfiledPID = new ProfiledPIDController(Constants.PID.Turret.flywheelP, 
-                                                    Constants.PID.Turret.flywheelI, 
-                                                    Constants.PID.Turret.flywheelD, rotationConstraints);
+        Constants.PID.Turret.hoodI,
+        Constants.PID.Turret.hoodD);
+    rotationProfiledPID = new ProfiledPIDController(Constants.PID.Turret.flywheelP,
+        Constants.PID.Turret.flywheelI,
+        Constants.PID.Turret.flywheelD, rotationConstraints);
 
     SparkMaxConfig turretConfig = new SparkMaxConfig();
     SparkFlexConfig flywheelConfig = new SparkFlexConfig();
@@ -105,12 +105,11 @@ public class Turret extends SubsystemBase {
     turretRotationMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
 
-
     hoodRoot.append(hoodBody);
     SmartDashboard.putData("Shooter Hood", hood);
 
     hoodPID.setSetpoint(hoodSetpoint);
-    
+
   }
 
   private Pair<Pose2d, Vector2> getFutureState(double dt) {
@@ -119,33 +118,33 @@ public class Turret extends SubsystemBase {
 
     // position = velocity*time + acceleration*0.5*time^2
     Vector2 predictedPositionChange = odometry.getBotVelocity().mult(dt).add(
-      odometry.getBotAcceleration().mult(0.5*dt*dt)
-    );
+        odometry.getBotAcceleration().mult(0.5 * dt * dt));
     Vector2 futureBotPosition = odometry.getPosition().add(predictedPositionChange);
-    
 
-    //TODO: make this the position of the turret relative to the axis of rotation of the bot
+    // TODO: make this the position of the turret relative to the axis of rotation
+    // of the bot
     // this is used to get centripetal velocity
     // calculate for when the bot is facing in the positive x direction
     // might want to put this in constants too
     Vector2 turretPosition = new Vector2(-0.25, 0); // this is a guess
 
-    double futureRotation = odometry.getAngle() + odometry.getAngularVelocity()*dt; // in rads
+    double futureRotation = odometry.getAngle() + odometry.getAngularVelocity() * dt; // in rads
     Vector2 rotatedTurretPosition = turretPosition.rotate(futureRotation);
 
     Vector2 centripetalVelocity = new Vector2(-rotatedTurretPosition.Y, rotatedTurretPosition.X)
-      .mult(odometry.getAngularVelocity());
+        .mult(odometry.getAngularVelocity());
     Vector2 futureTurretVelocity = futureBotVelocity.add(centripetalVelocity);
     Vector2 shotOrigin = futureBotPosition.add(rotatedTurretPosition);
-    
-    return new Pair<Pose2d,Vector2>(new Pose2d(shotOrigin.X, shotOrigin.Y, new Rotation2d(futureRotation)), futureTurretVelocity);
+
+    return new Pair<Pose2d, Vector2>(new Pose2d(shotOrigin.X, shotOrigin.Y, new Rotation2d(futureRotation)),
+        futureTurretVelocity);
   }
 
   private void predict(double deltaTime) {
     shotPredictor.DesiredShotVelocity = desiredVelocity; // incase we want to change desired velocity
 
-    double targetHeight = 2; //TODO: make this correct
-    Vector2 goalPosition = new Vector2(); //TODO: this too
+    double targetHeight = 2; // TODO: make this correct
+    Vector2 goalPosition = new Vector2(); // TODO: this too
 
     Pair<Pose2d, Vector2> futureStatePair = getFutureState(predictForwardTime);
     Pose2d futurePose = futureStatePair.getFirst();
@@ -158,27 +157,29 @@ public class Turret extends SubsystemBase {
 
     shotPredictor.MinAngle = calculateMinimumAngle(targetDistance);
 
-    boolean isShooting = false; //TODO: make this work
-    double verticalVelocity = 0; //TODO: (optional) make this work
+    boolean isShooting = false; // TODO: make this work
+    double verticalVelocity = 0; // TODO: (optional) make this work
     Optional<Result> result = shotPredictor.Update(
-      (!isShooting) || hoodSetpoint == 0,
-      hoodSetpoint,
-      deltaTime,
-      futureTurretVelocity,
-      verticalVelocity,
-      relativeTargetPosition,
-      targetHeight
-    );
+        (!isShooting) || hoodSetpoint == 0,
+        hoodSetpoint,
+        deltaTime,
+        futureTurretVelocity,
+        verticalVelocity,
+        relativeTargetPosition,
+        targetHeight);
 
-    shouldShoot = result.isPresent(); //TODO: make this matter (shouldn't let you shoot if this is false)
+    shouldShoot = result.isPresent(); // TODO: make this matter (shouldn't let you shoot if this is false)
 
     if (result.isPresent()) {
-      //TODO: Do we need to convert this? This is DEGREES ABOVE HORIZONTAL
-      // If we do need to convert this, then we need to fix the above code that passes in the hood setpoint
-      // If anything it'd be easier to convert the setpoint before feeding it to the motor.
+      // TODO: Do we need to convert this? This is DEGREES ABOVE HORIZONTAL
+      // If we do need to convert this, then we need to fix the above code that passes
+      // in the hood setpoint
+      // If anything it'd be easier to convert the setpoint before feeding it to the
+      // motor.
       hoodSetpoint = result.get().ShotAngle;
-      flywheelSetpoint = result.get().ShotSpeed; //TODO: convert this to RPM
-      turretSetpoint = Math.toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
+      flywheelSetpoint = result.get().ShotSpeed; // TODO: convert this to RPM
+      turretSetpoint = Math
+          .toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
     }
   }
 
@@ -189,9 +190,9 @@ public class Turret extends SubsystemBase {
       return Constants.Limits.Turret.nearMinAngle;
     } else {
       double alpha = (distance - Constants.Limits.Turret.nearRange)
-        /(Constants.Limits.Turret.nearInterpRange - Constants.Limits.Turret.nearRange);
+          / (Constants.Limits.Turret.nearInterpRange - Constants.Limits.Turret.nearRange);
       double interpolatedAngle = Constants.Limits.Turret.nearMinAngle +
-        (Constants.Limits.Turret.minAngle - Constants.Limits.Turret.nearMinAngle)*alpha;
+          (Constants.Limits.Turret.minAngle - Constants.Limits.Turret.nearMinAngle) * alpha;
 
       return interpolatedAngle;
     }
@@ -210,7 +211,6 @@ public class Turret extends SubsystemBase {
 
       predict(deltaTime);
     }
-    
 
     hoodBody.setAngle(hoodSetpoint);
     hoodSetpoint = hoodSetpoint + 1 % 360;
