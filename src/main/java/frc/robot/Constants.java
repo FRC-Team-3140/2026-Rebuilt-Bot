@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj.RobotBase;
  */
 public final class Constants {
   public static final Mode simMode = Mode.SIM; // Mode.REPLAY to replay
+
   public static class SIM {
     public static final double odometryDrift = 0.025;
   }
@@ -72,10 +73,19 @@ public final class Constants {
 
     public static final int BR = 3;
 
-    // Climber Limit Switches
-    public static final int climberLimitSwitchLeft = 4;
+    // Intake Absolute Encoder
+    public static final int intakeEncoder = 4;
 
-    public static final int cllimberLimitSwitchRight = 5;
+    // Turret Sensors
+    public static final int turretEncoder = 5;
+
+    public static final int hoodEncoder = 6;
+
+    // TODO: make these use digital inputs
+    // Climber Limit Switches
+    public static final int climberLimitSwitchLeft = 0;
+    public static final int climberLimitSwitchRight = 0;
+
 
   }
 
@@ -85,6 +95,10 @@ public final class Constants {
       public static final double outtakeSpeed = -0.7;
 
       public static final double agitateSpeed = 0.1;
+    }
+
+    public static class Feeder {
+      public static final double feederSpeed = 0.6;
     }
   }
 
@@ -105,6 +119,9 @@ public final class Constants {
     }
 
     public static class Intake {
+      public static final double intakeP = 0.01;
+      public static final double intakeI = 0.0;
+      public static final double intakeD = 0.0;
     }
   }
 
@@ -140,6 +157,8 @@ public final class Constants {
     // the module from the center, divided by 2 pi to convert to radians
     public static final double maxChassisTurnSpeed = maxChassisSpeed / botRadius;
     public static final double encoderRotationToMeters = Math.PI * wheelDiameter / gearRatio;
+
+    public static final double turnP = 0.01;
 
     /////// AI CODE ///////
     // Simulation-only momentum constants for realistic coast-down behavior
@@ -194,6 +213,11 @@ public final class Constants {
                                                       // nearMinAngle
       public static final double nearRange = 2; // the range where the min angle is the nearMinAngle
     }
+
+    public static class Intake {
+      public static final double deployedPosition = 90; // degrees
+      public static final double stowedPosition = 0; // degrees
+    }
   }
 
   public static class Controller {
@@ -223,10 +247,9 @@ public final class Constants {
   public static class PathplannerConstants {
     public static RobotConfig config;
 
-    // Field Dimensions
-    // TODO: update field values
-    public static final double FieldLength = 17.548;
-    public static final double FieldWidth = 8.052;
+    // Field Dimensions - Based on PathPlanner Rebuilt Field
+    public static final double FieldLength = 16.540;
+    public static final double FieldWidth = 8.070;
 
     // Translation PID Values
     public static final double TransP = 12;
@@ -234,7 +257,7 @@ public final class Constants {
     public static final double TransD = 0;
 
     // Rotation PID Values
-    public static final double RotP = 5.0;
+    public static final double RotP = 5;
     public static final double RotI = 0;
     public static final double RotD = 0;
 

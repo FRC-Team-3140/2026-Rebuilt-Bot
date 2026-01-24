@@ -49,8 +49,6 @@ public class SwerveModule extends SubsystemBase {
 
     public double botMass = 24.4;
 
-    public double turnP = .01;
-
     public double driveSetpointTolerance = .5;
     public double turnSetpointTolerance = 5;
     public double turnVelocityTolerance = 1;
@@ -99,7 +97,7 @@ public class SwerveModule extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             turnPID = new PIDController(Constants.Bot.simTurnP, 0, 0);
         } else {
-            turnPID = new PIDController(turnP, 0, 0);
+            turnPID = new PIDController(Constants.Bot.turnP, 0, 0);
         }
         /////// END AI CODE ///////
 

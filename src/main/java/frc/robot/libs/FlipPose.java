@@ -25,4 +25,17 @@ public class FlipPose {
 
         return pose;
     }
+
+    public static Vector2 flipVectorIfRed(Vector2 vector) {
+        var alliance = edu.wpi.first.wpilibj.DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == edu.wpi.first.wpilibj.DriverStation.Alliance.Red) {
+            // X must be flipped, but Y stays the same.
+            double flippedX = PathplannerConstants.FieldLength - vector.X;
+            double flippedY = PathplannerConstants.FieldWidth - vector.Y;
+
+            return new Vector2(flippedX, flippedY);
+        }
+
+        return vector;
+    }
 }
