@@ -18,7 +18,7 @@ import frc.robot.subsystems.Feeder;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.TestRunner;
-import frc.robot.subsystems.Turret;
+import frc.robot.subsystems.Turret.TurretMain;
 import frc.robot.subsystems.odometry.Odometry;
 
 /**
@@ -39,7 +39,7 @@ public class RobotContainer {
   public static Camera camera = Camera.getInstance();
   public static Odometry odometry = Odometry.getInstance();
   public static Controller controller = Controller.getInstance();
-  public static Turret turret = Turret.getInstance();
+  public static TurretMain turret = TurretMain.getInstance();
   public static Feeder feeder = Feeder.getInstance();
   public static Intake intake = Intake.getInstance();
   public static Climbers climber = Climbers.getInstance();

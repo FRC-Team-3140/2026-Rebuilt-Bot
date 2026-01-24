@@ -80,6 +80,11 @@ public final class Constants {
 
     // Intake Absolute Encoder
     public static final int intakeEncoder = 6;
+
+    // Turret Sensors
+    public static final int turretEncoder = 7;
+
+    public static final int hoodEncoder = 8;
   }
 
   public static class MotorSpeeds {
@@ -88,6 +93,10 @@ public final class Constants {
       public static final double outtakeSpeed = -0.7;
 
       public static final double agitateSpeed = 0.1;
+    }
+
+    public static class Feeder {
+      public static final double feederSpeed = 0.6;
     }
   }
 

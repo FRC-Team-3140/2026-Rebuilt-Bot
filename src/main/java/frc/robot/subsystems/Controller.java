@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.RobotContainer;
 import frc.robot.libs.NetworkTables;
+import frc.robot.subsystems.Turret.TurretMain;
 
 public class Controller extends SubsystemBase {
   private static Controller instance = null;
@@ -217,12 +218,12 @@ public class Controller extends SubsystemBase {
     }
 
     if (primaryController.getRightBumperButtonPressed()) {
-      Turret.getInstance().setFlywheelActive(true);
+      TurretMain.getInstance().setFlywheelActive(true);
     }
 
     if (primaryController.getRightBumperButtonReleased()) {
-      Turret.getInstance().setFlywheelActive(false);
-    }
+      TurretMain.getInstance().setFlywheelActive(false);
+    } 
 
     if (primaryController.getBButtonPressed()) {
       Intake.getInstance().stow();
@@ -257,8 +258,8 @@ public class Controller extends SubsystemBase {
 
     reusableDefaultControls();
 
-    if (primaryController.getRightTriggerAxis() > triggerThreshold && Turret.getInstance().getFlywheelActive()) {
-      // TODO: Shoot
+    if (primaryController.getRightTriggerAxis() > triggerThreshold && TurretMain.getInstance().getFlywheelActive()) {
+      Feeder.getInstance().setFeederActive(true);
     }
 
     if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
@@ -287,9 +288,8 @@ public class Controller extends SubsystemBase {
       return;
     }
 
-    if (primaryController.getRightTriggerAxis() > triggerThreshold && primaryController.getRightBumperButton()) {
-      // TODO: Shoot
-    }
+    Feeder.getInstance().setFeederActive(
+        primaryController.getRightTriggerAxis() > triggerThreshold && primaryController.getRightBumperButton());
 
     if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
       // TODO: Climb Manually With Secondary
