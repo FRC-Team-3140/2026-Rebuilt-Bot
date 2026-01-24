@@ -39,7 +39,7 @@ public class RobotContainer {
   public static Camera camera = Camera.getInstance();
   public static Odometry odometry = Odometry.getInstance();
   public static Controller controller = Controller.getInstance();
-  //  public static TurretMain turret = TurretMain.getInstance();
+  public static TurretMain turret = TurretMain.getInstance();
   public static Feeder feeder = Feeder.getInstance();
   public static Intake intake = Intake.getInstance();
   public static Climbers climber = Climbers.getInstance();
