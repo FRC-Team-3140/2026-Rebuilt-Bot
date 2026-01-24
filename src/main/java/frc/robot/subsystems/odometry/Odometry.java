@@ -21,15 +21,15 @@ import frc.robot.subsystems.SwerveDrive;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 
 abstract public class Odometry extends SubsystemBase {
-  protected static CustomOdometry inst = null;
+  protected static Odometry inst = null;
   protected double lastGyroAngle;
   protected static AHRS gyro;
   private Field2d fieldEntry;
 
   /** Creates a new Odometry. */
-  public static CustomOdometry getInstance() {
+  public static Odometry getInstance() {
     if (inst == null) {
-      inst = new CustomOdometry();
+      inst = new PoseOdometry();
     }
     return inst;
   }
@@ -133,6 +133,9 @@ abstract public class Odometry extends SubsystemBase {
     else
       return getGyro().isMoving();
   }
+
+  abstract public Vector2 getBotVelocity();
+  abstract public Vector2 getBotAcceleration();
 
   abstract public void updatePosition(SwerveModulePosition[] positions);
 

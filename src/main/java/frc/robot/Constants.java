@@ -212,7 +212,12 @@ public final class Constants {
     public static final double rightOffsetToCenter = Units.inchesToMeters(13);
     public static final double offsetToCenterVert = Units.inchesToMeters(10);
     public static final double pitch = Math.toRadians(-30);
-    public static final double maxReprojectionError = 0.35;
+    public static final double maxReprojectionError = 0.3;
+  }
+
+  public static class Odometry {
+    public static final double TagCorrectionSpeed = 8;
+    public static final double maxCorrectionDistance = 0.5;
   }
 
   public static class PathplannerConstants {
@@ -240,10 +245,6 @@ public final class Constants {
         Units.degreesToRadians(720));
   }
 
-  public static class Odometry {
-    public static final double TagCorrectionSpeed = 5;
-    public static final double maxCorrectionDistance = 1;
-  }
 
   public static class NetworktablePaths {
     public static final String Dashboard = "Dashboard";

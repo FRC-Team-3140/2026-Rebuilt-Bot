@@ -113,7 +113,7 @@ public class Turret extends SubsystemBase {
   }
 
   private Pair<Pose2d, Vector2> getFutureState(double dt) {
-    CustomOdometry odometry = Odometry.getInstance();
+    Odometry odometry = Odometry.getInstance();
     Vector2 futureBotVelocity = odometry.getBotVelocity().add(odometry.getBotAcceleration().mult(dt));
 
     // position = velocity*time + acceleration*0.5*time^2

@@ -119,7 +119,7 @@ public class Camera extends SubsystemBase {
 
     cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(100));
     cameraProp.setCalibError(0.25, 0.08);
-    cameraProp.setFPS(20);
+    cameraProp.setFPS(60);
     cameraProp.setAvgLatencyMs(35);
     cameraProp.setLatencyStdDevMs(5);
 
