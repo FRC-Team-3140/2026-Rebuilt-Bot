@@ -1,0 +1,230 @@
+{
+  "hubs": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1150,
+      "height": 718,
+      "state": {
+        "sidebar": {
+          "width": 300,
+          "expanded": [
+            "/SmartDashboard",
+            "/SmartDashboard/Shooter Hood/Hood",
+            "/SmartDashboard/Shooter Hood/Hood/Hood Body",
+            "/SmartDashboard/VisionSystemSim-main/Sim Field",
+            "/Dashboard",
+            "/PathPlanner",
+            "/AdvantageKit",
+            "/AdvantageKit/RealOutputs/Odometry",
+            "/Shuffleboard",
+            "/AdvantageKit/RealOutputs/ZeroedComponentPoses/2",
+            "/AdvantageKit/RealOutputs/ZeroedComponentPoses/2/translation",
+            "/AdvantageKit/RealOutputs",
+            "/AdvantageKit/RealOutputs/Mecanisms",
+            "/AdvantageKit/RealOutputs/Mecanisms/Intake",
+            "/AdvantageKit/RealOutputs/Intake",
+            "/AdvantageKit/RealOutputs/Mecanisms/Turret",
+            "/AdvantageKit/RealOutputs/TurretMain"
+          ]
+        },
+        "tabs": {
+          "selected": 5,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "007vtwainuagogrv2c25wlhikm323fh7",
+              "renderer": "",
+              "controlsHeight": 0
+            },
+            {
+              "type": 7,
+              "title": "Video",
+              "controller": null,
+              "controllerUUID": "0wwzb9nam4osgzax89t9ynf689dscarr",
+              "renderer": null,
+              "controlsHeight": 85
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "twznnjddn6xxy0kmas0m5ltrpxm5qlpy",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 10,
+              "title": "Mechanism",
+              "controller": [
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard/Shooter Hood",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                }
+              ],
+              "controllerUUID": "jpljoi5jmvnouzex4g4uo5jqmrsc24c3",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [],
+                "field": "FRC:Evergreen",
+                "orientation": 0,
+                "size": "large"
+              },
+              "controllerUUID": "ru9b10jm9j325hcxogk9l6gsrt2q9eia",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robotLegacy",
+                    "logKey": "NT:/SmartDashboard/Field/Robot",
+                    "logType": "NumberArray",
+                    "visible": true,
+                    "options": {
+                      "model": "3140 Rebuilt Bot",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Mecanisms",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "coneLegacy",
+                    "logKey": "NT:/SmartDashboard/VisionSystemSim-main/Sim Field/visibleTargetPoses",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "color": "#00ff00",
+                      "position": "back",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "coneLegacy",
+                    "logKey": "NT:/SmartDashboard/VisionSystemSim-main/Sim Field/cameras",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "color": "#00ffff",
+                      "position": "back",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/cameraOnePrediction",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "3140 Rebuilt Bot",
+                      "color": "#00ff00"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/cameraTwoPrediction",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "3140 Rebuilt Bot",
+                      "color": "#ffff00"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/simVisionBot",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "3140 Rebuilt Bot",
+                      "color": "#ff00ff"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/realisticOdometryBot",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "3140 Rebuilt Bot",
+                      "color": "#ff0000"
+                    }
+                  }
+                ],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "0qrpazrk7zqb9hr41dhz2l7adw36o69i",
+              "renderer": {
+                "cameraIndex": -2,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  1.611089820044396,
+                  0.979218579949171,
+                  -0.22263028273250418
+                ],
+                "cameraTarget": [
+                  -0.3376209152247187,
+                  0.3394288608663762,
+                  -0.17205797140368534
+                ]
+              },
+              "controlsHeight": 174
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [],
+                "field": "FRC:2026 Field",
+                "orientation": 0,
+                "size": "large"
+              },
+              "controllerUUID": "a2x0cl13uo9ws48vwx1nxeww9bzvk875",
+              "renderer": null,
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "26.0.0"
+}
