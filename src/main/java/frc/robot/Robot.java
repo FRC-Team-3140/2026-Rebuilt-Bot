@@ -113,12 +113,6 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void robotPeriodic() {
-    Logger.recordOutput("RobotPose", new Pose2d());
-    Logger.recordOutput("ZeroedComponentPoses", new Pose3d[] {
-      new Pose3d(Units.inchesToMeters(11.120000), 0, Units.inchesToMeters(7.254931), new Rotation3d(0, 45, 0)),
-      new Pose3d(Units.inchesToMeters(-5.379), 0, Units.inchesToMeters(16.112162), new Rotation3d(0, 0, 45)),
-      new Pose3d(Units.inchesToMeters(-6.067574), 0, Units.inchesToMeters(19.112162), new Rotation3d(0, 45, 45)),
-    });
     CommandScheduler.getInstance().run();
     NetworkTables.voltage_d.setDouble(RobotController.getBatteryVoltage());
   }

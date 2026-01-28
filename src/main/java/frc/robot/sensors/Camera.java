@@ -134,7 +134,7 @@ public class Camera extends SubsystemBase {
   @Override
   public void periodic() {
     if (RobotBase.isSimulation()) {
-      visionSim.update(Odometry.getInstance().getPose());
+      visionSim.update(Odometry.getInstance().getRealSimPose());
     }
     if (((Timer.getFPGATimestamp() - lastIteration)) > delayTime) {
       isConnected();
@@ -165,6 +165,7 @@ public class Camera extends SubsystemBase {
                 multiResult));
             if (pose.isPresent())
               estimatedPoseOne = pose.get().estimatedPose;
+
           }
         }
       }

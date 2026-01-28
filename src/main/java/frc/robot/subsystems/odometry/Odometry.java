@@ -54,10 +54,8 @@ abstract public class Odometry extends SubsystemBase {
   protected double readRotationRaw() {
     if (!RobotBase.isSimulation()) {
       return gyro.getRotation2d().getRadians();
-    }
-    {
-      return NavXSim.getInstance().getRotation2d().getRadians();
-    }
+    } 
+    return NavXSim.getInstance().getRotation2d().getRadians();
   }
 
   protected Pose2d calculatePoseFromTags() {
@@ -122,6 +120,10 @@ abstract public class Odometry extends SubsystemBase {
 
   public Pose2d getPose() {
     return new Pose2d(new Translation2d(getX(), getY()), new Rotation2d(getAngle()));
+  }
+
+  public Pose2d getRealSimPose() {
+    return getPose();
   }
 
   public AHRS getGyro() {
