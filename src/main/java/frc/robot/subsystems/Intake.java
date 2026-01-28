@@ -4,22 +4,36 @@
 
 package frc.robot.subsystems;
 
+import frc.robot.Robot;
+
+import org.littletonrobotics.junction.AutoLogOutput;
+
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
+import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.libs.AbsoluteEncoder;
 
 public class Intake extends SubsystemBase {
-  private SparkMax intakeArmMotor = new SparkMax(Constants.MotorIDs.intakeArmMotor, SparkMax.MotorType.kBrushless);
-  private SparkMax intakeRollerMotor = new SparkMax(Constants.MotorIDs.intakeMotor, SparkMax.MotorType.kBrushless);
+  private Pose3d armPose = Constants.SIM.intakeMechOffset; 
 
-  private AbsoluteEncoder intakeEncoder = new AbsoluteEncoder(Constants.SensorIDs.intakeEncoder, 0);
+
+  private SparkMax intakeArmMotor = new SparkMax(Constants.MotorIDs.intakeArmMotor, SparkMax.MotorType.kBrushless);
+  private SparkMax intakeArmMotorFollower = new SparkMax(Constants.MotorIDs.intakeArmMotorFollower, SparkMax.MotorType.kBrushless);
+  private SparkMax intakeRollerMotor = new SparkMax(Constants.MotorIDs.intakeMotor, SparkMax.MotorType.kBrushless);
+  public SparkMaxSim intakeArmMotorSim;
+
+  public AbsoluteEncoder intakeEncoder = new AbsoluteEncoder(Constants.SensorIDs.intakeEncoder, 0);
 
   private double intakeSetpoint = 0;
 
@@ -43,6 +57,13 @@ public class Intake extends SubsystemBase {
     config.idleMode(IdleMode.kBrake);
 
     intakeArmMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    config.follow(intakeArmMotor.getDeviceId(), true);
+    intakeArmMotorFollower.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+    if (RobotBase.isSimulation()) {
+      intakeArmMotorSim = new SparkMaxSim(intakeArmMotor, DCMotor.getNEO(1));
+    }
   }
 
   public void deploy() {
@@ -51,6 +72,10 @@ public class Intake extends SubsystemBase {
 
   public void stow() {
     intakeSetpoint = Constants.Limits.Intake.stowedPosition;
+  }
+
+  public double getAngle() {
+    return intakeEncoder.getAbsolutePosition();
   }
 
   /**
@@ -73,7 +98,13 @@ public class Intake extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
     intakeArmMotor.set(intakePID.calculate(intakeEncoder.getAbsolutePosition(), intakeSetpoint));
+
+    armPose = new Pose3d(
+        Constants.SIM.intakeMechOffset.getX(),
+        Constants.SIM.intakeMechOffset.getY(),
+        Constants.SIM.intakeMechOffset.getZ(),
+        new Rotation3d(0, Math.toRadians(intakeEncoder.getAbsolutePosition()), 0));
+    Robot.mecanismPoses[0] = armPose;
   }
 }

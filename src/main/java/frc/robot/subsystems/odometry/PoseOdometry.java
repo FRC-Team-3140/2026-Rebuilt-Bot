@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
 import frc.robot.libs.Vector2;
+import frc.robot.sensors.Camera;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.SwerveModule;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -21,11 +22,12 @@ import org.littletonrobotics.junction.Logger;
 public class PoseOdometry extends Odometry {
   protected SwerveDrivePoseEstimator estimator = null;
   protected SwerveDrivePoseEstimator simEstimator = null;
+  protected SwerveDrivePoseEstimator simDriftEstimator = null;
   private boolean knowsPosition = false;
   private Pose2d nullPose = new Pose2d(0, 0, new Rotation2d(0));
 
   private Pose2d startingPose = null;
-  private final int startingCameraPasses = 10;
+  private final int startingCameraPasses = Constants.Odometry.startingCameraPasses;
   private int cameraPasses = 0;
   private double angleOffset = 0;
 
@@ -37,10 +39,16 @@ public class PoseOdometry extends Odometry {
   }
 
   public double getX() {
+    if (RobotBase.isSimulation()) {
+      return simEstimator == null ? 0 : simEstimator.getEstimatedPosition().getX();
+    }
     return estimator == null ? 0 : estimator.getEstimatedPosition().getX();
   }
 
   public double getY() {
+    if (RobotBase.isSimulation()) {
+      return simEstimator == null ? 0 : simEstimator.getEstimatedPosition().getY();
+    }
     return estimator == null ? 0 : estimator.getEstimatedPosition().getY();
   }
 
@@ -49,6 +57,9 @@ public class PoseOdometry extends Odometry {
   }
 
   public Rotation2d getRotation() {
+    if (RobotBase.isSimulation()) {
+      return simEstimator == null ? new Rotation2d() : simEstimator.getEstimatedPosition().getRotation();
+    }
     return estimator == null ? new Rotation2d() : estimator.getEstimatedPosition().getRotation();
   }
 
@@ -82,10 +93,10 @@ public class PoseOdometry extends Odometry {
 
       // Reset all the module encoders to 0
       for (SwerveModule module : SwerveDrive.getInstance().modules) {
-        module.simDriveEncoder.setPosition(0);
+        //module.simDriveEncoder.setPosition(0);
         module.simDriveMotor.setPosition(0);
 
-        module.simTurnEncoder.setPosition(0);
+        //module.simTurnEncoder.setPosition(0);
         module.simTurnMotor.setPosition(0);
       }
 
@@ -131,27 +142,36 @@ public class PoseOdometry extends Odometry {
   @Override
   public void updatePosition(SwerveModulePosition[] positions) {
     SwerveDrive drive = SwerveDrive.getInstance();
+    boolean newMeasurement = Camera.getInstance().hasNewMeasurement(); 
     Pose2d pose = calculatePoseFromTags();
-
+    double stdDev = 2.5;
     if (estimator == null) {
       estimator = new SwerveDrivePoseEstimator(
           drive.kinematics,
           getGyroRotation(),
           positions,
           new Pose2d());
-      estimator.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, Units.degreesToRadians(15)));
-      simEstimator = new SwerveDrivePoseEstimator(
-          drive.kinematics,
-          getGyroRotation(),
-          positions,
-          new Pose2d());
-      simEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, Units.degreesToRadians(15)));
+      estimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(15)));
+
+      if(RobotBase.isSimulation()) {
+        simEstimator = new SwerveDrivePoseEstimator(
+            drive.kinematics,
+            getGyroRotation(),
+            positions,
+            new Pose2d());
+        simDriftEstimator = new SwerveDrivePoseEstimator(
+            drive.kinematics,
+            getGyroRotation(),
+            positions,
+            new Pose2d());
+        simDriftEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(15)));
+      }
     }
 
     if (cameraPasses == 0) {
       startingPose = null;
       cameraPasses++;
-    } else if (cameraPasses < startingCameraPasses) {
+    } else if (cameraPasses < startingCameraPasses && newMeasurement) {
       if (pose != null) {
         if (startingPose == null)
           startingPose = pose;
@@ -160,31 +180,47 @@ public class PoseOdometry extends Odometry {
       }
     } else if (cameraPasses == startingCameraPasses) {
       estimator.resetPose(startingPose);
-      simEstimator.resetPose(startingPose);
+      if (RobotBase.isSimulation()) {
+        simEstimator.resetPose(startingPose); 
+        simDriftEstimator.resetPose(startingPose);
+      }
       resetGyroCamera(startingPose.getRotation().getRadians());
       cameraPasses++;
-    } else {
-      if (pose != null) {
-        if (!knowsPosition) {
-          knowsPosition = true;
-          estimator.resetPose(pose);
+    } 
+
+    simEstimator.update(getGyroRotation(), positions);
+    if (RobotBase.isSimulation() && false) {
+      positions[0].distanceMeters *= (Math.random() * 0.02 - 0.01) + 1.00;
+      positions[1].distanceMeters *= (Math.random() * 0.02 - 0.01) + 1.00;
+      positions[2].distanceMeters *= (Math.random() * 0.02 - 0.01) + 1.00;
+      positions[3].distanceMeters *= (Math.random() * 0.02 - 0.01) + 1.00;
+      simDriftEstimator.update(getGyroRotation(), positions);
+    }
+    estimator.update(getGyroRotation(), positions);
+
+    Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());  
+    Logger.recordOutput("Odometry/realisticOdometryBot", simDriftEstimator.getEstimatedPosition());  
+
+  }
+
+  @Override
+  public void addVisionMeasurement(Pose2d pose, double timestamp) {
+    if (estimator != null) {
+      if (!knowsPosition) {
+        knowsPosition = true;
+        estimator.resetPose(pose);
+        if (RobotBase.isSimulation()) {
           simEstimator.resetPose(pose);
-        } else {
-          if (estimator.getEstimatedPosition().getTranslation()
-              .getDistance(pose.getTranslation()) < Constants.Odometry.maxCorrectionDistance) {
-            estimator.addVisionMeasurement(
-                new Pose2d(pose.getX(), pose.getY(), getGyroRotation()),
-                Timer.getFPGATimestamp());
-              }
+          simDriftEstimator.resetPose(pose);
+        }
+      } else {
+        if (estimator.getEstimatedPosition().getTranslation().getDistance(pose.getTranslation()) < Constants.Odometry.maxCorrectionDistance) {
+          estimator.addVisionMeasurement(
+              pose,
+              Timer.getFPGATimestamp());
         }
       }
     }
-    
-    estimator.update(getGyroRotation(), positions);
-    simEstimator.update(getGyroRotation(), positions);
-
-    Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());  
-    
   }
 
   @Override

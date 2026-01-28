@@ -7,7 +7,9 @@ package frc.robot;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -29,6 +31,10 @@ public final class Constants {
 
   public static class SIM {
     public static final double odometryDrift = 0.025;
+
+    public static final Pose3d intakeMechOffset = new Pose3d(Units.inchesToMeters(11.120000), 0, Units.inchesToMeters(7.254931), new Rotation3d(0, 45, 0));
+    public static final Pose3d turretMechOffset = new Pose3d(Units.inchesToMeters(-5.379), 0, Units.inchesToMeters(16.112162), new Rotation3d(0, 0, 45));
+    public static final Pose3d hoodMechOffset = new Pose3d(Units.inchesToMeters(-6.067574), 0, Units.inchesToMeters(19.112162), new Rotation3d(0, 45, 45));
   }
 
   public static class MotorIDs {
@@ -55,12 +61,13 @@ public final class Constants {
 
     public static final int intakeMotor = 12; // MINI 2
     public static final int intakeArmMotor = 13; // NEO 6
+    public static final int intakeArmMotorFollower = 14; // NEO 7
 
-    public static final int feederMotor = 14; // NEO 7
-    public static final int rollerMotor = 15; // NEO 8
+    public static final int feederMotor = 15; // NEO 8
+    public static final int rollerMotor = 16; // NEO 9
 
-    public static final int climberLeftMotor = 16; // NEO 9
-    public static final int climberRightMotor = 17; // NEO 10
+    public static final int climberLeftMotor = 17; // NEO 10
+    public static final int climberRightMotor = 18; // NEO 10
   }
 
   public static class SensorIDs {
@@ -81,10 +88,11 @@ public final class Constants {
 
     public static final int hoodEncoder = 6;
 
-    // TODO: make these use digital inputs
-    // Climber Limit Switches
-    public static final int climberLimitSwitchLeft = 0;
-    public static final int climberLimitSwitchRight = 0;
+    public static class Digital {
+      // Climber Limit Switches
+      public static final int climberLimitSwitchLeft = 0;
+      public static final int climberLimitSwitchRight = 1;
+    }
 
 
   }
@@ -104,22 +112,22 @@ public final class Constants {
 
   public static class PID {
     public static class Turret {
-      public static final double flywheelP = 0.0002;
+      public static final double flywheelP = 0.01;
       public static final double flywheelI = 0.0;
       public static final double flywheelD = 0.0;
 
-      public static final double hoodP = 0.005;
+      public static final double hoodP = 0.009;
       public static final double hoodI = 0.0;
       public static final double hoodD = 0.0;
 
-      public static final double rotationP = 0.02;
+      public static final double rotationP = 0.05;
       public static final double rotationI = 0.0;
-      public static final double rotationD = 0.001;
+      public static final double rotationD = 0.0;
 
     }
 
     public static class Intake {
-      public static final double intakeP = 0.01;
+      public static final double intakeP = 0.05;
       public static final double intakeI = 0.0;
       public static final double intakeD = 0.0;
     }
@@ -172,10 +180,10 @@ public final class Constants {
     public static final double simDriveI = 0.0; // No integral term
     public static final double simDriveD = 0.00001; // Minimal D for damping only
     public static final double simTurnP = 0.003; // Reduced turn P for smoother rotation
-    /////// END AI CODE ///////
+                                                 /////// END AI CODE ///////
 
-    // Swerve Module Base Angles
-    // TODO: Update for this configuration
+                                                 // Swerve Module Base Angles
+                                                 // TODO: Update for this configuration
     public static final double FLZeroOffset = 216.997730;// 217.720;
 
     public static final double FRZeroOffset = 136.602900;// 228.319;
@@ -185,20 +193,24 @@ public final class Constants {
     public static final double BRZeroOffset = 310.841840;// 312.425;
 
     public static final double[] lockedAngles = {
-        45,
-        315,
-        315,
-        45
+      45,
+      315,
+      315,
+      45
     };
 
     // Default swerve state
     // new SwerveModuleState initializes states with 0s for angle and velocity
     public static final SwerveModuleState[] defaultSwerveStates = {
-        new SwerveModuleState(0, new Rotation2d(0)),
-        new SwerveModuleState(0, new Rotation2d(0)),
-        new SwerveModuleState(0, new Rotation2d(0)),
-        new SwerveModuleState(0, new Rotation2d(0))
+      new SwerveModuleState(0, new Rotation2d(0)),
+      new SwerveModuleState(0, new Rotation2d(0)),
+      new SwerveModuleState(0, new Rotation2d(0)),
+      new SwerveModuleState(0, new Rotation2d(0))
     };
+
+    public static final double intakeGearRatio = 50;
+    public static final double turretGearRatio = 10;
+    public static final double hoodGearRatio = 10;
 
   }
 
@@ -242,6 +254,7 @@ public final class Constants {
   public static class Odometry {
     public static final double TagCorrectionSpeed = 8;
     public static final double maxCorrectionDistance = 0.5;
+    public static final int startingCameraPasses = 10;
   }
 
   public static class PathplannerConstants {

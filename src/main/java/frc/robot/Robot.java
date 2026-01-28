@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -14,17 +15,23 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.swerveDrive.SetSwerveStates;
 import frc.robot.commands.swerveDrive.SwerveDriveManualControl;
 import frc.robot.libs.NetworkTables;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.SwerveModule;
 import frc.robot.subsystems.TestRunner;
+import frc.robot.subsystems.Turret.TurretMain;
 import frc.robot.subsystems.odometry.NavXSim;
 
 /**
@@ -40,6 +47,12 @@ public class Robot extends LoggedRobot {
   private final RobotContainer m_robotContainer;
   private final TestRunner m_testRunner;
 
+  @AutoLogOutput(key = "Mecanisms")
+  public static Pose3d mecanismPoses[] = new Pose3d[] {
+      Constants.SIM.intakeMechOffset,
+      Constants.SIM.turretMechOffset,
+      Constants.SIM.hoodMechOffset,
+  }; 
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -100,6 +113,12 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void robotPeriodic() {
+    Logger.recordOutput("RobotPose", new Pose2d());
+    Logger.recordOutput("ZeroedComponentPoses", new Pose3d[] {
+      new Pose3d(Units.inchesToMeters(11.120000), 0, Units.inchesToMeters(7.254931), new Rotation3d(0, 45, 0)),
+      new Pose3d(Units.inchesToMeters(-5.379), 0, Units.inchesToMeters(16.112162), new Rotation3d(0, 0, 45)),
+      new Pose3d(Units.inchesToMeters(-6.067574), 0, Units.inchesToMeters(19.112162), new Rotation3d(0, 45, 45)),
+    });
     CommandScheduler.getInstance().run();
     NetworkTables.voltage_d.setDouble(RobotController.getBatteryVoltage());
   }
@@ -209,14 +228,11 @@ public class Robot extends LoggedRobot {
       double driveRPM = driveDuty * vortexFreeRPM;
       double driveRPS = driveRPM / 60.0;
       module.simDriveMotor.iterate(driveRPM, vbus, dt);
-      module.simDriveEncoder.iterate(driveRPS, dt);
 
       // --- STEER ---
       double turnDuty = module.simTurnMotor.getAppliedOutput();
       double turnRPM = turnDuty * neoFreeRPM;
-      double turnRPS = turnRPM / 60.0;
       module.simTurnMotor.iterate(turnRPM, vbus, dt);
-      module.simTurnEncoder.iterate(turnRPS, dt);
 
       // update custom absolute encoder (convert motor rotations → wheel degrees)
       double wheelRotations = module.simTurnMotor.getPosition() / Constants.Bot.steerGearRatio;
@@ -227,6 +243,33 @@ public class Robot extends LoggedRobot {
 
       module.turnEncoder.setDistance(angleDeg);
     }
+
+    // --- SIMULATED INTAKE ---
+    double intakeDuty = Intake.getInstance().intakeArmMotorSim.getAppliedOutput();
+    double intakeRPM = intakeDuty * neoFreeRPM;
+    Intake.getInstance().intakeArmMotorSim.iterate(intakeRPM, vbus, dt);
+
+    double intakeRotations = Intake.getInstance().intakeArmMotorSim.getPosition() / Constants.Bot.intakeGearRatio;
+    double intakeAngleDeg = intakeRotations * 360.0;
+    Intake.getInstance().intakeEncoder.setDistance(intakeAngleDeg);
+
+    // --- SIMULATED TURRET ---
+    double turretDuty = TurretMain.getInstance().turretRotationMotorSim.getAppliedOutput();
+    double turretRPM = turretDuty * neoFreeRPM;
+    TurretMain.getInstance().turretRotationMotorSim.iterate(turretRPM, vbus, dt);
+
+    double hoodDuty = TurretMain.getInstance().hoodMotorSim.getAppliedOutput();
+    double hoodRPM = hoodDuty * neoFreeRPM;
+    TurretMain.getInstance().hoodMotorSim.iterate(hoodRPM, vbus, dt);
+
+    double turretRotations = TurretMain.getInstance().turretRotationMotorSim.getPosition() / Constants.Bot.turretGearRatio;
+    double turretAngleDeg = turretRotations * 360.0;
+    turretAngleDeg = ((turretAngleDeg % 360.0) + 360.0) % 360.0;
+    TurretMain.getInstance().turretEncoder.setDistance(turretAngleDeg);
+
+    double hoodRotations = TurretMain.getInstance().hoodMotorSim.getPosition() / Constants.Bot.hoodGearRatio;
+    double hoodAngleDeg = hoodRotations * 360.0;
+    TurretMain.getInstance().hoodEncoder.setDistance(hoodAngleDeg);
 
     // --- SIMULATED GYRO ---
     // compute chassis speeds from wheel positions

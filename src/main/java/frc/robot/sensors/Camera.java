@@ -65,6 +65,8 @@ public class Camera extends SubsystemBase {
   PhotonCameraSim oneCameraSim = new PhotonCameraSim(one, cameraProp);
   PhotonCameraSim twoCameraSim = new PhotonCameraSim(two, cameraProp);
 
+  boolean newMeasurement = false;
+  boolean calculatRotation = false;
   // private boolean tooFar = false;
   /**
    * Represents a distance measurement obtained from a camera sensor.
@@ -197,6 +199,11 @@ public class Camera extends SubsystemBase {
       } else {
         estimatedPose = Pose2d.kZero;
       }
+      if (estimatedPose != Pose2d.kZero) { 
+        Odometry.getInstance().addVisionMeasurement(estimatedPose, Timer.getFPGATimestamp());
+        newMeasurement = true;
+      }
+
     }
   }
 
@@ -247,10 +254,15 @@ public class Camera extends SubsystemBase {
   // first call of the method within a rio loop.
   public Pose2d getPoseFromCamera() {
     if (connected || RobotBase.isSimulation()) {
+      newMeasurement = false;
       return estimatedPose;
     }
 
     return null;
+  }
+
+  public boolean hasNewMeasurement() {
+    return newMeasurement;
   }
 
   public int[] getDetectedTags() {

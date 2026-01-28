@@ -73,6 +73,8 @@ abstract public class Odometry extends SubsystemBase {
   public Rotation2d getRotation() {
     return new Rotation2d(getAngle());
   }
+  
+  public abstract void addVisionMeasurement(Pose2d visionPose, double timestamp);
 
   abstract public Vector2 getPosition();
 
@@ -126,6 +128,7 @@ abstract public class Odometry extends SubsystemBase {
     return gyro;
   }
 
+  
   public boolean isMoving() {
     if (RobotBase.isSimulation())
       return NavXSim.getInstance().isMoving();

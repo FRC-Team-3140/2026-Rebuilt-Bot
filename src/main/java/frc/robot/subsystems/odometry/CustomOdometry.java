@@ -245,7 +245,8 @@ public class CustomOdometry extends Odometry {
     Logger.recordOutput("Odometry/simVisionBot", new Pose2d(simVisionPosition.X, simVisionPosition.Y, new Rotation2d(angle)));  
     Logger.recordOutput("Odometry/realisticOdometryBot", new Pose2d(simRealisticPosition.X, simRealisticPosition.Y, new Rotation2d(angle)));  
   }
-
+  @Override
+  public void addVisionMeasurement(Pose2d pose, double timestamp) {}
   @Override
   public void updateSimulatedPosition(SwerveModulePosition[] positions, double gyroAngleRad) {
     // TODO: I'm too lazy to figure out how this works right now :) - TK

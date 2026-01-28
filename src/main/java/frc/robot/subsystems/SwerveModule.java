@@ -43,9 +43,7 @@ public class SwerveModule extends SubsystemBase {
     public PIDController turnPID;
     public ProfiledPIDController drivePID;
     public AbsoluteEncoder turnEncoder;
-    public SparkAbsoluteEncoderSim simTurnEncoder;
     public RelativeEncoder driveEncoder;
-    public SparkRelativeEncoderSim simDriveEncoder;
 
     public double botMass = 24.4;
 
@@ -118,10 +116,8 @@ public class SwerveModule extends SubsystemBase {
         drivePID.setTolerance(driveSetpointTolerance);
 
         if (RobotBase.isSimulation()) {
-            simDriveEncoder = new SparkRelativeEncoderSim(driveMotor);
             simDriveMotor = new SparkFlexSim(driveMotor, DCMotor.getNeoVortex(1));
 
-            simTurnEncoder = new SparkAbsoluteEncoderSim(turnMotor);
             simTurnMotor = new SparkMaxSim(turnMotor, DCMotor.getNEO(1));
         }
     }
