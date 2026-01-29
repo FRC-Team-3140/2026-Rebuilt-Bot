@@ -36,6 +36,8 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.libs.AbsoluteEncoder;
+import frc.robot.subsystems.TestRunner;
+import frc.robot.subsystems.TestRunner.TestType;
 import frc.robot.subsystems.odometry.Odometry;
 
 public class TurretMain extends SubsystemBase {
@@ -213,29 +215,50 @@ public class TurretMain extends SubsystemBase {
         && Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance;
   }
 
+  public void setHoodAngle(double angle) {
+    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
+      System.err.println("Turret Hood Angle Setpoint Ignored: Not in Test Mode");
+      return;
+    }
+
+    hoodSetpoint = angle;
+  }
+
+  public void setRotationAngle(double angle) {
+    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
+      System.err.println("Turret Rotation Angle Setpoint Ignored: Not in Test Mode");
+      return;
+    }
+
+    turretSetpoint = angle;
+  }
+
   @Override
   public void periodic() {
+
+    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
+      // TODO: Default Hood Angle DN, Manual Mode, Limiting Angle
+      if (lastUpdateTimestamp == 0) {
+        lastUpdateTimestamp = Timer.getFPGATimestamp();
+        // first update, setup
+        // TODO: read hood setpoint from encoder so that predict can work properly
+      } else {
+        double t = Timer.getFPGATimestamp();
+        double deltaTime = t - lastUpdateTimestamp;
+        lastUpdateTimestamp = t;
+
+        AimType type = aimTypes.get(currentMode);
+
+        type.periodic(deltaTime);
+
+        flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
+        hoodSetpoint = type.hoodAngle;
+        turretSetpoint = type.rotationAngle;
+      }
+    }
+
     hoodPID.setSetpoint(hoodSetpoint);
     rotationProfiledPID.setGoal(turretSetpoint);
-
-    // TODO: Default Hood Angle DN, Manual Mode, Limiting Angle
-    if (lastUpdateTimestamp == 0) {
-      lastUpdateTimestamp = Timer.getFPGATimestamp();
-      // first update, setup
-      // TODO: read hood setpoint from encoder so that predict can work properly
-    } else {
-      double t = Timer.getFPGATimestamp();
-      double deltaTime = t - lastUpdateTimestamp;
-      lastUpdateTimestamp = t;
-
-      AimType type = aimTypes.get(currentMode);
-
-      type.periodic(deltaTime);
-
-      flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
-      hoodSetpoint = type.hoodAngle;
-      turretSetpoint = type.rotationAngle;
-    }
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.getAbsolutePosition()));
     turretRotationMotor.set(rotationProfiledPID.calculate(turretEncoder.getAbsolutePosition()));

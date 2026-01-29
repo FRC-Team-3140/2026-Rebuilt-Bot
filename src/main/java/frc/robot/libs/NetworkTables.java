@@ -37,6 +37,8 @@ public class NetworkTables {
 
     // Test buttons
     public static NetworkTableEntry swerveButton_b = devBoard.getEntry("Swerve_b");
+    public static NetworkTableEntry turretButton_b = devBoard.getEntry("Turret_b");
+    public static NetworkTableEntry climberButton_b = devBoard.getEntry("Climber_b");
 
   // private static NetworkTable sensors = inst.getTable(Constants.NetworktablePaths.Sensors);
   //   public static NetworkTableEntry globalCameraTimestamp = sensors.getEntry("timestamp");
