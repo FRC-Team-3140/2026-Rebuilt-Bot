@@ -217,6 +217,10 @@ public class Controller extends SubsystemBase {
       Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
     }
 
+    if (primaryController.getXButtonPressed()) {
+      TurretMain.getInstance().shootSimFuel();
+    }
+
     if (primaryController.getRightBumperButtonPressed()) {
       TurretMain.getInstance().setFlywheelActive(true);
     }

@@ -4,6 +4,8 @@
 
 package frc.robot;
 
+import java.util.ArrayList;
+
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -15,12 +17,10 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -256,6 +256,11 @@ public class Robot extends LoggedRobot {
     double hoodRPM = hoodDuty * neoFreeRPM;
     TurretMain.getInstance().hoodMotorSim.iterate(hoodRPM, vbus, dt);
 
+    double flywheelDuty = TurretMain.getInstance().flywheelMotorSim.getAppliedOutput();
+    double flyWheelRPM = flywheelDuty * vortexFreeRPM;
+    TurretMain.getInstance().flywheelMotorSim.iterate(flyWheelRPM, vbus, dt);
+
+
     double turretRotations = TurretMain.getInstance().turretRotationMotorSim.getPosition() / Constants.Bot.turretGearRatio;
     double turretAngleDeg = turretRotations * 360.0;
     turretAngleDeg = ((turretAngleDeg % 360.0) + 360.0) % 360.0;
@@ -264,6 +269,8 @@ public class Robot extends LoggedRobot {
     double hoodRotations = TurretMain.getInstance().hoodMotorSim.getPosition() / Constants.Bot.hoodGearRatio;
     double hoodAngleDeg = hoodRotations * 360.0;
     TurretMain.getInstance().hoodEncoder.setDistance(hoodAngleDeg);
+
+    TurretMain.getInstance().simFuel(dt);
 
     // --- SIMULATED GYRO ---
     // compute chassis speeds from wheel positions

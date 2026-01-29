@@ -112,15 +112,11 @@ public final class Constants {
 
   public static class PID {
     public static class Turret {
-      public static final double flywheelP = 0.01;
-      public static final double flywheelI = 0.0;
-      public static final double flywheelD = 0.0;
-
       public static final double hoodP = 0.009;
       public static final double hoodI = 0.0;
       public static final double hoodD = 0.0;
 
-      public static final double rotationP = 0.05;
+      public static final double rotationP = 0.0125;
       public static final double rotationI = 0.0;
       public static final double rotationD = 0.0;
 
@@ -131,6 +127,14 @@ public final class Constants {
       public static final double intakeI = 0.0;
       public static final double intakeD = 0.0;
     }
+  }
+  public static class FeedFoward {
+    public static class Turret {
+      public static final double flywheelS = 0.02;
+      public static final double flywheelV = 0.016;
+      public static final double flywheelA = 0.0;
+    }
+
   }
 
   public static class CurrentLimits {
@@ -211,6 +215,7 @@ public final class Constants {
     public static final double intakeGearRatio = 50;
     public static final double turretGearRatio = 10;
     public static final double hoodGearRatio = 10;
+    public static final double flywheelGearRatio = 10;
 
   }
 

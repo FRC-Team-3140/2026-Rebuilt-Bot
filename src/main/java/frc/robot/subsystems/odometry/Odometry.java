@@ -88,6 +88,7 @@ abstract public class Odometry extends SubsystemBase {
 
   @Override
   public void periodic() {
+
   }
 
   protected double caluclateRotationDelta() {

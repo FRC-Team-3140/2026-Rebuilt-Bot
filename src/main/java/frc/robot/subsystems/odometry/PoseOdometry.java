@@ -114,6 +114,11 @@ public class PoseOdometry extends Odometry {
           + angleOffset);
   }
 
+  @Override
+  public void periodic() {
+    super.periodic();
+    
+  }
 
   public void resetGyro() {
       NavXSim.getInstance().reset(0);
