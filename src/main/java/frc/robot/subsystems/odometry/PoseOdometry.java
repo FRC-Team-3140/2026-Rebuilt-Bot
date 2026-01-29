@@ -7,9 +7,7 @@ package frc.robot.subsystems.odometry;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.libs.Vector2;
-import frc.robot.sensors.Camera;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.SwerveModule;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -102,32 +100,33 @@ public class PoseOdometry extends Odometry {
     return estimator == null ? nullPose : estimator.getEstimatedPosition();
   }
 
-  @Override 
+  @Override
   public Pose2d getRealSimPose() {
     return simEstimator == null ? nullPose : simEstimator.getEstimatedPosition();
   }
 
   @Override
   public Rotation2d getGyroRotation() {
-      return new Rotation2d(
-          (!RobotBase.isSimulation() ? gyro.getRotation2d().getRadians() : NavXSim.getInstance().getRotation2d().getRadians()) 
-          + angleOffset);
+    return new Rotation2d(
+        (!RobotBase.isSimulation() ? gyro.getRotation2d().getRadians()
+            : NavXSim.getInstance().getRotation2d().getRadians())
+            + angleOffset);
   }
 
   @Override
   public void periodic() {
     super.periodic();
-    
+
   }
 
   public void resetGyro() {
-      NavXSim.getInstance().reset(0);
-      resetGyroCamera(0);
+    NavXSim.getInstance().reset(0);
+    resetGyroCamera(0);
   }
 
   public void resetGyroCamera(double correctAngle) {
-    angleOffset = -readRotationRaw() + correctAngle; 
-    
+    angleOffset = -readRotationRaw() + correctAngle;
+
   }
 
   public void recalibrateCameraPose() {
@@ -137,8 +136,6 @@ public class PoseOdometry extends Odometry {
   @Override
   public void updatePosition(SwerveModulePosition[] positions) {
     SwerveDrive drive = SwerveDrive.getInstance();
-    boolean newMeasurement = Camera.getInstance().hasNewMeasurement(); 
-    Pose2d pose = calculatePoseFromTags();
     double stdDev = 2.5;
     if (estimator == null) {
       estimator = new SwerveDrivePoseEstimator(
@@ -148,7 +145,7 @@ public class PoseOdometry extends Odometry {
           new Pose2d());
       estimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(15)));
 
-      if(RobotBase.isSimulation()) {
+      if (RobotBase.isSimulation()) {
         simEstimator = new SwerveDrivePoseEstimator(
             drive.kinematics,
             getGyroRotation(),
@@ -163,7 +160,6 @@ public class PoseOdometry extends Odometry {
       }
     }
 
-
     if (RobotBase.isSimulation()) {
       simEstimator.update(getGyroRotation(), positions);
       positions[0].distanceMeters *= 1.03;
@@ -171,12 +167,12 @@ public class PoseOdometry extends Odometry {
       positions[2].distanceMeters *= 1.03;
       positions[3].distanceMeters *= 1.03;
       simDriftEstimator.update(getGyroRotation(), positions);
-      Logger.recordOutput("Odometry/simRealPosition", simEstimator.getEstimatedPosition());  
-      Logger.recordOutput("Odometry/realisticOdometryBot", simDriftEstimator.getEstimatedPosition());  
+      Logger.recordOutput("Odometry/simRealPosition", simEstimator.getEstimatedPosition());
+      Logger.recordOutput("Odometry/realisticOdometryBot", simDriftEstimator.getEstimatedPosition());
     }
     estimator.update(getGyroRotation(), positions);
 
-    Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());  
+    Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());
 
   }
 
@@ -199,7 +195,8 @@ public class PoseOdometry extends Odometry {
         resetGyroCamera(startingPose.getRotation().getRadians());
         cameraPasses++;
       } else {
-        if (estimator.getEstimatedPosition().getTranslation().getDistance(pose.getTranslation()) < Constants.Odometry.maxCorrectionDistance) {
+        if (estimator.getEstimatedPosition().getTranslation()
+            .getDistance(pose.getTranslation()) < Constants.Odometry.maxCorrectionDistance) {
           estimator.addVisionMeasurement(
               pose,
               Timer.getFPGATimestamp());
@@ -226,4 +223,3 @@ public class PoseOdometry extends Odometry {
   public void updateSimulatedPosition(SwerveModulePosition[] positions, double gyroAngleRad) {
   }
 }
-

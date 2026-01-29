@@ -227,7 +227,7 @@ public class Controller extends SubsystemBase {
 
     if (primaryController.getRightBumperButtonReleased()) {
       TurretMain.getInstance().setFlywheelActive(false);
-    } 
+    }
 
     if (primaryController.getBButtonPressed()) {
       Intake.getInstance().stow();

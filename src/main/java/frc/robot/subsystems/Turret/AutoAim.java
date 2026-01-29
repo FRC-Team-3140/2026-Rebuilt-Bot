@@ -11,7 +11,6 @@ import frc.robot.libs.ShotPredictor;
 import frc.robot.libs.ShotPredictor.Result;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.Controller;
-import frc.robot.subsystems.odometry.CustomOdometry;
 import frc.robot.subsystems.odometry.Odometry;
 
 public class AutoAim extends AimType {

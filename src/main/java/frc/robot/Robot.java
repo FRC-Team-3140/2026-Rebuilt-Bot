@@ -4,8 +4,6 @@
 
 package frc.robot;
 
-import java.util.ArrayList;
-
 import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
@@ -18,7 +16,6 @@ import com.pathplanner.lib.commands.PathfindingCommand;
 import com.pathplanner.lib.config.RobotConfig;
 
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotController;
@@ -52,7 +49,8 @@ public class Robot extends LoggedRobot {
       Constants.SIM.intakeMechOffset,
       Constants.SIM.turretMechOffset,
       Constants.SIM.hoodMechOffset,
-  }; 
+  };
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any
@@ -220,7 +218,6 @@ public class Robot extends LoggedRobot {
       // --- DRIVE ---
       double driveDuty = module.simDriveMotor.getAppliedOutput();
       double driveRPM = driveDuty * vortexFreeRPM;
-      double driveRPS = driveRPM / 60.0;
       module.simDriveMotor.iterate(driveRPM, vbus, dt);
 
       // --- STEER ---
@@ -260,8 +257,8 @@ public class Robot extends LoggedRobot {
     double flyWheelRPM = flywheelDuty * vortexFreeRPM;
     TurretMain.getInstance().flywheelMotorSim.iterate(flyWheelRPM, vbus, dt);
 
-
-    double turretRotations = TurretMain.getInstance().turretRotationMotorSim.getPosition() / Constants.Bot.turretGearRatio;
+    double turretRotations = TurretMain.getInstance().turretRotationMotorSim.getPosition()
+        / Constants.Bot.turretGearRatio;
     double turretAngleDeg = turretRotations * 360.0;
     turretAngleDeg = ((turretAngleDeg % 360.0) + 360.0) % 360.0;
     TurretMain.getInstance().turretEncoder.setDistance(turretAngleDeg);

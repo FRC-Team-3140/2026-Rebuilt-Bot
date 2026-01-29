@@ -32,9 +32,12 @@ public final class Constants {
   public static class SIM {
     public static final double odometryDrift = 0.025;
 
-    public static final Pose3d intakeMechOffset = new Pose3d(Units.inchesToMeters(11.120000), 0, Units.inchesToMeters(7.254931), new Rotation3d(0, 45, 0));
-    public static final Pose3d turretMechOffset = new Pose3d(Units.inchesToMeters(-5.379), 0, Units.inchesToMeters(16.112162), new Rotation3d(0, 0, 45));
-    public static final Pose3d hoodMechOffset = new Pose3d(Units.inchesToMeters(-6.067574), 0, Units.inchesToMeters(19.112162), new Rotation3d(0, 45, 45));
+    public static final Pose3d intakeMechOffset = new Pose3d(Units.inchesToMeters(11.120000), 0,
+        Units.inchesToMeters(7.254931), new Rotation3d(0, 45, 0));
+    public static final Pose3d turretMechOffset = new Pose3d(Units.inchesToMeters(-5.379), 0,
+        Units.inchesToMeters(16.112162), new Rotation3d(0, 0, 45));
+    public static final Pose3d hoodMechOffset = new Pose3d(Units.inchesToMeters(-6.067574), 0,
+        Units.inchesToMeters(19.112162), new Rotation3d(0, 45, 45));
   }
 
   public static class MotorIDs {
@@ -93,8 +96,6 @@ public final class Constants {
       public static final int climberLimitSwitchLeft = 0;
       public static final int climberLimitSwitchRight = 1;
     }
-
-
   }
 
   public static class MotorSpeeds {
@@ -128,6 +129,7 @@ public final class Constants {
       public static final double intakeD = 0.0;
     }
   }
+
   public static class FeedFoward {
     public static class Turret {
       public static final double flywheelS = 0.02;
@@ -186,8 +188,8 @@ public final class Constants {
     public static final double simTurnP = 0.003; // Reduced turn P for smoother rotation
                                                  /////// END AI CODE ///////
 
-                                                 // Swerve Module Base Angles
-                                                 // TODO: Update for this configuration
+    // Swerve Module Base Angles
+    // TODO: Update for this configuration
     public static final double FLZeroOffset = 216.997730;// 217.720;
 
     public static final double FRZeroOffset = 136.602900;// 228.319;
@@ -197,19 +199,19 @@ public final class Constants {
     public static final double BRZeroOffset = 310.841840;// 312.425;
 
     public static final double[] lockedAngles = {
-      45,
-      315,
-      315,
-      45
+        45,
+        315,
+        315,
+        45
     };
 
     // Default swerve state
     // new SwerveModuleState initializes states with 0s for angle and velocity
     public static final SwerveModuleState[] defaultSwerveStates = {
-      new SwerveModuleState(0, new Rotation2d(0)),
-      new SwerveModuleState(0, new Rotation2d(0)),
-      new SwerveModuleState(0, new Rotation2d(0)),
-      new SwerveModuleState(0, new Rotation2d(0))
+        new SwerveModuleState(0, new Rotation2d(0)),
+        new SwerveModuleState(0, new Rotation2d(0)),
+        new SwerveModuleState(0, new Rotation2d(0)),
+        new SwerveModuleState(0, new Rotation2d(0))
     };
 
     public static final double intakeGearRatio = 50;
@@ -285,7 +287,6 @@ public final class Constants {
         Units.degreesToRadians(540),
         Units.degreesToRadians(720));
   }
-
 
   public static class NetworktablePaths {
     public static final String Dashboard = "Dashboard";

@@ -22,7 +22,8 @@ public class Climbers extends SubsystemBase {
   private final SparkMax rClimber = new SparkMax(Constants.MotorIDs.climberRightMotor, MotorType.kBrushless);
 
   private final DigitalInput climberLimitSwitchL = new DigitalInput(Constants.SensorIDs.Digital.climberLimitSwitchLeft);
-  private final DigitalInput climberLimitSwitchR = new DigitalInput(Constants.SensorIDs.Digital.climberLimitSwitchRight);
+  private final DigitalInput climberLimitSwitchR = new DigitalInput(
+      Constants.SensorIDs.Digital.climberLimitSwitchRight);
 
   private final SparkMaxConfig lConfig = new SparkMaxConfig();
   private final SparkMaxConfig rConfig = new SparkMaxConfig();

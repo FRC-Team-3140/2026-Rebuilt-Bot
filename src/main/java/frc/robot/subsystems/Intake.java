@@ -6,8 +6,6 @@ package frc.robot.subsystems;
 
 import frc.robot.Robot;
 
-import org.littletonrobotics.junction.AutoLogOutput;
-
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
 import com.revrobotics.sim.SparkMaxSim;
@@ -25,11 +23,11 @@ import frc.robot.Constants;
 import frc.robot.libs.AbsoluteEncoder;
 
 public class Intake extends SubsystemBase {
-  private Pose3d armPose = Constants.SIM.intakeMechOffset; 
-
+  private Pose3d armPose = Constants.SIM.intakeMechOffset;
 
   private SparkMax intakeArmMotor = new SparkMax(Constants.MotorIDs.intakeArmMotor, SparkMax.MotorType.kBrushless);
-  private SparkMax intakeArmMotorFollower = new SparkMax(Constants.MotorIDs.intakeArmMotorFollower, SparkMax.MotorType.kBrushless);
+  private SparkMax intakeArmMotorFollower = new SparkMax(Constants.MotorIDs.intakeArmMotorFollower,
+      SparkMax.MotorType.kBrushless);
   private SparkMax intakeRollerMotor = new SparkMax(Constants.MotorIDs.intakeMotor, SparkMax.MotorType.kBrushless);
   public SparkMaxSim intakeArmMotorSim;
 
