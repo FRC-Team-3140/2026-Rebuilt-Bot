@@ -1,0 +1,245 @@
+{
+  "hubs": [
+    {
+      "x": 0,
+      "y": 0,
+      "width": 1150,
+      "height": 718,
+      "state": {
+        "sidebar": {
+          "width": 300,
+          "expanded": [
+            "/SmartDashboard",
+            "/SmartDashboard/Shooter Hood/Hood",
+            "/SmartDashboard/Shooter Hood/Hood/Hood Body",
+            "/SmartDashboard/VisionSystemSim-main/Sim Field",
+            "/Dashboard",
+            "/PathPlanner",
+            "/AdvantageKit",
+            "/AdvantageKit/RealOutputs/Odometry",
+            "/Shuffleboard",
+            "/AdvantageKit/RealOutputs/ZeroedComponentPoses/2",
+            "/AdvantageKit/RealOutputs/ZeroedComponentPoses/2/translation",
+            "/AdvantageKit/RealOutputs",
+            "/AdvantageKit/RealOutputs/Mecanisms/Intake",
+            "/AdvantageKit/RealOutputs/Intake",
+            "/AdvantageKit/RealOutputs/Mecanisms/Turret",
+            "/AdvantageKit/RealOutputs/RobotPose",
+            "/SmartDashboard/VisionSystemSim-main",
+            "/AdvantageKit/RealOutputs/GamePieces/0/rotation",
+            "/AdvantageKit/RealOutputs/TurretMain",
+            "/AdvantageKit/RealOutputs/GamePieces/21",
+            "/AdvantageKit/RealOutputs/GamePieces/21/translation",
+            "/AdvantageKit/RealOutputs/GamePieces/2",
+            "/AdvantageKit/RealOutputs/GamePieces/2/translation",
+            "/AdvantageKit/RealOutputs/Turret",
+            "/AdvantageKit/RealOutputs/Turret/Flywheel",
+            "/AdvantageKit/RealOutputs/TurretMain/Flywheel"
+          ]
+        },
+        "tabs": {
+          "selected": 5,
+          "tabs": [
+            {
+              "type": 0,
+              "title": "",
+              "controller": null,
+              "controllerUUID": "007vtwainuagogrv2c25wlhikm323fh7",
+              "renderer": "",
+              "controlsHeight": 0
+            },
+            {
+              "type": 7,
+              "title": "Video",
+              "controller": null,
+              "controllerUUID": "0wwzb9nam4osgzax89t9ynf689dscarr",
+              "renderer": null,
+              "controlsHeight": 85
+            },
+            {
+              "type": 1,
+              "title": "Line Graph",
+              "controller": {
+                "leftSources": [],
+                "rightSources": [],
+                "discreteSources": [],
+                "leftLockedRange": null,
+                "rightLockedRange": null,
+                "leftUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "rightUnitConversion": {
+                  "autoTarget": null,
+                  "preset": null
+                },
+                "leftFilter": 0,
+                "rightFilter": 0
+              },
+              "controllerUUID": "twznnjddn6xxy0kmas0m5ltrpxm5qlpy",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 10,
+              "title": "Mechanism",
+              "controller": [
+                {
+                  "type": "mechanism",
+                  "logKey": "NT:/SmartDashboard/Shooter Hood",
+                  "logType": "Mechanism2d",
+                  "visible": true,
+                  "options": {}
+                }
+              ],
+              "controllerUUID": "jpljoi5jmvnouzex4g4uo5jqmrsc24c3",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [],
+                "field": "FRC:Evergreen",
+                "orientation": 0,
+                "size": "large"
+              },
+              "controllerUUID": "ru9b10jm9j325hcxogk9l6gsrt2q9eia",
+              "renderer": null,
+              "controlsHeight": 200
+            },
+            {
+              "type": 3,
+              "title": "3D Field",
+              "controller": {
+                "sources": [
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/simRealPosition",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "3140 Rebuilt Bot"
+                    }
+                  },
+                  {
+                    "type": "component",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Mecanisms",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {}
+                  },
+                  {
+                    "type": "coneLegacy",
+                    "logKey": "NT:/SmartDashboard/VisionSystemSim-main/Sim Field/visibleTargetPoses",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "color": "#00ff00",
+                      "position": "back",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "coneLegacy",
+                    "logKey": "NT:/SmartDashboard/VisionSystemSim-main/Sim Field/cameras",
+                    "logType": "NumberArray",
+                    "visible": false,
+                    "options": {
+                      "color": "#00ffff",
+                      "position": "back",
+                      "format": "Pose2d",
+                      "units": "degrees"
+                    }
+                  },
+                  {
+                    "type": "robot",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/simVisionBot",
+                    "logType": "Pose2d",
+                    "visible": true,
+                    "options": {
+                      "model": "KitBot"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/cameraOnePrediction",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "KitBot",
+                      "color": "#00ff00"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/cameraTwoPrediction",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "KitBot",
+                      "color": "#ffff00"
+                    }
+                  },
+                  {
+                    "type": "ghost",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/Odometry/realisticOdometryBot",
+                    "logType": "Pose2d",
+                    "visible": false,
+                    "options": {
+                      "model": "KitBot",
+                      "color": "#ff0000"
+                    }
+                  },
+                  {
+                    "type": "gamePiece",
+                    "logKey": "NT:/AdvantageKit/RealOutputs/GamePieces",
+                    "logType": "Pose3d[]",
+                    "visible": true,
+                    "options": {
+                      "variant": "Fuel"
+                    }
+                  }
+                ],
+                "game": "FRC:2026 Field"
+              },
+              "controllerUUID": "0qrpazrk7zqb9hr41dhz2l7adw36o69i",
+              "renderer": {
+                "cameraIndex": -8,
+                "orbitFov": 50,
+                "cameraPosition": [
+                  7.002708095803423,
+                  1.342300140452698,
+                  1.1933055633251897
+                ],
+                "cameraTarget": [
+                  -0.0199487716437104,
+                  0.5689999997615812,
+                  0.13200112322923163
+                ]
+              },
+              "controlsHeight": 234
+            },
+            {
+              "type": 2,
+              "title": "2D Field",
+              "controller": {
+                "sources": [],
+                "field": "FRC:2026 Field",
+                "orientation": 0,
+                "size": "large"
+              },
+              "controllerUUID": "a2x0cl13uo9ws48vwx1nxeww9bzvk875",
+              "renderer": null,
+              "controlsHeight": 200
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "satellites": [],
+  "version": "26.0.0"
+}
