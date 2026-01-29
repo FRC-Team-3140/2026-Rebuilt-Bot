@@ -16,13 +16,14 @@ import frc.robot.subsystems.odometry.Odometry;
 public class AutoAim extends AimType {
     private static double predictForwardTime = 0.1;
 
-    private double desiredVelocity = 10;
+    private double desiredVelocity = 8;
+    private double maxVelocityError = 2;
 
     private ShotPredictor shotPredictor = new ShotPredictor(
             Constants.Limits.Turret.minAngle,
             Constants.Limits.Turret.maxAngle,
             Constants.Limits.Turret.maxAngularVelocity,
-            desiredVelocity);
+            maxVelocityError);
 
     public AutoAim() {
         rotationAngle = 0;
@@ -44,7 +45,7 @@ public class AutoAim extends AimType {
         // this is used to get centripetal velocity
         // calculate for when the bot is facing in the positive x direction
         // might want to put this in constants too
-        Vector2 turretPosition = new Vector2(-0.25, 0); // this is a guess
+        Vector2 turretPosition = new Vector2(-0.1366, 0); // this is a guess
 
         double futureRotation = odometry.getAngle() + odometry.getAngularVelocity() * dt; // in rads
         Vector2 rotatedTurretPosition = turretPosition.rotate(futureRotation);
@@ -61,7 +62,7 @@ public class AutoAim extends AimType {
     private void predict(double deltaTime) {
         shotPredictor.DesiredShotVelocity = desiredVelocity; // incase we want to change desired velocity
 
-        double targetHeight = 2; // TODO: make this correct (relative to turret)
+        double targetHeight = 1.3716; // TODO: make this correct (relative to turret)
         Vector2 goalPosition = FlipPose.flipVectorIfRed(new Vector2(4.625, 4.025));
 
         Pair<Pose2d, Vector2> futureStatePair = getFutureState(predictForwardTime);
@@ -75,10 +76,10 @@ public class AutoAim extends AimType {
 
         shotPredictor.MinAngle = calculateMinimumAngle(targetDistance);
 
-        boolean isShooting = Controller.getInstance().primaryController.getRightBumperButton();
+        //boolean isShooting = Controller.getInstance().primaryController.getRightBumperButton();
         double verticalVelocity = 0; // TODO: (optional) make this work
         Optional<Result> result = shotPredictor.Update(
-                !isShooting,
+                true,//!isShooting,
                 hoodAngle,
                 deltaTime,
                 futureTurretVelocity,

@@ -8,6 +8,7 @@ public class ShotPredictor {
     public double MaxAngle;
     public double MaxAngleVelocity;
     public double DesiredShotVelocity;
+    public double MaxVelocityError;
 
     private static final int NewtonRepetitions = 8;
     private static final double maxNewtonError = 0.1;
@@ -27,11 +28,15 @@ public class ShotPredictor {
         }
     }
 
-    public ShotPredictor(double minAngle, double maxAngle, double maxAngleVelocity, double desiredShotVelocity) {
+    public ShotPredictor(double minAngle, double maxAngle, double maxAngleVelocity, double desiredShotVelocity, double maxVelocityError) {
         MinAngle = minAngle;
         MaxAngle = maxAngle;
         MaxAngleVelocity = maxAngleVelocity;
         DesiredShotVelocity = desiredShotVelocity;
+        MaxVelocityError = maxVelocityError;
+    }
+    public ShotPredictor(double minAngle, double maxAngle, double maxAngleVelocity, double desiredShotVelocity) {
+      this(minAngle, maxAngle, maxAngleVelocity, desiredShotVelocity, Double.MAX_VALUE);
     }
 
     public static Optional<Result> Predict(double shotAngle, Vector2 botVelocity, double verticalVelocity,
@@ -89,7 +94,8 @@ public class ShotPredictor {
         for (int i = 0; i < updateRepetitions; i++) {
 
             double bestAngle = 0;
-            double bestErr = Double.MAX_VALUE;
+            double bestErr = MaxVelocityError;
+            boolean foundOption = false;
 
             // divide the interval into sections and find the best one
             double halfStepSize = (max - min) / (updateSteps * 2);
@@ -101,6 +107,7 @@ public class ShotPredictor {
                 cache.put(angle, resultOpt);
 
                 if (resultOpt.isEmpty()) {
+                  
                     continue;
                 }
 
@@ -110,11 +117,12 @@ public class ShotPredictor {
                 if (err < bestErr) {
                     bestErr = err;
                     bestAngle = angle;
+                    foundOption = true;
                 }
             }
 
             // no options, so fail
-            if (bestAngle == Double.MAX_VALUE) {
+            if (!foundOption) {
                 return Optional.empty();
             }
 
@@ -124,6 +132,6 @@ public class ShotPredictor {
             max = bestAngle + halfStepSize;
         }
 
-        return cache.get(finalAngle);
+        return cache.getOrDefault(finalAngle, Optional.empty());
     }
 }

@@ -66,10 +66,9 @@ public class TurretMain extends SubsystemBase {
   double turretSetpoint = 0; // degrees
 
   public PIDController hoodPID;
-  public ProfiledPIDController rotationProfiledPID;
+  public PIDController rotationProfiledPID;
   public SimpleMotorFeedforward flywheelFeedforward;
 
-  public TrapezoidProfile.Constraints rotationConstraints = new TrapezoidProfile.Constraints(1000, 500);
 
 
 
@@ -157,9 +156,9 @@ public class TurretMain extends SubsystemBase {
     hoodPID = new PIDController(Constants.PID.Turret.hoodP,
         Constants.PID.Turret.hoodI,
         Constants.PID.Turret.hoodD);
-    rotationProfiledPID = new ProfiledPIDController(Constants.PID.Turret.rotationP,
+    rotationProfiledPID = new PIDController(Constants.PID.Turret.rotationP,
         Constants.PID.Turret.rotationI,
-        Constants.PID.Turret.rotationD, rotationConstraints);
+        Constants.PID.Turret.rotationD);
 
     hoodPID.enableContinuousInput(0, 360);
     rotationProfiledPID.enableContinuousInput(0, 360);
@@ -213,14 +212,14 @@ public class TurretMain extends SubsystemBase {
   }
 
   public boolean shouldShoot() {
-    return aimTypes.get(currentMode).shouldShoot
-      && Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance;
+    return aimTypes.get(currentMode).shouldShoot;
+      //&& Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance;
   }
 
   @Override
   public void periodic() {
     hoodPID.setSetpoint(hoodSetpoint);
-    rotationProfiledPID.setGoal(turretSetpoint);
+    rotationProfiledPID.setSetpoint(turretSetpoint);
 
     // TODO: Default Hood Angle DN, Manual Mode, Limiting Angle
     if (lastUpdateTimestamp == 0) {
@@ -237,7 +236,7 @@ public class TurretMain extends SubsystemBase {
       type.periodic(deltaTime);
 
       flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
-                                                                  //
+      
       hoodSetpoint = type.hoodAngle;
       turretSetpoint = type.rotationAngle;
     }
@@ -253,7 +252,7 @@ public class TurretMain extends SubsystemBase {
     }
     Logger.recordOutput("TurretMain/Flywheel/Setpoint", flywheelSetpoint);
     Logger.recordOutput("TurretMain/Flywheel/Speed", flywheelMotor.getEncoder().getVelocity());
-    Logger.recordOutput("TurretMain/Flywheel/FeedFowardOutput", flywheelFeedforward.calculate(flywheelSetpoint) / 12);
+    Logger.recordOutput("TurretMain/Flywheel/FeedFowardOutput", flywheelFeedforward.calculate(flywheelSetpoint));
 
     hoodPose = new Pose3d(
         Constants.SIM.hoodMechOffset.getX(),
@@ -286,7 +285,7 @@ public class TurretMain extends SubsystemBase {
   }
 
   public void shootSimFuel() {
-    //if(!shouldShoot()) return;
+    if(!shouldShoot()) return;
 
     // Get robot's field pose (x, y, rotation)
     Pose2d robotFieldPose = Odometry.getInstance().getRealSimPose();
@@ -313,7 +312,33 @@ public class TurretMain extends SubsystemBase {
     );
 
     Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
-    gamePieces.add(new Fuel(shooterPose,   flywheelMotor.getEncoder().getVelocity() * RPMSpeedConversion / Constants.Bot.flywheelGearRatio));
+
+    // Calculate robot's velocity direction (field-relative)
+    double robotVelX = Odometry.getInstance().getBotVelocity().X; // implement or replace with your method
+    double robotVelY = Odometry.getInstance().getBotVelocity().Y; // implement or replace with your method
+    double robotVelZ = 0; // usually 0 unless you have a swerve module that can jump :)
+
+    // Calculate projectile speed (magnitude)
+    double projectileSpeed = flywheelMotor.getEncoder().getVelocity() * RPMSpeedConversion / Constants.Bot.flywheelGearRatio;
+
+    // Calculate launch direction from shooter pose
+    Rotation3d rot = shooterPose.getRotation();
+    double pitch = rot.getY(); // radians
+    double yaw = rot.getZ();   // radians
+    double dx = Math.cos(pitch) * Math.cos(yaw);
+    double dy = Math.cos(pitch) * Math.sin(yaw);
+    double dz = Math.sin(pitch);
+
+    // Add robot velocity to projectile velocity
+    double vx = projectileSpeed * dx + robotVelX;
+    double vy = projectileSpeed * dy + robotVelY;
+    double vz = projectileSpeed * dz + robotVelZ;
+
+    Fuel fuel = new Fuel(shooterPose, 0);
+    fuel.vx = vx;
+    fuel.vy = vy;
+    fuel.vz = vz;
+    gamePieces.add(fuel);
     publishedGamePieces.add(shooterPose);
 
     Logger.recordOutput("ShooterPose", new Pose3d(shooterPose.getTranslation(), shooterPose.getRotation().rotateBy(new Rotation3d(0, Units.degreesToRadians(180), Units.degreesToRadians(180)))));

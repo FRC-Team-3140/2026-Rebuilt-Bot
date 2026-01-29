@@ -117,7 +117,7 @@ public final class Constants {
       public static final double hoodI = 0.0;
       public static final double hoodD = 0.0;
 
-      public static final double rotationP = 0.0125;
+      public static final double rotationP = 0.005;
       public static final double rotationI = 0.0;
       public static final double rotationD = 0.0;
 
