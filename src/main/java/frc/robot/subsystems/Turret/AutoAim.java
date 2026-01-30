@@ -5,6 +5,7 @@ import java.util.Optional;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
 import frc.robot.libs.FlipPose;
 import frc.robot.libs.ShotPredictor;
@@ -62,7 +63,7 @@ public class AutoAim extends AimType {
     private void predict(double deltaTime) {
         shotPredictor.DesiredShotVelocity = desiredVelocity; // incase we want to change desired velocity
 
-        double targetHeight = 1.3716; // TODO: make this correct (relative to turret)
+        double targetHeight = Units.inchesToMeters(72 - 18 - 6); // TODO: make this correct (relative to turret)
         Vector2 goalPosition = FlipPose.flipVectorIfRed(new Vector2(4.625, 4.025));
 
         Pair<Pose2d, Vector2> futureStatePair = getFutureState(predictForwardTime);

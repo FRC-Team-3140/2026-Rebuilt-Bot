@@ -22,6 +22,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.libs.NetworkTables;
@@ -241,6 +242,41 @@ public class SwerveDrive extends SubsystemBase {
   public ChassisSpeeds getRobotRelativeSpeeds() {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
+
+    public ChassisSpeeds getFieldRelativeSpeeds() {
+      return ChassisSpeeds.fromRobotRelativeSpeeds(
+          getRobotRelativeSpeeds(),
+          odometry.getRotation()
+      );
+    }
+
+    private final edu.wpi.first.math.filter.LinearFilter xAccelFilter = edu.wpi.first.math.filter.LinearFilter.movingAverage(5);
+    private final edu.wpi.first.math.filter.LinearFilter yAccelFilter = edu.wpi.first.math.filter.LinearFilter.movingAverage(5);
+    private ChassisSpeeds lastFieldSpeeds = new ChassisSpeeds();
+    private double lastTimestamp = Timer.getFPGATimestamp();
+
+    public ChassisSpeeds getFieldRelativeAcceleration() {
+      double now = Timer.getFPGATimestamp();
+      double dt = now - lastTimestamp;
+
+      if (dt <= 1e-6) {
+        return new ChassisSpeeds();
+      }
+
+      ChassisSpeeds current = getFieldRelativeSpeeds();
+
+      double rawXAccel = (current.vxMetersPerSecond - lastFieldSpeeds.vxMetersPerSecond) / dt;
+      double rawYAccel = (current.vyMetersPerSecond - lastFieldSpeeds.vyMetersPerSecond) / dt;
+      double rawOmegaAccel = (current.omegaRadiansPerSecond - lastFieldSpeeds.omegaRadiansPerSecond) / dt;
+
+      double filteredXAccel = xAccelFilter.calculate(rawXAccel);
+      double filteredYAccel = yAccelFilter.calculate(rawYAccel);
+
+      lastFieldSpeeds = current;
+      lastTimestamp = now;
+
+      return new ChassisSpeeds(filteredXAccel, filteredYAccel, rawOmegaAccel);
+    }
 
   private void updateNetworktables() {
     if (swerveModuleStates != null) {

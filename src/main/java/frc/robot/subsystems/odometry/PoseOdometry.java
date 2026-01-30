@@ -3,13 +3,13 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems.odometry;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.SwerveModule;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -116,7 +116,15 @@ public class PoseOdometry extends Odometry {
   @Override
   public void periodic() {
     super.periodic();
+    ChassisSpeeds field = SwerveDrive.getInstance().getFieldRelativeSpeeds();
+    Logger.recordOutput("ChassisSpeeds/Field/vx", field.vxMetersPerSecond);
+    Logger.recordOutput("ChassisSpeeds/Field/vy", field.vyMetersPerSecond);
+    Logger.recordOutput("ChassisSpeeds/Field/omega", field.omegaRadiansPerSecond);
 
+    ChassisSpeeds accel = SwerveDrive.getInstance().getFieldRelativeAcceleration();
+    Logger.recordOutput("Accel/Field/X", accel.vxMetersPerSecond);
+    Logger.recordOutput("Accel/Field/Y", accel.vyMetersPerSecond);
+    Logger.recordOutput("Accel/Field/Angular", accel.omegaRadiansPerSecond);
   }
 
   public void resetGyro() {
@@ -173,7 +181,6 @@ public class PoseOdometry extends Odometry {
     estimator.update(getGyroRotation(), positions);
 
     Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());
-
   }
 
   @Override
@@ -207,16 +214,20 @@ public class PoseOdometry extends Odometry {
   }
 
   @Override
-  public double getAngularVelocity() {
-    return super.getAngularVelocity();
+  public double getAngularVelocity() { 
+    return SwerveDrive.getInstance().getFieldRelativeSpeeds().omegaRadiansPerSecond;
   }
 
   public Vector2 getBotVelocity() {
-    return botVelocity;
+    return new Vector2(SwerveDrive.getInstance().getRobotRelativeSpeeds().vxMetersPerSecond,
+        SwerveDrive.getInstance().getRobotRelativeSpeeds().vyMetersPerSecond);
   }
 
   public Vector2 getBotAcceleration() {
-    return botAcceleration;
+    return new Vector2();
+
+    //return new Vector2(SwerveDrive.getInstance().getFieldRelativeAcceleration().vxMetersPerSecond,
+     //   SwerveDrive.getInstance().getFieldRelativeAcceleration().vyMetersPerSecond);
   }
 
   @Override

@@ -104,7 +104,7 @@ public class TurretMain extends SubsystemBase {
     public double vx, vy, vz; // velocity components
 
     public Fuel(Pose3d pos, double velocity) {
-      this.position = new Pose3d(pos.getTranslation(), pos.getRotation());
+      this.position = pos;
 
       // Calculate launch direction from pose rotation (assume launch along +X axis)
       Rotation3d rot = pos.getRotation();
@@ -364,8 +364,5 @@ public class TurretMain extends SubsystemBase {
     fuel.vz = vz;
     gamePieces.add(fuel);
     publishedGamePieces.add(shooterPose);
-
-    Logger.recordOutput("ShooterPose", new Pose3d(shooterPose.getTranslation(), shooterPose.getRotation()
-        .rotateBy(new Rotation3d(0, Units.degreesToRadians(180), Units.degreesToRadians(180)))));
   }
 }

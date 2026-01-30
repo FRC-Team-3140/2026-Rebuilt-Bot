@@ -9,8 +9,8 @@ import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.TestRunner.TestType;
 
 public class TestClimber extends Test {
-    SequentialCommandGroup climbCommand = new Home(Climbers.getInstance())
-            .andThen(new Climb(Climbers.getInstance(), 3));
+    //SequentialCommandGroup climbCommand = new Home(Climbers.getInstance())
+            //.andThen(new Climb(Climbers.getInstance(), 3));
 
     public TestClimber(NetworkTableEntry entry, TestType type) {
         super(entry, type);
@@ -19,8 +19,8 @@ public class TestClimber extends Test {
     @Override
     public void Start() {
         super.Start();
-        CommandScheduler.getInstance()
-                .schedule(climbCommand);
+     //   CommandScheduler.getInstance()
+      //          .schedule(climbCommand);
     }
 
     @Override
@@ -30,7 +30,7 @@ public class TestClimber extends Test {
 
     @Override
     public void Stop() {
-        CommandScheduler.getInstance().cancel(climbCommand);
+       // CommandScheduler.getInstance().cancel(climbCommand);
         super.Stop();
     }
 }
