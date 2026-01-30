@@ -10,13 +10,13 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import frc.robot.subsystems.Climbers;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class home extends Command {
+public class Home extends Command {
   private final Climbers climbers;
 
   private ParallelCommandGroup homeCommands;
 
   /** Creates a new home. */
-  public home(Climbers climbers) {
+  public Home(Climbers climbers) {
     this.climbers = climbers;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(this.climbers);

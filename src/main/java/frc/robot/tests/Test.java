@@ -41,4 +41,8 @@ public class Test {
             TestRunner.getInstance().setState(type, !running);
         }
     }
+
+    public boolean isRunningTests() {
+        return this.running;
+    }
 }

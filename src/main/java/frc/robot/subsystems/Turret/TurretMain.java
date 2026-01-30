@@ -36,14 +36,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.libs.AbsoluteEncoder;
+import frc.robot.subsystems.TestRunner;
+import frc.robot.subsystems.TestRunner.TestType;
 import frc.robot.subsystems.odometry.Odometry;
 
 public class TurretMain extends SubsystemBase {
 
-  private Pose3d turretPose = Constants.SIM.turretMechOffset; 
+  private Pose3d turretPose = Constants.SIM.turretMechOffset;
 
   private Pose3d hoodPose = Constants.SIM.hoodMechOffset;
-
 
   SparkMax turretRotationMotor = new SparkMax(Constants.MotorIDs.turretRotation, SparkMax.MotorType.kBrushless); // Neo
   SparkFlex flywheelMotor = new SparkFlex(Constants.MotorIDs.flywheelMotor, SparkMax.MotorType.kBrushless); // Vortex
@@ -70,8 +71,6 @@ public class TurretMain extends SubsystemBase {
   public SimpleMotorFeedforward flywheelFeedforward;
 
 
-
-
   private boolean spinup = false;
 
   private static final double flywheelSpeedTolerance = 10; // RPM
@@ -94,6 +93,7 @@ public class TurretMain extends SubsystemBase {
     }
     return m_instance;
   }
+
   private ArrayList<Fuel> gamePieces = new ArrayList<Fuel>();
   private ArrayList<Pose3d> publishedGamePieces = new ArrayList<Pose3d>();
 
@@ -103,14 +103,13 @@ public class TurretMain extends SubsystemBase {
     public Pose3d position;
     public double vx, vy, vz; // velocity components
 
-
     public Fuel(Pose3d pos, double velocity) {
       this.position = new Pose3d(pos.getTranslation(), pos.getRotation());
 
       // Calculate launch direction from pose rotation (assume launch along +X axis)
       Rotation3d rot = pos.getRotation();
       double pitch = rot.getY(); // radians
-      double yaw = rot.getZ();   // radians
+      double yaw = rot.getZ(); // radians
 
       double dx = Math.cos(pitch) * Math.cos(yaw);
       double dy = Math.cos(pitch) * Math.sin(yaw);
@@ -137,7 +136,7 @@ public class TurretMain extends SubsystemBase {
 
       // Optionally, update rotation to match velocity direction
       // If you want the pose's rotation to follow the velocity vector:
-      double speed = Math.sqrt(vx*vx + vy*vy + vz*vz);
+      double speed = Math.sqrt(vx * vx + vy * vy + vz * vz);
       if (speed > 1e-6) {
         double pitch = Math.asin(vz / speed);
         double yaw = Math.atan2(vy, vx);
@@ -149,9 +148,9 @@ public class TurretMain extends SubsystemBase {
   /** Creates a new Turret. */
   public TurretMain() {
     flywheelFeedforward = new SimpleMotorFeedforward(
-      Constants.FeedFoward.Turret.flywheelS,
-      Constants.FeedFoward.Turret.flywheelV,
-      Constants.FeedFoward.Turret.flywheelA);
+        Constants.FeedFoward.Turret.flywheelS,
+        Constants.FeedFoward.Turret.flywheelV,
+        Constants.FeedFoward.Turret.flywheelA);
 
     hoodPID = new PIDController(Constants.PID.Turret.hoodP,
         Constants.PID.Turret.hoodI,
@@ -175,7 +174,6 @@ public class TurretMain extends SubsystemBase {
 
     turretRotationMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
 
     hoodPID.setSetpoint(hoodSetpoint);
 
@@ -216,31 +214,56 @@ public class TurretMain extends SubsystemBase {
       //&& Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance;
   }
 
+  public void setHoodAngle(double angle) {
+    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
+      System.err.println("Turret Hood Angle Setpoint Ignored: Not in Test Mode");
+      return;
+    }
+
+    hoodSetpoint = angle;
+  }
+
+  public void setRotationAngle(double angle) {
+    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
+      System.err.println("Turret Rotation Angle Setpoint Ignored: Not in Test Mode");
+      return;
+    }
+
+    turretSetpoint = angle;
+  }
+
   @Override
   public void periodic() {
     hoodPID.setSetpoint(hoodSetpoint);
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
-    // TODO: Default Hood Angle DN, Manual Mode, Limiting Angle
-    if (lastUpdateTimestamp == 0) {
-      lastUpdateTimestamp = Timer.getFPGATimestamp();
-      // first update, setup
-      // TODO: read hood setpoint from encoder so that predict can work properly
-    } else {
-      double t = Timer.getFPGATimestamp();
-      double deltaTime = t - lastUpdateTimestamp;
-      lastUpdateTimestamp = t;
+    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
+      // TODO: Default Hood Angle DN, Manual Mode, Limiting Angle
+      if (lastUpdateTimestamp == 0) {
+        lastUpdateTimestamp = Timer.getFPGATimestamp();
+        // first update, setup
+        // TODO: read hood setpoint from encoder so that predict can work properly
+      } else {
+        double t = Timer.getFPGATimestamp();
+        double deltaTime = t - lastUpdateTimestamp;
+        lastUpdateTimestamp = t;
 
-      AimType type = aimTypes.get(currentMode);
+        AimType type = aimTypes.get(currentMode);
 
-      type.periodic(deltaTime);
+        type.periodic(deltaTime);
 
       flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
       
       hoodSetpoint = type.hoodAngle;
       turretSetpoint = type.rotationAngle;
+        flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
+        hoodSetpoint = type.hoodAngle;
+        turretSetpoint = type.rotationAngle;
+      }
     }
 
+    hoodPID.setSetpoint(hoodSetpoint);
+    rotationProfiledPID.setSetpoint(turretSetpoint);
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.getAbsolutePosition()));
     turretRotationMotor.set(rotationProfiledPID.calculate(turretEncoder.getAbsolutePosition()));
@@ -258,7 +281,8 @@ public class TurretMain extends SubsystemBase {
         Constants.SIM.hoodMechOffset.getX(),
         Constants.SIM.hoodMechOffset.getY(),
         Constants.SIM.hoodMechOffset.getZ(),
-        new Rotation3d(0, Math.toRadians(90 - hoodEncoder.getAbsolutePosition()), Math.toRadians(turretEncoder.getAbsolutePosition())));    
+        new Rotation3d(0, Math.toRadians(90 - hoodEncoder.getAbsolutePosition()),
+            Math.toRadians(turretEncoder.getAbsolutePosition())));
     turretPose = new Pose3d(
         Constants.SIM.turretMechOffset.getX(),
         Constants.SIM.turretMechOffset.getY(),
@@ -280,7 +304,7 @@ public class TurretMain extends SubsystemBase {
         gamePieces.remove(i);
       }
     }
-    
+
     Logger.recordOutput("GamePieces", publishedGamePieces.toArray(new Pose3d[0]));
   }
 
@@ -304,12 +328,12 @@ public class TurretMain extends SubsystemBase {
     double fieldY = robotFieldPose.getY() + offsetY;
     double fieldZ = offsetZ;
 
-    // Build the shooter pose at the correct field position, with turret/hood rotation
+    // Build the shooter pose at the correct field position, with turret/hood
+    // rotation
     Rotation3d shooterRot = new Rotation3d(
         0,
         Math.toRadians(hoodEncoder.getAbsolutePosition()),
-        Math.toRadians(turretEncoder.getAbsolutePosition() + robotFieldPose.getRotation().getDegrees())
-    );
+        Math.toRadians(turretEncoder.getAbsolutePosition() + robotFieldPose.getRotation().getDegrees()));
 
     Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
 
@@ -341,6 +365,7 @@ public class TurretMain extends SubsystemBase {
     gamePieces.add(fuel);
     publishedGamePieces.add(shooterPose);
 
-    Logger.recordOutput("ShooterPose", new Pose3d(shooterPose.getTranslation(), shooterPose.getRotation().rotateBy(new Rotation3d(0, Units.degreesToRadians(180), Units.degreesToRadians(180)))));
+    Logger.recordOutput("ShooterPose", new Pose3d(shooterPose.getTranslation(), shooterPose.getRotation()
+        .rotateBy(new Rotation3d(0, Units.degreesToRadians(180), Units.degreesToRadians(180)))));
   }
 }

@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
 import frc.robot.libs.NetworkTables;
 import frc.robot.subsystems.Turret.TurretMain;
@@ -217,7 +218,7 @@ public class Controller extends SubsystemBase {
       Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
     }
 
-    if (primaryController.getXButtonPressed()) {
+    if (primaryController.getXButtonPressed() && Robot.isSimulation()) {
       TurretMain.getInstance().shootSimFuel();
     }
 
@@ -283,7 +284,9 @@ public class Controller extends SubsystemBase {
       // TODO: Climb with primary && Climb Manually With Secondary
     }
 
-    // TODO: Turn Turret manually without camera
+    if (secondaryController.getYButtonPressed()) {
+      TurretMain.getInstance().setAimMode(TurretMain.AimOpt.MANUAL);
+    }
   }
 
   private void OHNOManualMode() {
@@ -299,7 +302,7 @@ public class Controller extends SubsystemBase {
       // TODO: Climb Manually With Secondary
     }
 
-    // TODO: Turn Turret manually without camera
+    TurretMain.getInstance().setAimMode(TurretMain.AimOpt.MANUAL);
   }
 
   private void testingMode() {

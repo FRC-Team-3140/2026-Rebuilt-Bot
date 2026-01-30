@@ -9,13 +9,17 @@ import java.util.HashMap;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.libs.NetworkTables;
 import frc.robot.tests.Test;
+import frc.robot.tests.TestClimber;
 import frc.robot.tests.TestSwerve;
+import frc.robot.tests.TestTurret;
 
 public class TestRunner extends SubsystemBase {
   private static TestRunner instance = null;
 
   public enum TestType {
     SWERVE,
+    TURRET,
+    CLIMBER,
   };
 
   private final HashMap<TestType, Test> tests = new HashMap<TestType, Test>();
@@ -30,7 +34,8 @@ public class TestRunner extends SubsystemBase {
   private TestRunner() {
     // Subsystems
     tests.put(TestType.SWERVE, new TestSwerve(NetworkTables.swerveButton_b, TestType.SWERVE));
-
+    tests.put(TestType.TURRET, new TestTurret(NetworkTables.turretButton_b, TestType.TURRET));
+    tests.put(TestType.CLIMBER, new TestClimber(NetworkTables.climberButton_b, TestType.CLIMBER));
   }
 
   @Override

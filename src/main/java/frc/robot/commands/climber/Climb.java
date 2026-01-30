@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.subsystems.Climbers;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class climb extends Command {
+public class Climb extends Command {
   private final Climbers climbers;
   private final int level;
 
@@ -24,7 +24,7 @@ public class climb extends Command {
   }
 
   /** Creates a new climb. */
-  public climb(Climbers climbers, int level) {
+  public Climb(Climbers climbers, int level) {
     this.climbers = climbers;
     this.level = level;
 
