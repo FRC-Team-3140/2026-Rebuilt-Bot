@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.path.PathConstraints;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -286,6 +287,9 @@ public final class Constants {
         4.0,
         Units.degreesToRadians(540),
         Units.degreesToRadians(720));
+
+    public static final Pose2d shootPoseL = new Pose2d(1, 7, new Rotation2d(Units.degreesToRadians(0)));
+    public static final Pose2d shootPoseR = new Pose2d(1, 1, new Rotation2d(Units.degreesToRadians(0)));
   }
 
   public static class NetworktablePaths {

@@ -11,7 +11,6 @@ import frc.robot.libs.FlipPose;
 import frc.robot.libs.ShotPredictor;
 import frc.robot.libs.ShotPredictor.Result;
 import frc.robot.libs.Vector2;
-import frc.robot.subsystems.Controller;
 import frc.robot.subsystems.odometry.Odometry;
 
 public class AutoAim extends AimType {
@@ -77,10 +76,11 @@ public class AutoAim extends AimType {
 
         shotPredictor.MinAngle = calculateMinimumAngle(targetDistance);
 
-        //boolean isShooting = Controller.getInstance().primaryController.getRightBumperButton();
+        // boolean isShooting =
+        // Controller.getInstance().primaryController.getRightBumperButton();
         double verticalVelocity = 0; // TODO: (optional) make this work
         Optional<Result> result = shotPredictor.Update(
-                true,//!isShooting,
+                true, // !isShooting,
                 hoodAngle,
                 deltaTime,
                 futureTurretVelocity,

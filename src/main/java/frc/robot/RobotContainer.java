@@ -4,11 +4,15 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.auto.L2R_Neutral;
+import frc.robot.commands.auto.L2R_Neutral_Shoot;
+import frc.robot.commands.auto.Pickup_Outpost;
+import frc.robot.commands.auto.R2L_Neutral;
+import frc.robot.commands.auto.R2L_Neutral_Shoot;
+import frc.robot.commands.auto.SimpleShoot;
 import frc.robot.commands.swerveDrive.Drive;
 import frc.robot.libs.FieldAprilTags;
 import frc.robot.sensors.Camera;
@@ -46,7 +50,7 @@ public class RobotContainer {
 
   public static TestRunner testRunner = TestRunner.getInstance();
 
-  private SendableChooser<Command> PathPlanner = new SendableChooser<>();
+  private SendableChooser<Command> Path = new SendableChooser<>();
 
   // Get the singleton instance or create it if it doesn't exist
   public static RobotContainer getInstance() {
@@ -60,9 +64,15 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   private RobotContainer() {
-    PathPlanner.setDefaultOption("Normal - No PathPlanner", null);
-    PathPlanner.addOption("Mobility", AutoBuilder.buildAuto("Simple Mobility"));
-    SmartDashboard.putData("PathPlanner", PathPlanner);
+    Path.setDefaultOption("Normal - No PathPlanner", null);
+    Path.addOption("Simple Mobility", new Drive(5, false, Constants.Bot.maxChassisSpeed / 2, 0, 0));
+    Path.addOption("Simple Shoot", new SimpleShoot());
+    Path.addOption("L2R Neutral", new L2R_Neutral());
+    Path.addOption("L2R Neutral Shoot", new L2R_Neutral_Shoot());
+    Path.addOption("R2L Neutral", new R2L_Neutral());
+    Path.addOption("R2L Neutral Shoot", new R2L_Neutral_Shoot());
+    Path.addOption("Outpost", new Pickup_Outpost());
+    SmartDashboard.putData("Path", Path);
   }
 
   /**
@@ -72,6 +82,8 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // if (pushAutoMode)
-    return new Drive(10000000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0);
+    // TODO: IF Mobiltiy checkbox is selected
+    // return new Drive(10000000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0);
+    return Path.getSelected();
   }
 }

@@ -6,13 +6,14 @@ package frc.robot.libs;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.Constants.PathplannerConstants;
 
 /** Used to flip poses accross the Reefscape field */
 public class FlipPose {
     public static Pose2d flipIfRed(Pose2d pose) {
-        var alliance = edu.wpi.first.wpilibj.DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == edu.wpi.first.wpilibj.DriverStation.Alliance.Red) {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
             // X must be flipped, but Y stays the same.
             double flippedX = PathplannerConstants.FieldLength - pose.getX();
             double flippedY = PathplannerConstants.FieldWidth - pose.getY();
@@ -27,8 +28,8 @@ public class FlipPose {
     }
 
     public static Vector2 flipVectorIfRed(Vector2 vector) {
-        var alliance = edu.wpi.first.wpilibj.DriverStation.getAlliance();
-        if (alliance.isPresent() && alliance.get() == edu.wpi.first.wpilibj.DriverStation.Alliance.Red) {
+        var alliance = DriverStation.getAlliance();
+        if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
             // X must be flipped, but Y stays the same.
             double flippedX = PathplannerConstants.FieldLength - vector.X;
             double flippedY = PathplannerConstants.FieldWidth - vector.Y;

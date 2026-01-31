@@ -3,6 +3,7 @@
 // the WPILib BSD license file in the root directory of this project.
 
 package frc.robot.subsystems.odometry;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
@@ -31,9 +32,6 @@ public class PoseOdometry extends Odometry {
   private final int startingCameraPasses = Constants.Odometry.startingCameraPasses;
   private int cameraPasses = 0;
   private double angleOffset = 0;
-
-  private Vector2 botVelocity = new Vector2();
-  private Vector2 botAcceleration = new Vector2();
 
   protected PoseOdometry() {
     super();
@@ -214,7 +212,7 @@ public class PoseOdometry extends Odometry {
   }
 
   @Override
-  public double getAngularVelocity() { 
+  public double getAngularVelocity() {
     return SwerveDrive.getInstance().getFieldRelativeSpeeds().omegaRadiansPerSecond;
   }
 
@@ -226,8 +224,9 @@ public class PoseOdometry extends Odometry {
   public Vector2 getBotAcceleration() {
     return new Vector2();
 
-    //return new Vector2(SwerveDrive.getInstance().getFieldRelativeAcceleration().vxMetersPerSecond,
-     //   SwerveDrive.getInstance().getFieldRelativeAcceleration().vyMetersPerSecond);
+    // return new
+    // Vector2(SwerveDrive.getInstance().getFieldRelativeAcceleration().vxMetersPerSecond,
+    // SwerveDrive.getInstance().getFieldRelativeAcceleration().vyMetersPerSecond);
   }
 
   @Override

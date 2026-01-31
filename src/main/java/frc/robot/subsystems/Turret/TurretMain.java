@@ -22,14 +22,11 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -70,10 +67,8 @@ public class TurretMain extends SubsystemBase {
   public PIDController rotationProfiledPID;
   public SimpleMotorFeedforward flywheelFeedforward;
 
-
   private boolean spinup = false;
 
-  private static final double flywheelSpeedTolerance = 10; // RPM
   private static final double RPMSpeedConversion = 0.0762 * 2 * Math.PI; // convert from m/s to RPM
 
   public enum AimOpt {
@@ -211,24 +206,15 @@ public class TurretMain extends SubsystemBase {
 
   public boolean shouldShoot() {
     return aimTypes.get(currentMode).shouldShoot;
-      //&& Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance;
+    // && Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <=
+    // flywheelSpeedTolerance;
   }
 
   public void setHoodAngle(double angle) {
-    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
-      System.err.println("Turret Hood Angle Setpoint Ignored: Not in Test Mode");
-      return;
-    }
-
     hoodSetpoint = angle;
   }
 
   public void setRotationAngle(double angle) {
-    if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
-      System.err.println("Turret Rotation Angle Setpoint Ignored: Not in Test Mode");
-      return;
-    }
-
     turretSetpoint = angle;
   }
 
@@ -252,10 +238,10 @@ public class TurretMain extends SubsystemBase {
 
         type.periodic(deltaTime);
 
-      flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
-      
-      hoodSetpoint = type.hoodAngle;
-      turretSetpoint = type.rotationAngle;
+        flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
+
+        hoodSetpoint = type.hoodAngle;
+        turretSetpoint = type.rotationAngle;
         flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
         hoodSetpoint = type.hoodAngle;
         turretSetpoint = type.rotationAngle;
@@ -309,7 +295,8 @@ public class TurretMain extends SubsystemBase {
   }
 
   public void shootSimFuel() {
-    if(!shouldShoot()) return;
+    if (!shouldShoot())
+      return;
 
     // Get robot's field pose (x, y, rotation)
     Pose2d robotFieldPose = Odometry.getInstance().getRealSimPose();
@@ -343,12 +330,13 @@ public class TurretMain extends SubsystemBase {
     double robotVelZ = 0; // usually 0 unless you have a swerve module that can jump :)
 
     // Calculate projectile speed (magnitude)
-    double projectileSpeed = flywheelMotor.getEncoder().getVelocity() * RPMSpeedConversion / Constants.Bot.flywheelGearRatio;
+    double projectileSpeed = flywheelMotor.getEncoder().getVelocity() * RPMSpeedConversion
+        / Constants.Bot.flywheelGearRatio;
 
     // Calculate launch direction from shooter pose
     Rotation3d rot = shooterPose.getRotation();
     double pitch = rot.getY(); // radians
-    double yaw = rot.getZ();   // radians
+    double yaw = rot.getZ(); // radians
     double dx = Math.cos(pitch) * Math.cos(yaw);
     double dy = Math.cos(pitch) * Math.sin(yaw);
     double dz = Math.sin(pitch);
