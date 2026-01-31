@@ -6,12 +6,15 @@ package frc.robot.subsystems;
 
 import java.util.ArrayList;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -42,21 +45,17 @@ public class SwerveDrive extends SubsystemBase {
   private double simCurrentRotationalVelocity = 0;
   /////// END AI CODE ///////
 
+  // Locations of the swerve modules relative to the robot center
   public final Translation2d[] locations = {
-      new Translation2d(Constants.Bot.botLength, Constants.Bot.botLength),
-      new Translation2d(Constants.Bot.botLength, -Constants.Bot.botLength),
-      new Translation2d(-Constants.Bot.botLength, Constants.Bot.botLength),
-      new Translation2d(-Constants.Bot.botLength, -Constants.Bot.botLength)
+      // Order: FR, FL, BR, BL --> Necessary order for Custom Dashboard visualization!
+      // WPILib uses x = forward, y = left, so front-left is (+x/2, +y/2)
+      new Translation2d(Constants.Bot.botLength / 2, -Constants.Bot.botLength / 2),
+      new Translation2d(Constants.Bot.botLength / 2, Constants.Bot.botLength / 2),
+      new Translation2d(-Constants.Bot.botLength / 2, -Constants.Bot.botLength / 2),
+      new Translation2d(-Constants.Bot.botLength / 2, Constants.Bot.botLength / 2)
   };
 
   public final SwerveModule[] modules = {
-      new SwerveModule(
-          "frontLeft",
-          Constants.SensorIDs.FL,
-          Constants.MotorIDs.FLVortex,
-          Constants.MotorIDs.FLNeo,
-          Constants.Bot.FLZeroOffset,
-          false),
       new SwerveModule(
           "frontRight",
           Constants.SensorIDs.FR,
@@ -64,18 +63,25 @@ public class SwerveDrive extends SubsystemBase {
           Constants.MotorIDs.FRNeo,
           Constants.Bot.FRZeroOffset,
           true),
-      new SwerveModule("backLeft",
-          Constants.SensorIDs.BL,
-          Constants.MotorIDs.BLVortex,
-          Constants.MotorIDs.BLNeo,
-          Constants.Bot.BLZeroOffset,
+      new SwerveModule(
+          "frontLeft",
+          Constants.SensorIDs.FL,
+          Constants.MotorIDs.FLVortex,
+          Constants.MotorIDs.FLNeo,
+          Constants.Bot.FLZeroOffset,
           false),
       new SwerveModule("backRight",
           Constants.SensorIDs.BR,
           Constants.MotorIDs.BRVortex,
           Constants.MotorIDs.BRNeo,
           Constants.Bot.BRZeroOffset,
-          true)
+          true),
+      new SwerveModule("backLeft",
+          Constants.SensorIDs.BL,
+          Constants.MotorIDs.BLVortex,
+          Constants.MotorIDs.BLNeo,
+          Constants.Bot.BLZeroOffset,
+          false)
   };
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(
@@ -243,43 +249,58 @@ public class SwerveDrive extends SubsystemBase {
     return kinematics.toChassisSpeeds(getModuleStates());
   }
 
-    public ChassisSpeeds getFieldRelativeSpeeds() {
-      return ChassisSpeeds.fromRobotRelativeSpeeds(
-          getRobotRelativeSpeeds(),
-          odometry.getRotation()
-      );
+  public ChassisSpeeds getFieldRelativeSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(
+        getRobotRelativeSpeeds(),
+        odometry.getRotation());
+  }
+
+  private final LinearFilter xAccelFilter = LinearFilter
+      .movingAverage(5);
+  private final LinearFilter yAccelFilter = LinearFilter
+      .movingAverage(5);
+  private ChassisSpeeds lastFieldSpeeds = new ChassisSpeeds();
+  private double lastTimestamp = Timer.getFPGATimestamp();
+
+  public ChassisSpeeds getFieldRelativeAcceleration() {
+    double now = Timer.getFPGATimestamp();
+    double dt = now - lastTimestamp;
+
+    if (dt <= 1e-6) {
+      return new ChassisSpeeds();
     }
 
-    private final edu.wpi.first.math.filter.LinearFilter xAccelFilter = edu.wpi.first.math.filter.LinearFilter.movingAverage(5);
-    private final edu.wpi.first.math.filter.LinearFilter yAccelFilter = edu.wpi.first.math.filter.LinearFilter.movingAverage(5);
-    private ChassisSpeeds lastFieldSpeeds = new ChassisSpeeds();
-    private double lastTimestamp = Timer.getFPGATimestamp();
+    ChassisSpeeds current = getFieldRelativeSpeeds();
 
-    public ChassisSpeeds getFieldRelativeAcceleration() {
-      double now = Timer.getFPGATimestamp();
-      double dt = now - lastTimestamp;
+    double rawXAccel = (current.vxMetersPerSecond - lastFieldSpeeds.vxMetersPerSecond) / dt;
+    double rawYAccel = (current.vyMetersPerSecond - lastFieldSpeeds.vyMetersPerSecond) / dt;
+    double rawOmegaAccel = (current.omegaRadiansPerSecond - lastFieldSpeeds.omegaRadiansPerSecond) / dt;
 
-      if (dt <= 1e-6) {
-        return new ChassisSpeeds();
-      }
+    double filteredXAccel = xAccelFilter.calculate(rawXAccel);
+    double filteredYAccel = yAccelFilter.calculate(rawYAccel);
 
-      ChassisSpeeds current = getFieldRelativeSpeeds();
+    lastFieldSpeeds = current;
+    lastTimestamp = now;
 
-      double rawXAccel = (current.vxMetersPerSecond - lastFieldSpeeds.vxMetersPerSecond) / dt;
-      double rawYAccel = (current.vyMetersPerSecond - lastFieldSpeeds.vyMetersPerSecond) / dt;
-      double rawOmegaAccel = (current.omegaRadiansPerSecond - lastFieldSpeeds.omegaRadiansPerSecond) / dt;
-
-      double filteredXAccel = xAccelFilter.calculate(rawXAccel);
-      double filteredYAccel = yAccelFilter.calculate(rawYAccel);
-
-      lastFieldSpeeds = current;
-      lastTimestamp = now;
-
-      return new ChassisSpeeds(filteredXAccel, filteredYAccel, rawOmegaAccel);
-    }
+    return new ChassisSpeeds(filteredXAccel, filteredYAccel, rawOmegaAccel);
+  }
 
   private void updateNetworktables() {
     if (swerveModuleStates != null) {
+      // Create a sanitized copy replacing null entries (or null angles) with a safe
+      // default
+      SwerveModuleState[] safeStates = new SwerveModuleState[swerveModuleStates.length];
+      for (int i = 0; i < swerveModuleStates.length; i++) {
+        if (swerveModuleStates[i] == null) {
+          safeStates[i] = new SwerveModuleState(0.0, new Rotation2d());
+        } else if (swerveModuleStates[i].angle == null) {
+          safeStates[i] = new SwerveModuleState(swerveModuleStates[i].speedMetersPerSecond, new Rotation2d());
+        } else {
+          safeStates[i] = swerveModuleStates[i];
+        }
+      }
+      Logger.recordOutput("Swerve States", safeStates);
+
       ArrayList<Double> desiredStates = new ArrayList<>(8);
 
       for (int i = 0; i < swerveModuleStates.length; i++) {

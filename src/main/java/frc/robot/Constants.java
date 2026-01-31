@@ -159,7 +159,7 @@ public final class Constants {
     public static final double steerGearRatio = 150 / 7;
     public static final double botMass = 48.988;
     public static final double wheelDiameter = Units.inchesToMeters(4);
-    public static final double botLength = Units.inchesToMeters(29);
+    public static final double botLength = Units.inchesToMeters(26);
 
     // In meters per second, determined from the free speed of the bot via
     // SwerveDriveSpecialties
