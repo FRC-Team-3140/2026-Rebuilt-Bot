@@ -19,7 +19,15 @@ public class Drive extends LoggedCommand {
   private final double y;
   private final double rot;
 
-  /** Creates a new Drive. */
+  /**
+   * Creates a new Drive.
+   * 
+   * @param duration Duration to drive in milliseconds
+   * @param fieldRel Whether to drive field-relative
+   * @param x        X speed
+   * @param y        Y speed
+   * @param rot      Rotational speed
+   */
   public Drive(double duration, boolean fieldRel, double x, double y, double rot) {
     this.duration = duration;
     this.fieldRel = fieldRel;

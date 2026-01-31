@@ -4,30 +4,36 @@
 
 package frc.robot.commands.auto;
 
+import java.io.IOException;
+
+import org.json.simple.parser.ParseException;
+
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.util.FileVersionException;
+
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+import frc.robot.Constants;
+import frc.robot.subsystems.Intake;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class Depot extends Command {
+public class Depot extends SequentialCommandGroup {
+  private Command pathCommand;
+
   /** Creates a new Depot. */
   public Depot() {
-    // Use addRequirements() here to declare subsystem dependencies.
-  }
+    try {
+      pathCommand = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("Depot Approach"),
+          Constants.PathplannerConstants.pathplannerConstraints);
+    } catch (FileVersionException | IOException | ParseException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 
-  // Called when the command is initially scheduled.
-  @Override
-  public void initialize() {}
-
-  // Called every time the scheduler runs while the command is scheduled.
-  @Override
-  public void execute() {}
-
-  // Called once the command ends or is interrupted.
-  @Override
-  public void end(boolean interrupted) {}
-
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
+    // TODO: ADD SHOOT LOGIC WITH CHECKBOX TO TACK ON CLIMBING (WHILE SHOOTING)
+    this.addCommands(pathCommand.andThen(new InstantCommand(() -> Intake.getInstance().deploy())), new WaitCommand(4) /*Then GO CLIMB*/);
   }
 }

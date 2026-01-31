@@ -7,9 +7,12 @@ package frc.robot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.commands.auto.Depot;
+import frc.robot.commands.auto.Depot_Shoot;
 import frc.robot.commands.auto.L2R_Neutral;
 import frc.robot.commands.auto.L2R_Neutral_Shoot;
 import frc.robot.commands.auto.Pickup_Outpost;
+import frc.robot.commands.auto.Pickup_Outpost_Shoot;
 import frc.robot.commands.auto.R2L_Neutral;
 import frc.robot.commands.auto.R2L_Neutral_Shoot;
 import frc.robot.commands.auto.SimpleShoot;
@@ -65,13 +68,16 @@ public class RobotContainer {
    */
   private RobotContainer() {
     Path.setDefaultOption("Normal - No PathPlanner", null);
-    Path.addOption("Simple Mobility", new Drive(5, false, Constants.Bot.maxChassisSpeed / 2, 0, 0));
+    Path.addOption("Simple Mobility", new Drive(1000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0));
     Path.addOption("Simple Shoot", new SimpleShoot());
     Path.addOption("L2R Neutral", new L2R_Neutral());
     Path.addOption("L2R Neutral Shoot", new L2R_Neutral_Shoot());
     Path.addOption("R2L Neutral", new R2L_Neutral());
     Path.addOption("R2L Neutral Shoot", new R2L_Neutral_Shoot());
     Path.addOption("Outpost", new Pickup_Outpost());
+    Path.addOption("Outpost Shoot", new Pickup_Outpost_Shoot());
+    Path.addOption("Depot", new Depot());
+    Path.addOption("Depot Shoot", new Depot_Shoot());
     SmartDashboard.putData("Path", Path);
   }
 
@@ -81,9 +87,6 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    // if (pushAutoMode)
-    // TODO: IF Mobiltiy checkbox is selected
-    // return new Drive(10000000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0);
     return Path.getSelected();
   }
 }

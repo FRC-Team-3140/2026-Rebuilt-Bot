@@ -13,10 +13,12 @@ import com.pathplanner.lib.path.PathPlannerPath;
 import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
 import frc.robot.commands.turret.Fire_Away;
 import frc.robot.libs.FlipPose;
+import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Turret.TurretMain;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -33,7 +35,7 @@ public class R2L_Neutral_Shoot extends SequentialCommandGroup {
     }
 
     // TODO: ADD SHOOT LOGIC WITH CHECKBOX TO TACK ON CLIMBING (WHILE SHOOTING)
-    this.addCommands(pathCommand,
+    this.addCommands(pathCommand.alongWith(new InstantCommand(() -> Intake.getInstance().deploy())),
         AutoBuilder.pathfindToPose(FlipPose.flipIfRed(Constants.PathplannerConstants.shootPoseL),
             Constants.PathplannerConstants.pathplannerConstraints).alongWith(new Fire_Away(TurretMain.getInstance())));
   }

@@ -14,13 +14,13 @@ import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.subsystems.Intake;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class Pickup_Outpost extends ParallelCommandGroup {
+public class Pickup_Outpost extends SequentialCommandGroup {
   private Command pathCommand;
 
   /** Creates a new Outpost. */
@@ -34,6 +34,7 @@ public class Pickup_Outpost extends ParallelCommandGroup {
     }
 
     // TODO: ADD SHOOT LOGIC WITH CHECKBOX TO TACK ON CLIMBING (WHILE SHOOTING)
-    this.addCommands(pathCommand.andThen(new InstantCommand(() -> Intake.getInstance().deploy())), new WaitCommand(4));
+    this.addCommands(pathCommand.andThen(new InstantCommand(() -> Intake.getInstance().deploy())),
+        new WaitCommand(4) /* Then GO CLIMB */);
   }
 }

@@ -288,8 +288,8 @@ public final class Constants {
         Units.degreesToRadians(540),
         Units.degreesToRadians(720));
 
-    public static final Pose2d shootPoseL = new Pose2d(1, 7, new Rotation2d(Units.degreesToRadians(0)));
-    public static final Pose2d shootPoseR = new Pose2d(1, 1, new Rotation2d(Units.degreesToRadians(0)));
+    public static final Pose2d shootPoseL = new Pose2d(1, 7, new Rotation2d(Units.degreesToRadians(180)));
+    public static final Pose2d shootPoseR = new Pose2d(1, 1, new Rotation2d(Units.degreesToRadians(180)));
   }
 
   public static class NetworktablePaths {
