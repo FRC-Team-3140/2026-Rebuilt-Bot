@@ -14,7 +14,7 @@ import frc.robot.libs.Vector2;
 import frc.robot.subsystems.odometry.Odometry;
 
 public class AutoAim extends AimType {
-    private static double predictForwardTime = 0.1;
+    private static double predictForwardTime = 0;
 
     private double desiredVelocity = 8;
     private double maxVelocityError = 2;
