@@ -290,6 +290,9 @@ public final class Constants {
 
     public static final Pose2d shootPoseL = new Pose2d(1, 7, new Rotation2d(Units.degreesToRadians(180)));
     public static final Pose2d shootPoseR = new Pose2d(1, 1, new Rotation2d(Units.degreesToRadians(180)));
+
+    public static final Pose2d climbPoseL = new Pose2d(1.5, 4.175, new Rotation2d(Units.degreesToRadians(0)));
+    public static final Pose2d climbPoseR = new Pose2d(1.5, 3.319, new Rotation2d(Units.degreesToRadians(0)));
   }
 
   public static class NetworktablePaths {

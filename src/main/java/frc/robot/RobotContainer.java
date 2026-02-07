@@ -4,20 +4,23 @@
 
 package frc.robot;
 
+import com.pathplanner.lib.auto.AutoBuilder;
+
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.commands.auto.Climb_Auto;
 import frc.robot.commands.auto.Depot;
-import frc.robot.commands.auto.Depot_Shoot;
 import frc.robot.commands.auto.L2R_Neutral;
-import frc.robot.commands.auto.L2R_Neutral_Shoot;
-import frc.robot.commands.auto.Pickup_Outpost;
 import frc.robot.commands.auto.Pickup_Outpost_Shoot;
 import frc.robot.commands.auto.R2L_Neutral;
-import frc.robot.commands.auto.R2L_Neutral_Shoot;
 import frc.robot.commands.auto.SimpleShoot;
 import frc.robot.commands.swerveDrive.Drive;
+import frc.robot.commands.turret.Fire_Away;
 import frc.robot.libs.FieldAprilTags;
+import frc.robot.libs.FlipPose;
+import frc.robot.libs.NetworkTables;
 import frc.robot.sensors.Camera;
 import frc.robot.subsystems.Climbers;
 import frc.robot.subsystems.Controller;
@@ -53,7 +56,8 @@ public class RobotContainer {
 
   public static TestRunner testRunner = TestRunner.getInstance();
 
-  private SendableChooser<Command> Path = new SendableChooser<>();
+  private SendableChooser<String> Path = new SendableChooser<>();
+  private SendableChooser<Command> Climb = new SendableChooser<>();
 
   // Get the singleton instance or create it if it doesn't exist
   public static RobotContainer getInstance() {
@@ -68,17 +72,26 @@ public class RobotContainer {
    */
   private RobotContainer() {
     Path.setDefaultOption("Normal - No PathPlanner", null);
-    Path.addOption("Simple Mobility", new Drive(1000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0));
-    Path.addOption("Simple Shoot", new SimpleShoot());
-    Path.addOption("L2R Neutral", new L2R_Neutral());
-    Path.addOption("L2R Neutral Shoot", new L2R_Neutral_Shoot());
-    Path.addOption("R2L Neutral", new R2L_Neutral());
-    Path.addOption("R2L Neutral Shoot", new R2L_Neutral_Shoot());
-    Path.addOption("Outpost", new Pickup_Outpost());
-    Path.addOption("Outpost Shoot", new Pickup_Outpost_Shoot());
-    Path.addOption("Depot", new Depot());
-    Path.addOption("Depot Shoot", new Depot_Shoot());
+    Path.addOption("Simple Mobility", "SM");
+    Path.addOption("Simple Shoot", "SS");
+    Path.addOption("L2R Neutral", "L2R");
+    Path.addOption("R2L Neutral", "R2L");
+    Path.addOption("Outpost", "O");
+    Path.addOption("Depot", "D");
+
     SmartDashboard.putData("Path", Path);
+
+    Climb.setDefaultOption("Normal - No Climber", null);
+    Climb.addOption("L1", new Climb_Auto(Climb_Auto.POSITIONS.LEFT, 1));
+    Climb.addOption("L2", new Climb_Auto(Climb_Auto.POSITIONS.LEFT, 2));
+    Climb.addOption("L3", new Climb_Auto(Climb_Auto.POSITIONS.LEFT, 3));
+    Climb.addOption("R1", new Climb_Auto(Climb_Auto.POSITIONS.RIGHT, 1));
+    Climb.addOption("R2", new Climb_Auto(Climb_Auto.POSITIONS.RIGHT, 2));
+    Climb.addOption("R3", new Climb_Auto(Climb_Auto.POSITIONS.RIGHT, 3));
+
+    SmartDashboard.putData("Climb", Climb);
+
+    NetworkTables.shouldShoot_b.setBoolean(false);
   }
 
   /**
@@ -87,6 +100,84 @@ public class RobotContainer {
    * @return the command to run in autonomous
    */
   public Command getAutonomousCommand() {
-    return Path.getSelected();
+    if (Path.getSelected().equals("SM"))
+      return new Drive(1000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0);
+
+    SequentialCommandGroup autoCommand = null;
+    if (NetworkTables.shouldShoot_b.getBoolean(false)) {
+      switch (Path.getSelected()) {
+        case "SS":
+          // Simple Shoot
+          autoCommand = new SimpleShoot();
+          break;
+
+        case "L2R":
+          // Left-to-Right neutral path with shooting
+          autoCommand = new L2R_Neutral().andThen(AutoBuilder
+              .pathfindToPose(FlipPose.flipIfRed(Constants.PathplannerConstants.shootPoseR),
+                  Constants.PathplannerConstants.pathplannerConstraints)
+              .alongWith(new Fire_Away(TurretMain.getInstance())));
+          break;
+
+        case "R2L":
+          // Right-to-Left neutral path with shooting
+          autoCommand = new R2L_Neutral().andThen(AutoBuilder
+              .pathfindToPose(FlipPose.flipIfRed(Constants.PathplannerConstants.shootPoseL),
+                  Constants.PathplannerConstants.pathplannerConstraints)
+              .alongWith(new Fire_Away(TurretMain.getInstance())));
+          break;
+
+        case "O":
+          // Outpost pickup then shoot
+          autoCommand = new Pickup_Outpost_Shoot();
+          break;
+
+        case "D":
+          // Depot autonomous with shooting
+          autoCommand = new Depot().andThen(new Fire_Away(TurretMain.getInstance()));
+          break;
+
+        default:
+          // No autonomous selected / fallback
+          return null;
+      }
+    } else {
+      switch (Path.getSelected()) {
+        case "SS":
+          // Simple Shoot
+          autoCommand = new SimpleShoot();
+          break;
+
+        case "L2R":
+          // Left-to-Right neutral path with shooting
+          autoCommand = new L2R_Neutral();
+          break;
+
+        case "R2L":
+          // Right-to-Left neutral path with shooting
+          autoCommand = new R2L_Neutral();
+          break;
+
+        case "O":
+          // Outpost pickup then shoot
+          autoCommand = new Pickup_Outpost_Shoot();
+          break;
+
+        case "D":
+          // Depot autonomous with shooting
+          autoCommand = new Depot();
+          break;
+
+        default:
+          // No autonomous selected / fallback
+          return null;
+      }
+    }
+
+    if (Climb.getSelected() != null && autoCommand != null) {
+      autoCommand = autoCommand.andThen(Climb.getSelected());
+    }
+
+    return autoCommand;
   }
 }

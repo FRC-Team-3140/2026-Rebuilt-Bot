@@ -345,9 +345,6 @@ public class TurretMain extends SubsystemBase {
     double vx = projectileSpeed * dx + robotVelX;
     double vy = projectileSpeed * dy + robotVelY;
     double vz = projectileSpeed * dz + robotVelZ;
-    Pose2d turretOffset2d = new Pose2d(Constants.SIM.turretMechOffset.getX(), Constants.SIM.turretMechOffset.getY(),
-        new Rotation3d(0, 0, Math.toRadians(turretSetpoint)).toRotation2d());
-
 
     Fuel fuel = new Fuel(shooterPose, 0);
     fuel.vx = vx;
