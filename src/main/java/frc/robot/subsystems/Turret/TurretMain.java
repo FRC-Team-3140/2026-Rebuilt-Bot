@@ -33,6 +33,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.libs.AbsoluteEncoder;
+import frc.robot.libs.Vector2;
 import frc.robot.subsystems.TestRunner;
 import frc.robot.subsystems.TestRunner.TestType;
 import frc.robot.subsystems.odometry.Odometry;
@@ -319,8 +320,9 @@ public class TurretMain extends SubsystemBase {
     // rotation
     Rotation3d shooterRot = new Rotation3d(
         0,
-        Math.toRadians(hoodEncoder.getAbsolutePosition()),
-        Math.toRadians(turretSetpoint/*turretEncoder.getAbsolutePosition()*/ + robotFieldPose.getRotation().getDegrees()));
+        Math.toRadians(/* hoodEncoder.getAbsolutePosition() */hoodSetpoint),
+        Math.toRadians(
+            turretSetpoint/* turretEncoder.getAbsolutePosition() */ + robotFieldPose.getRotation().getDegrees()));
 
     Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
 
@@ -341,9 +343,14 @@ public class TurretMain extends SubsystemBase {
     double dy = Math.cos(pitch) * Math.sin(yaw);
     double dz = Math.sin(pitch);
 
+    // Add tangential velocity
+    Vector2 turretPosition = new Vector2(turretPose.toPose2d().getX(), turretPose.toPose2d().getY())
+        .rotate(Odometry.getInstance().getRotation().getRadians() + (Math.PI / 2))
+        .mult(Odometry.getInstance().getAngularVelocity());
+
     // Add robot velocity to projectile velocity
-    double vx = projectileSpeed * dx + robotVelX;
-    double vy = projectileSpeed * dy + robotVelY;
+    double vx = projectileSpeed * dx + robotVelX + turretPosition.X;
+    double vy = projectileSpeed * dy + robotVelY + turretPosition.Y;
     double vz = projectileSpeed * dz + robotVelZ;
 
     Fuel fuel = new Fuel(shooterPose, 0);
