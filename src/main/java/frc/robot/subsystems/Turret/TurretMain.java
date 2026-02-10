@@ -332,8 +332,7 @@ public class TurretMain extends SubsystemBase {
     double robotVelZ = 0; // usually 0 unless you have a swerve module that can jump :)
 
     // Calculate projectile speed (magnitude)
-    double projectileSpeed = flywheelMotor.getEncoder().getVelocity() * RPMSpeedConversion
-        / Constants.Bot.flywheelGearRatio;
+    double projectileSpeed = flywheelSetpoint * RPMSpeedConversion; //flywheelMotor.getEncoder().getVelocity()/*flywheelSetpoint*/ * RPMSpeedConversion / Constants.Bot.flywheelGearRatio;
 
     // Calculate launch direction from shooter pose
     Rotation3d rot = shooterPose.getRotation();
