@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import edu.wpi.first.math.Pair;
+import edu.wpi.first.math.util.Units;
 
 public class ShotPredictor {
     public double MinAngle;
@@ -57,7 +58,7 @@ public class ShotPredictor {
         }
 
         public Pair<Double, Double> GetHeightAtSetDistance(Vector2 ballVelocity, double verticalVelocity, double travelTime) {
-            double backTime = ballVelocity.magnitude()/DistanceFromTarget;
+            double backTime = DistanceFromTarget/ballVelocity.magnitude();
             double time = Math.max(travelTime - backTime, 0);
             double height = time * verticalVelocity + 0.5 * gravity * time * time;
 
@@ -125,11 +126,13 @@ public class ShotPredictor {
 
         double finalAngle = currentAngle;
         HashMap<Double, Optional<Result>> cache = new HashMap<Double, Optional<Result>>();
+        System.out.println("PREDICTION UPDATE ========================");
 
         // repetitively close in on the best angle by repeating the process
         for (int i = 0; i < updateRepetitions; i++) {
 
             double bestAngle = 0;
+            double bestHeight = 0;
             double bestErr = Double.MAX_VALUE;
             boolean foundOption = false;
 
@@ -160,12 +163,14 @@ public class ShotPredictor {
                 );
 
                 double height = heightInst.getFirst() + shooterHeight;
+                System.out.println("Angle: " + Math.round(angle*100)/100.0 + ";\tHeight: " + (Math.round(Units.metersToInches(height)*100)/100.0));
                 //double heightTime = heightInst.getSecond();
 
                 double err = Bounds.GetError(height);
-                if (err < bestErr && Bounds.IsInBounds(height)) {
+                if (err < bestErr || (!Bounds.IsInBounds(bestHeight) && Bounds.IsInBounds(height))) {
                     bestErr = err;
                     bestAngle = angle;
+                    bestHeight = height;
                     foundOption = true;
                 }
             }
@@ -176,11 +181,43 @@ public class ShotPredictor {
             }
 
             // repeat with a new interval closed in around the best option
-            min = bestAngle - halfStepSize;
+            min = bestAngle - halfStepSize*1.5;
             finalAngle = bestAngle;
-            max = bestAngle + halfStepSize;
+            max = bestAngle + halfStepSize*1.5;
+
+            System.out.println("Next Angle: " + Math.round(bestAngle*100)/100.0 + ";\tHeight: " + (Math.round(Units.metersToInches(bestHeight)*100)/100.0));
         }
 
-        return cache.getOrDefault(finalAngle, Optional.empty());
+        if (cache.containsKey(finalAngle)) {
+            System.out.println("HAS CACHE!");
+            Optional<Result> resultOpt = cache.get(finalAngle);
+            if (resultOpt.isPresent()) {
+                System.out.println("HAS TARGET!");
+                Result result = resultOpt.get();
+                Vector2 aimPosition = result.GetAimDirection(relativeTargetPosition, botVelocity);
+                Vector2 ballVelocity = aimPosition.div(result.TravelTime);
+                double ballVerticalVelocity = verticalVelocity + result.ShotSpeed * Math.sin(Math.toRadians(result.ShotAngle));    
+
+                Pair<Double, Double> heightInst = Bounds.GetHeightAtSetDistance(
+                    ballVelocity,
+                    ballVerticalVelocity,
+                    result.TravelTime
+                    );
+
+                System.out.println("Height: " + Units.metersToInches(heightInst.getFirst() + shooterHeight) + ";\tMin: " + Units.metersToInches(Bounds.MinHeight) + ";\tMax: " + Units.metersToInches(Bounds.MaxHeight));
+
+                if (Bounds.IsInBounds(heightInst.getFirst() + shooterHeight)) {
+                    System.out.println("ACCEPT TARGET!");
+                    return resultOpt;
+                } else {
+                    return Optional.empty();
+                }
+            } else {
+                return Optional.empty();
+            }
+        } else {
+            return Optional.empty();
+        }
+    
     }
 }

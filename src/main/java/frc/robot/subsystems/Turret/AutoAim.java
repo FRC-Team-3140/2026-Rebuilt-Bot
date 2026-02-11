@@ -34,16 +34,17 @@ public class AutoAim extends AimType {
         }
     }
 
-    private static double topOfHubHeightInches = 72;
+    private static final double topOfHubHeightInches = 72;
+    private static final double radiusOfBallInches = 5.91/2;
     private Target hubTarget = new Target(
         new Vector2(4.625, 4.025),
-        Units.inchesToMeters(topOfHubHeightInches - 6),
+        Units.inchesToMeters(topOfHubHeightInches - 3),
         true,
         new ShotPredictor.HeightBounds(
             Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
-            Units.inchesToMeters(2 + topOfHubHeightInches), // desired height
-            Units.inchesToMeters(1 + topOfHubHeightInches), // min height
-            Units.inchesToMeters(4 + topOfHubHeightInches) // max height
+            Units.inchesToMeters(2 + topOfHubHeightInches + radiusOfBallInches), // desired height
+            Units.inchesToMeters(1 + topOfHubHeightInches + radiusOfBallInches), // min height
+            Units.inchesToMeters(20 + topOfHubHeightInches + radiusOfBallInches) // max height
         )
     );
     private Target currentTarget = hubTarget;
