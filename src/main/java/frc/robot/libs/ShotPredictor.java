@@ -3,12 +3,15 @@ package frc.robot.libs;
 import java.util.HashMap;
 import java.util.Optional;
 
+import edu.wpi.first.math.Pair;
+
 public class ShotPredictor {
     public double MinAngle;
     public double MaxAngle;
     public double MaxAngleVelocity;
-    public double DesiredShotVelocity;
-    public double MaxVelocityError;
+    //public double DesiredShotVelocity;
+    public HeightBounds Bounds;
+    //public double MaxVelocityError;
 
     private static final int NewtonRepetitions = 8;
     private static final double maxNewtonError = 0.1;
@@ -26,18 +29,51 @@ public class ShotPredictor {
         public Result() {
 
         }
+
+        public Vector2 GetAimDirection(Vector2 targetPosition, Vector2 botVelocity) {
+            return targetPosition.sub(botVelocity.mult(TravelTime));
+        }
     }
 
-    public ShotPredictor(double minAngle, double maxAngle, double maxAngleVelocity, double desiredShotVelocity, double maxVelocityError) {
+    public static class HeightBounds {
+        public double DistanceFromTarget;
+        public double DesiredHeight;
+        public double MinHeight;
+        public double MaxHeight;
+
+        public HeightBounds(double distanceFromTarget, double desiredHeight, double minHeight, double maxHeight) {
+            DistanceFromTarget = distanceFromTarget;
+            DesiredHeight = desiredHeight;
+            MinHeight = minHeight;
+            MaxHeight = maxHeight;
+        }
+
+        public double GetError(double height) {
+            return Math.abs(height - DesiredHeight);
+        }
+
+        public boolean IsInBounds(double height) {
+            return height >= MinHeight && height <= MaxHeight;
+        }
+
+        public Pair<Double, Double> GetHeightAtSetDistance(Vector2 ballVelocity, double verticalVelocity, double travelTime) {
+            double backTime = ballVelocity.magnitude()/DistanceFromTarget;
+            double time = Math.max(travelTime - backTime, 0);
+            double height = time * verticalVelocity + 0.5 * gravity * time * time;
+
+            return new Pair<Double, Double>(height, time);
+        }
+    }
+
+    public ShotPredictor(double minAngle, double maxAngle, double maxAngleVelocity, HeightBounds bounds) {
         MinAngle = minAngle;
         MaxAngle = maxAngle;
         MaxAngleVelocity = maxAngleVelocity;
-        DesiredShotVelocity = desiredShotVelocity;
-        MaxVelocityError = maxVelocityError;
+        Bounds = bounds;
     }
-    public ShotPredictor(double minAngle, double maxAngle, double maxAngleVelocity, double desiredShotVelocity) {
-      this(minAngle, maxAngle, maxAngleVelocity, desiredShotVelocity, Double.MAX_VALUE);
-    }
+    // public ShotPredictor(double minAngle, double maxAngle, double maxAngleVelocity, double desiredMaxHeight) {
+    //   this(minAngle, maxAngle, maxAngleVelocity, desiredMaxHeight, 0, Double.MAX_VALUE);
+    // }
 
     public static Optional<Result> Predict(double shotAngle, Vector2 botVelocity, double verticalVelocity,
             Vector2 relativeTargetPosition, double targetHeight) {
@@ -83,7 +119,7 @@ public class ShotPredictor {
     }
 
     public Optional<Result> Update(boolean loose, double currentAngle, double deltaTime, Vector2 botVelocity,
-            double verticalVelocity, Vector2 relativeTargetPosition, double targetHeight) {
+            double verticalVelocity, Vector2 relativeTargetPosition, double targetHeight, double shooterHeight) {
         double min = loose ? MinAngle : Math.max(MinAngle, currentAngle - deltaTime * MaxAngleVelocity);
         double max = loose ? MaxAngle : Math.min(MaxAngle, currentAngle + deltaTime * MaxAngleVelocity);
 
@@ -94,7 +130,7 @@ public class ShotPredictor {
         for (int i = 0; i < updateRepetitions; i++) {
 
             double bestAngle = 0;
-            double bestErr = MaxVelocityError;
+            double bestErr = Double.MAX_VALUE;
             boolean foundOption = false;
 
             // divide the interval into sections and find the best one
@@ -102,7 +138,7 @@ public class ShotPredictor {
             for (double angle = min + halfStepSize; angle < max; angle += 2 * halfStepSize) {
                 Optional<Result> resultOpt = cache.containsKey(angle)
                         ? cache.get(angle)
-                        : Predict(angle, botVelocity, verticalVelocity, relativeTargetPosition, targetHeight);
+                        : Predict(angle, botVelocity, verticalVelocity, relativeTargetPosition, targetHeight - shooterHeight);
 
                 cache.put(angle, resultOpt);
 
@@ -113,8 +149,21 @@ public class ShotPredictor {
 
                 Result result = resultOpt.get();
 
-                double err = Math.abs(DesiredShotVelocity - result.ShotSpeed);
-                if (err < bestErr) {
+                Vector2 aimPosition = result.GetAimDirection(relativeTargetPosition, botVelocity);
+                Vector2 ballVelocity = aimPosition.div(result.TravelTime);
+                double ballVerticalVelocity = verticalVelocity + result.ShotSpeed * Math.sin(Math.toRadians(result.ShotAngle));        
+
+                Pair<Double, Double> heightInst = Bounds.GetHeightAtSetDistance(
+                    ballVelocity,
+                    ballVerticalVelocity,
+                    result.TravelTime
+                );
+
+                double height = heightInst.getFirst() + shooterHeight;
+                //double heightTime = heightInst.getSecond();
+
+                double err = Bounds.GetError(height);
+                if (err < bestErr && Bounds.IsInBounds(height)) {
                     bestErr = err;
                     bestAngle = angle;
                     foundOption = true;
