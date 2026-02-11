@@ -293,6 +293,9 @@ public final class Constants {
 
     public static final Pose2d climbPoseL = new Pose2d(1.5, 4.175, new Rotation2d(Units.degreesToRadians(0)));
     public static final Pose2d climbPoseR = new Pose2d(1.5, 3.319, new Rotation2d(Units.degreesToRadians(0)));
+
+    public static final double redAllianceShootPreventionY = 11.9;
+    public static final double blueAllianceShootPreventionY = 4.65;
   }
 
   public static class NetworktablePaths {

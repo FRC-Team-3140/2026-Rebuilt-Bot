@@ -4,14 +4,23 @@
 
 package frc.robot.commands.turret;
 
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.subsystems.Feeder;
+import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Turret.TurretMain;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Fire_Away extends Command {
+  private final SwerveDrive swerve = SwerveDrive.getInstance();
   private final TurretMain turret;
+
+  // --- Simulation-only rate limiting (non-blocking) ---
+  private static final double SIM_SHOT_DELAY_SEC = 0.25; // tune as desired
+  private double lastSimShotTimeSec = -1.0;
 
   /**
    * Creates a new Unload.
@@ -33,15 +42,55 @@ public class Fire_Away extends Command {
   public void initialize() {
     turret.setFlywheelActive(true);
 
-    if (Robot.isReal())
-      Feeder.getInstance().setFeederActive(true);
+    // reset sim timing gate
+    lastSimShotTimeSec = -1.0;
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    if (Robot.isSimulation())
+    if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+      // BLUE ALLIANCE --> is closer to x = 0
+      if (swerve.getPose().getX() < Constants.PathplannerConstants.blueAllianceShootPreventionY) {
+
+        if (Robot.isSimulation())
+          tryShootSimFuel();
+
+        if (Robot.isReal())
+          Feeder.getInstance().setFeederActive(true);
+
+      } else {
+        Feeder.getInstance().setFeederActive(false);
+      }
+    } else {
+      // RED ALLIANCE
+      if (swerve.getPose().getX() > Constants.PathplannerConstants.redAllianceShootPreventionY) {
+
+        if (Robot.isSimulation())
+          tryShootSimFuel();
+
+        if (Robot.isReal())
+          Feeder.getInstance().setFeederActive(true);
+
+      } else {
+        Feeder.getInstance().setFeederActive(false);
+      }
+    }
+  }
+
+  /**
+   * Simulation-only: shoots a simulated fuel at most once every
+   * SIM_SHOT_DELAY_SEC.
+   * Non-blocking (does not use Timer.delay()).
+   */
+  private void tryShootSimFuel() {
+    double now = Timer.getFPGATimestamp();
+
+    // First shot happens immediately after entering the valid region
+    if (lastSimShotTimeSec < 0.0 || (now - lastSimShotTimeSec) >= SIM_SHOT_DELAY_SEC) {
       turret.shootSimFuel();
+      lastSimShotTimeSec = now;
+    }
   }
 
   // Called once the command ends or is interrupted.
