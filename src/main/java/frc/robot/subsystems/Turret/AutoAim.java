@@ -16,14 +16,43 @@ import frc.robot.subsystems.odometry.Odometry;
 public class AutoAim extends AimType {
     private static double predictForwardTime = 0;
 
-    private double desiredVelocity = 8;
-    private double maxVelocityError = 2;
+    public static class Target {
+        public Vector2 position;
+        public double targetHeight;
+        public boolean flipIfRed;
+        public ShotPredictor.HeightBounds heightBounds;
 
+        public Target(Vector2 position, double targetHeight, boolean flipIfRed, ShotPredictor.HeightBounds heightBounds) {
+            this.position = position;
+            this.targetHeight = targetHeight;
+            this.flipIfRed = flipIfRed;
+            this.heightBounds = heightBounds;
+        }
+
+        public Vector2 getPosition() {
+            return flipIfRed ? FlipPose.flipVectorIfRed(position) : position;
+        }
+    }
+
+    private static double topOfHubHeightInches = 72;
+    private Target hubTarget = new Target(
+        new Vector2(4.625, 4.025),
+        Units.inchesToMeters(topOfHubHeightInches - 6),
+        true,
+        new ShotPredictor.HeightBounds(
+            Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
+            Units.inchesToMeters(2 + topOfHubHeightInches), // desired height
+            Units.inchesToMeters(1 + topOfHubHeightInches), // min height
+            Units.inchesToMeters(4 + topOfHubHeightInches) // max height
+        )
+    );
+    private Target currentTarget = hubTarget;
     private ShotPredictor shotPredictor = new ShotPredictor(
             Constants.Limits.Turret.minAngle,
             Constants.Limits.Turret.maxAngle,
             Constants.Limits.Turret.maxAngularVelocity,
-            maxVelocityError);
+            currentTarget.heightBounds
+    );
 
     public AutoAim() {
         rotationAngle = 0;
@@ -60,10 +89,9 @@ public class AutoAim extends AimType {
     }
 
     private void predict(double deltaTime) {
-        shotPredictor.DesiredShotVelocity = desiredVelocity; // incase we want to change desired velocity
+        shotPredictor.Bounds = currentTarget.heightBounds; // incase we want to change desired velocity
 
-        double targetHeight = Units.inchesToMeters(72 - 18 - 6); // TODO: make this correct (relative to turret)
-        Vector2 goalPosition = FlipPose.flipVectorIfRed(new Vector2(4.625, 4.025));
+        double turretHeight = Units.inchesToMeters(18);
 
         Pair<Pose2d, Vector2> futureStatePair = getFutureState(predictForwardTime);
         Pose2d futurePose = futureStatePair.getFirst();
@@ -71,7 +99,7 @@ public class AutoAim extends AimType {
         double futureRotation = futurePose.getRotation().getRadians();
         Vector2 futureTurretVelocity = futureStatePair.getSecond();
 
-        Vector2 relativeTargetPosition = goalPosition.sub(futureShotOrigin);
+        Vector2 relativeTargetPosition = currentTarget.getPosition().sub(futureShotOrigin);
         double targetDistance = relativeTargetPosition.magnitude();
 
         shotPredictor.MinAngle = calculateMinimumAngle(targetDistance);
@@ -86,7 +114,8 @@ public class AutoAim extends AimType {
                 futureTurretVelocity,
                 verticalVelocity,
                 relativeTargetPosition,
-                targetHeight);
+                currentTarget.targetHeight,
+                turretHeight);
 
         shouldShoot = result.isPresent();
 
