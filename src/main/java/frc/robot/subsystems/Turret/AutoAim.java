@@ -34,17 +34,14 @@ public class AutoAim extends AimType {
         }
     }
 
-    private static final double topOfHubHeightInches = 72;
-    private static final double radiusOfBallInches = 5.91/2;
     private Target hubTarget = new Target(
         new Vector2(4.625, 4.025),
-        Units.inchesToMeters(topOfHubHeightInches - 3),
+        Units.inchesToMeters(Constants.PathplannerConstants.TopOfHubHeightInches - 3),
         true,
         new ShotPredictor.HeightBounds(
             Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
-            Units.inchesToMeters(2 + topOfHubHeightInches + radiusOfBallInches), // desired height
-            Units.inchesToMeters(1 + topOfHubHeightInches + radiusOfBallInches), // min height
-            Units.inchesToMeters(20 + topOfHubHeightInches + radiusOfBallInches) // max height
+            Units.inchesToMeters(2 + Constants.PathplannerConstants.TopOfHubHeightInches + Constants.PathplannerConstants.FuelRadiusInches), // desired height
+            Units.inchesToMeters(1 + Constants.PathplannerConstants.TopOfHubHeightInches + Constants.PathplannerConstants.FuelRadiusInches) // min height
         )
     );
     private Target currentTarget = hubTarget;
@@ -101,9 +98,6 @@ public class AutoAim extends AimType {
         Vector2 futureTurretVelocity = futureStatePair.getSecond();
 
         Vector2 relativeTargetPosition = currentTarget.getPosition().sub(futureShotOrigin);
-        double targetDistance = relativeTargetPosition.magnitude();
-
-        shotPredictor.MinAngle = calculateMinimumAngle(targetDistance);
 
         // boolean isShooting =
         // Controller.getInstance().primaryController.getRightBumperButton();
@@ -118,28 +112,13 @@ public class AutoAim extends AimType {
                 currentTarget.targetHeight,
                 turretHeight);
 
-        shouldShoot = result.isPresent();
+        shouldShoot = result.isPresent() && result.get().ShotSpeed <= Constants.Limits.Turret.maxFuelVelocity;
 
         if (result.isPresent()) {
             hoodAngle = result.get().ShotAngle;
             flywheelSpeed = result.get().ShotSpeed; // Convereted to RPM in TurretMain
             rotationAngle = Math
                     .toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
-        }
-    }
-
-    private static double calculateMinimumAngle(double distance) {
-        if (distance >= Constants.Limits.Turret.nearInterpRange) {
-            return Constants.Limits.Turret.minAngle;
-        } else if (distance <= Constants.Limits.Turret.nearRange) {
-            return Constants.Limits.Turret.nearMinAngle;
-        } else {
-            double alpha = (distance - Constants.Limits.Turret.nearRange)
-                    / (Constants.Limits.Turret.nearInterpRange - Constants.Limits.Turret.nearRange);
-            double interpolatedAngle = Constants.Limits.Turret.nearMinAngle +
-                    (Constants.Limits.Turret.minAngle - Constants.Limits.Turret.nearMinAngle) * alpha;
-
-            return interpolatedAngle;
         }
     }
 

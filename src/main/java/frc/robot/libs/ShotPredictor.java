@@ -40,21 +40,31 @@ public class ShotPredictor {
         public double DistanceFromTarget;
         public double DesiredHeight;
         public double MinHeight;
-        public double MaxHeight;
 
-        public HeightBounds(double distanceFromTarget, double desiredHeight, double minHeight, double maxHeight) {
+        public HeightBounds(double distanceFromTarget, double desiredHeight, double minHeight) {
             DistanceFromTarget = distanceFromTarget;
             DesiredHeight = desiredHeight;
             MinHeight = minHeight;
-            MaxHeight = maxHeight;
         }
 
         public double GetError(double height) {
-            return Math.abs(height - DesiredHeight);
+            if (height == DesiredHeight) {
+                return 0;
+            } else if (height < DesiredHeight) {
+                if (height <= MinHeight) {
+                    return MinHeight - height;
+                } else {
+                    return 1 - (height - MinHeight)/(DesiredHeight - MinHeight);
+                }
+            } else {
+                double scale = MinHeight >= DesiredHeight ? 1 : (DesiredHeight - MinHeight);
+
+                return 1 - 1/((height-DesiredHeight)/scale + 1);
+            }
         }
 
         public boolean IsInBounds(double height) {
-            return height >= MinHeight && height <= MaxHeight;
+            return height >= MinHeight;
         }
 
         public Pair<Double, Double> GetHeightAtSetDistance(Vector2 ballVelocity, double verticalVelocity, double travelTime) {
@@ -126,7 +136,7 @@ public class ShotPredictor {
 
         double finalAngle = currentAngle;
         HashMap<Double, Optional<Result>> cache = new HashMap<Double, Optional<Result>>();
-        System.out.println("PREDICTION UPDATE ========================");
+        //System.out.println("PREDICTION UPDATE ========================");
 
         // repetitively close in on the best angle by repeating the process
         for (int i = 0; i < updateRepetitions; i++) {
@@ -163,7 +173,7 @@ public class ShotPredictor {
                 );
 
                 double height = heightInst.getFirst() + shooterHeight;
-                System.out.println("Angle: " + Math.round(angle*100)/100.0 + ";\tHeight: " + (Math.round(Units.metersToInches(height)*100)/100.0));
+                //System.out.println("Angle: " + Math.round(angle*100)/100.0 + ";\tHeight: " + (Math.round(Units.metersToInches(height)*100)/100.0));
                 //double heightTime = heightInst.getSecond();
 
                 double err = Bounds.GetError(height);
@@ -177,6 +187,7 @@ public class ShotPredictor {
 
             // no options, so fail
             if (!foundOption) {
+                System.out.println("NO OPTION FAILURE");
                 return Optional.empty();
             }
 
@@ -185,14 +196,14 @@ public class ShotPredictor {
             finalAngle = bestAngle;
             max = bestAngle + halfStepSize*1.5;
 
-            System.out.println("Next Angle: " + Math.round(bestAngle*100)/100.0 + ";\tHeight: " + (Math.round(Units.metersToInches(bestHeight)*100)/100.0));
+            //System.out.println("Next Angle: " + Math.round(bestAngle*100)/100.0 + ";\tHeight: " + (Math.round(Units.metersToInches(bestHeight)*100)/100.0));
         }
 
         if (cache.containsKey(finalAngle)) {
-            System.out.println("HAS CACHE!");
+            //System.out.println("HAS CACHE!");
             Optional<Result> resultOpt = cache.get(finalAngle);
             if (resultOpt.isPresent()) {
-                System.out.println("HAS TARGET!");
+                //System.out.println("HAS TARGET!");
                 Result result = resultOpt.get();
                 Vector2 aimPosition = result.GetAimDirection(relativeTargetPosition, botVelocity);
                 Vector2 ballVelocity = aimPosition.div(result.TravelTime);
@@ -204,18 +215,21 @@ public class ShotPredictor {
                     result.TravelTime
                     );
 
-                System.out.println("Height: " + Units.metersToInches(heightInst.getFirst() + shooterHeight) + ";\tMin: " + Units.metersToInches(Bounds.MinHeight) + ";\tMax: " + Units.metersToInches(Bounds.MaxHeight));
+                // System.out.println("Height: " + Units.metersToInches(heightInst.getFirst() + shooterHeight) + ";\tMin: " + Units.metersToInches(Bounds.MinHeight) + ";\tDesired: " + Units.metersToInches(Bounds.DesiredHeight));
 
                 if (Bounds.IsInBounds(heightInst.getFirst() + shooterHeight)) {
-                    System.out.println("ACCEPT TARGET!");
+                    // System.out.println("ACCEPT TARGET!");
                     return resultOpt;
                 } else {
+                    System.out.println("TARGET OUT OF BOUNDS.\nHeight: " + Units.metersToInches(heightInst.getFirst() + shooterHeight) + ";\tMin: " + Units.metersToInches(Bounds.MinHeight) + ";\tDesired: " + Units.metersToInches(Bounds.DesiredHeight));
                     return Optional.empty();
                 }
             } else {
+                System.out.println("CACHE EMPTY FAILURE");
                 return Optional.empty();
             }
         } else {
+            System.out.println("CACHE MISS FAILURE");
             return Optional.empty();
         }
     

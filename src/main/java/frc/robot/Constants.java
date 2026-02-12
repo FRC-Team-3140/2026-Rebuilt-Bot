@@ -44,20 +44,20 @@ public final class Constants {
   public static class MotorIDs {
     /* Swerve Drive Motors: */
     // FL
-    public static final int FLNeo = 1; // NEO 1
-    public static final int FLVortex = 2; // VORTEX 1
+    public static final int FLNeo = 7; // NEO 1
+    public static final int FLVortex = 8; // VORTEX 1
 
     // FR
-    public static final int FRNeo = 3; // NEO 2
-    public static final int FRVortex = 4; // VORTEX 2
+    public static final int FRNeo = 1; // NEO 2
+    public static final int FRVortex = 2; // VORTEX 2
 
     // BL
     public static final int BLNeo = 5; // NEO 3
     public static final int BLVortex = 6; // VORTEX 3
 
     // BR
-    public static final int BRNeo = 7; // NEO 4
-    public static final int BRVortex = 8; // VORTEX 4
+    public static final int BRNeo = 3; // NEO 4
+    public static final int BRVortex = 4; // VORTEX 4
 
     public static final int turretRotation = 9; // NEO 5
     public static final int flywheelMotor = 10; // VORTEX 5
@@ -76,11 +76,11 @@ public final class Constants {
 
   public static class SensorIDs {
     // Swerve Modules
-    public static final int FL = 0;
+    public static final int FL = 1;
 
-    public static final int FR = 1;
+    public static final int FR = 2;
 
-    public static final int BL = 2;
+    public static final int BL = 0;
 
     public static final int BR = 3;
 
@@ -228,10 +228,7 @@ public final class Constants {
       public static final double maxAngle = 80;
       public static final double maxAngularVelocity = 30; // degrees per second
 
-      public static final double nearMinAngle = 75; // minimum angle when near the goal. Makes sure the shot arcs
-      public static final double nearInterpRange = 4; // the range where the min angle starts to interpolate to the
-                                                      // nearMinAngle
-      public static final double nearRange = 2; // the range where the min angle is the nearMinAngle
+      public static final double maxFuelVelocity = 15;
     }
 
     public static class Intake {
@@ -271,6 +268,10 @@ public final class Constants {
     // Field Dimensions - Based on PathPlanner Rebuilt Field
     public static final double FieldLength = 16.540;
     public static final double FieldWidth = 8.070;
+
+    public static final double FuelDiameterInches = 5.91;
+    public static final double FuelRadiusInches = FuelDiameterInches/2;
+    public static final double TopOfHubHeightInches = 72;
 
     // Translation PID Values
     public static final double TransP = 12;
