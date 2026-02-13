@@ -34,6 +34,7 @@ public class Depot extends SequentialCommandGroup {
     }
 
     // TODO: ADD SHOOT LOGIC WITH CHECKBOX TO TACK ON CLIMBING (WHILE SHOOTING)
-    this.addCommands(pathCommand.andThen(new InstantCommand(() -> Intake.getInstance().deploy())), new WaitCommand(4) /*Then GO CLIMB*/);
+    this.addCommands(pathCommand.andThen(new InstantCommand(() -> Intake.getInstance().deploy())),
+        new WaitCommand(4) /* Then GO CLIMB */);
   }
 }

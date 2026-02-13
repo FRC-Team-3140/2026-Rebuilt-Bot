@@ -54,7 +54,7 @@ abstract public class Odometry extends SubsystemBase {
   protected double readRotationRaw() {
     if (!RobotBase.isSimulation()) {
       return gyro.getRotation2d().getRadians();
-    } 
+    }
     return NavXSim.getInstance().getRotation2d().getRadians();
   }
 
@@ -71,7 +71,7 @@ abstract public class Odometry extends SubsystemBase {
   public Rotation2d getRotation() {
     return new Rotation2d(getAngle());
   }
-  
+
   public abstract void addVisionMeasurement(Pose2d visionPose, double timestamp);
 
   abstract public Vector2 getPosition();
@@ -131,7 +131,6 @@ abstract public class Odometry extends SubsystemBase {
     return gyro;
   }
 
-  
   public boolean isMoving() {
     if (RobotBase.isSimulation())
       return NavXSim.getInstance().isMoving();
@@ -140,6 +139,7 @@ abstract public class Odometry extends SubsystemBase {
   }
 
   abstract public Vector2 getBotVelocity();
+
   abstract public Vector2 getBotAcceleration();
 
   abstract public void updatePosition(SwerveModulePosition[] positions);

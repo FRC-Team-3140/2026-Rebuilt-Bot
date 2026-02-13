@@ -67,6 +67,7 @@ public class Camera extends SubsystemBase {
 
   boolean newMeasurement = false;
   boolean calculatRotation = false;
+
   // private boolean tooFar = false;
   /**
    * Represents a distance measurement obtained from a camera sensor.
@@ -200,7 +201,7 @@ public class Camera extends SubsystemBase {
       } else {
         estimatedPose = Pose2d.kZero;
       }
-      if (estimatedPose != Pose2d.kZero) { 
+      if (estimatedPose != Pose2d.kZero) {
         Odometry.getInstance().addVisionMeasurement(estimatedPose, Timer.getFPGATimestamp());
         newMeasurement = true;
       }

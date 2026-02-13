@@ -22,7 +22,8 @@ public class AutoAim extends AimType {
         public boolean flipIfRed;
         public ShotPredictor.HeightBounds heightBounds;
 
-        public Target(Vector2 position, double targetHeight, boolean flipIfRed, ShotPredictor.HeightBounds heightBounds) {
+        public Target(Vector2 position, double targetHeight, boolean flipIfRed,
+                ShotPredictor.HeightBounds heightBounds) {
             this.position = position;
             this.targetHeight = targetHeight;
             this.flipIfRed = flipIfRed;
@@ -35,22 +36,22 @@ public class AutoAim extends AimType {
     }
 
     private Target hubTarget = new Target(
-        new Vector2(4.625, 4.025),
-        Units.inchesToMeters(Constants.PathplannerConstants.TopOfHubHeightInches - 3),
-        true,
-        new ShotPredictor.HeightBounds(
-            Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
-            Units.inchesToMeters(2 + Constants.PathplannerConstants.TopOfHubHeightInches + Constants.PathplannerConstants.FuelRadiusInches), // desired height
-            Units.inchesToMeters(1 + Constants.PathplannerConstants.TopOfHubHeightInches + Constants.PathplannerConstants.FuelRadiusInches) // min height
-        )
-    );
+            new Vector2(4.625, 4.025),
+            Units.inchesToMeters(Constants.PathplannerConstants.TopOfHubHeightInches - 3),
+            true,
+            new ShotPredictor.HeightBounds(
+                    Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
+                    Units.inchesToMeters(2 + Constants.PathplannerConstants.TopOfHubHeightInches
+                            + Constants.PathplannerConstants.FuelRadiusInches), // desired height
+                    Units.inchesToMeters(1 + Constants.PathplannerConstants.TopOfHubHeightInches
+                            + Constants.PathplannerConstants.FuelRadiusInches) // min height
+            ));
     private Target currentTarget = hubTarget;
     private ShotPredictor shotPredictor = new ShotPredictor(
             Constants.Limits.Turret.minAngle,
             Constants.Limits.Turret.maxAngle,
             Constants.Limits.Turret.maxAngularVelocity,
-            currentTarget.heightBounds
-    );
+            currentTarget.heightBounds);
 
     public AutoAim() {
         rotationAngle = 0;

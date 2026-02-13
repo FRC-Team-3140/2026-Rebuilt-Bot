@@ -69,13 +69,13 @@ public class SwerveDrive extends SubsystemBase {
           Constants.MotorIDs.FLVortex,
           Constants.MotorIDs.FLNeo,
           Constants.Bot.FLZeroOffset,
-          false),
+          true),
       new SwerveModule("backRight",
           Constants.SensorIDs.BR,
           Constants.MotorIDs.BRVortex,
           Constants.MotorIDs.BRNeo,
           Constants.Bot.BRZeroOffset,
-          true),
+          false),
       new SwerveModule("backLeft",
           Constants.SensorIDs.BL,
           Constants.MotorIDs.BLVortex,
@@ -165,7 +165,8 @@ public class SwerveDrive extends SubsystemBase {
     swerveModuleStates = kinematics.toSwerveModuleStates(
         ChassisSpeeds.discretize(
             fieldRelative
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot, odometry.getGyroRotation())
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot,
+                    odometry.getGyroRotation().plus(new Rotation2d(Math.PI)))
                 : new ChassisSpeeds(xSpeed, ySpeed, rot),
             .02));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Bot.maxChassisSpeed);

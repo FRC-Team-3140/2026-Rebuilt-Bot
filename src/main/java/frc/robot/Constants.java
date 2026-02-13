@@ -76,13 +76,13 @@ public final class Constants {
 
   public static class SensorIDs {
     // Swerve Modules
-    public static final int FL = 1;
+    public static final int FL = 2;
 
-    public static final int FR = 2;
+    public static final int FR = 1;
 
-    public static final int BL = 0;
+    public static final int BL = 3;
 
-    public static final int BR = 3;
+    public static final int BR = 0;
 
     // Intake Absolute Encoder
     public static final int intakeEncoder = 4;
@@ -174,6 +174,7 @@ public final class Constants {
     public static final double encoderRotationToMeters = Math.PI * wheelDiameter / gearRatio;
 
     public static final double turnP = 0.01;
+    public static final double turnD = 0.0001;
 
     /////// AI CODE ///////
     // Simulation-only momentum constants for realistic coast-down behavior
@@ -191,19 +192,19 @@ public final class Constants {
 
     // Swerve Module Base Angles
     // TODO: Update for this configuration
-    public static final double FLZeroOffset = 216.997730;// 217.720;
+    public static final double FLZeroOffset = 343.5;
 
-    public static final double FRZeroOffset = 136.602900;// 228.319;
+    public static final double FRZeroOffset = 291.15;
 
-    public static final double BLZeroOffset = 200.317267;// 197.621;
+    public static final double BLZeroOffset = 254.45;
 
-    public static final double BRZeroOffset = 310.841840;// 312.425;
+    public static final double BRZeroOffset = 247.475;
 
     public static final double[] lockedAngles = {
-        45,
-        315,
-        315,
-        45
+        135, // 45 + 90
+        225, // 315 + 90
+        225, // 315 + 90
+        135 // 45 + 90
     };
 
     // Default swerve state
@@ -270,7 +271,7 @@ public final class Constants {
     public static final double FieldWidth = 8.070;
 
     public static final double FuelDiameterInches = 5.91;
-    public static final double FuelRadiusInches = FuelDiameterInches/2;
+    public static final double FuelRadiusInches = FuelDiameterInches / 2;
     public static final double TopOfHubHeightInches = 72;
 
     // Translation PID Values

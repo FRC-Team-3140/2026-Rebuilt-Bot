@@ -6,7 +6,6 @@ package frc.robot.subsystems.odometry;
 
 import org.littletonrobotics.junction.Logger;
 
-
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -20,8 +19,10 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 
 public class CustomOdometry extends Odometry {
   private Vector2 position = new Vector2(); // THIS AND ANGLE USED TO BE NULLABLE, NOT ANYMORE BUT KEPT COMPATIBILITY
-  private Vector2 simVisionPosition = new Vector2(); // THIS AND ANGLE USED TO BE NULLABLE, NOT ANYMORE BUT KEPT COMPATIBILITY
-  private Vector2 simRealisticPosition = new Vector2(); // THIS AND ANGLE USED TO BE NULLABLE, NOT ANYMORE BUT KEPT COMPATIBILITY
+  private Vector2 simVisionPosition = new Vector2(); // THIS AND ANGLE USED TO BE NULLABLE, NOT ANYMORE BUT KEPT
+                                                     // COMPATIBILITY
+  private Vector2 simRealisticPosition = new Vector2(); // THIS AND ANGLE USED TO BE NULLABLE, NOT ANYMORE BUT KEPT
+                                                        // COMPATIBILITY
   private Double angle = Double.valueOf(0); // IN RADIANS
   private Double simAngle = Double.valueOf(0); // IN RADIANS
   private SwerveModuleState[] lastStates = null;
@@ -117,12 +118,12 @@ public class CustomOdometry extends Odometry {
 
       //////////// FANCY CALCULUS BASED COMPLEX CODE (accurate (probably))
       delta = delta.add(new Vector2(
-            da == 0 ? (vf - v0) / 2 * tc * Math.cos(a0)
-            : tc * (vf / da * Math.sin(af) - v0 / da * Math.sin(a0)
-              + dv / (da * da) * (Math.cos(af) - Math.cos(a0))),
-            da == 0 ? (vf - v0) / 2 * tc * Math.sin(a0)
-            : tc * (-vf / da * Math.cos(af) + v0 / da * Math.cos(a0)
-              + dv / (da * da) * (Math.sin(af) - Math.sin(a0)))));
+          da == 0 ? (vf - v0) / 2 * tc * Math.cos(a0)
+              : tc * (vf / da * Math.sin(af) - v0 / da * Math.sin(a0)
+                  + dv / (da * da) * (Math.cos(af) - Math.cos(a0))),
+          da == 0 ? (vf - v0) / 2 * tc * Math.sin(a0)
+              : tc * (-vf / da * Math.cos(af) + v0 / da * Math.cos(a0)
+                  + dv / (da * da) * (Math.sin(af) - Math.sin(a0)))));
     }
 
     velocity.div(states.length);
@@ -176,9 +177,10 @@ public class CustomOdometry extends Odometry {
     double deltaTime = Timer.getFPGATimestamp() - lastUpdateT;
     lastUpdateT += deltaTime;
     Pose2d tagPose = calculatePoseFromTags();
-    if (position.sub(new Vector2(tagPose.getX(), tagPose.getY())).magnitude() > Constants.Odometry.maxCorrectionDistance) {
+    if (position.sub(new Vector2(tagPose.getX(), tagPose.getY()))
+        .magnitude() > Constants.Odometry.maxCorrectionDistance) {
       tagPose = null;
-    } 
+    }
     if (tagPose == Pose2d.kZero) {
       tagPose = null;
     }
@@ -201,10 +203,11 @@ public class CustomOdometry extends Odometry {
     if (tagPose != null) {
       Vector2 tagPos = new Vector2(tagPose.getX(), tagPose.getY());
 
-      double alpha = 1 - Math.exp(-tagPos.sub(RobotBase.isReal() ? position : simVisionPosition).magnitude() * Constants.Odometry.TagCorrectionSpeed * deltaTime);
+      double alpha = 1 - Math.exp(-tagPos.sub(RobotBase.isReal() ? position : simVisionPosition).magnitude()
+          * Constants.Odometry.TagCorrectionSpeed * deltaTime);
       double targetAngle = tagPose.getRotation().getRadians();
 
-      if (RobotBase.isReal()) { 
+      if (RobotBase.isReal()) {
         position = position.lerp(tagPos, alpha);
 
         angle = optimizeAngle(targetAngle, angle);
@@ -242,11 +245,16 @@ public class CustomOdometry extends Odometry {
     simVisionPosition = simVisionPosition.add(delta).add(randomNoise);
     simRealisticPosition = simRealisticPosition.add(delta).add(randomNoise);
 
-    Logger.recordOutput("Odometry/simVisionBot", new Pose2d(simVisionPosition.X, simVisionPosition.Y, new Rotation2d(angle)));  
-    Logger.recordOutput("Odometry/realisticOdometryBot", new Pose2d(simRealisticPosition.X, simRealisticPosition.Y, new Rotation2d(angle)));  
+    Logger.recordOutput("Odometry/simVisionBot",
+        new Pose2d(simVisionPosition.X, simVisionPosition.Y, new Rotation2d(angle)));
+    Logger.recordOutput("Odometry/realisticOdometryBot",
+        new Pose2d(simRealisticPosition.X, simRealisticPosition.Y, new Rotation2d(angle)));
   }
+
   @Override
-  public void addVisionMeasurement(Pose2d pose, double timestamp) {}
+  public void addVisionMeasurement(Pose2d pose, double timestamp) {
+  }
+
   @Override
   public void updateSimulatedPosition(SwerveModulePosition[] positions, double gyroAngleRad) {
     // TODO: I'm too lazy to figure out how this works right now :) - TK

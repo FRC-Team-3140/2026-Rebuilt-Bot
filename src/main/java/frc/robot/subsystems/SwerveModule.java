@@ -93,7 +93,7 @@ public class SwerveModule extends SubsystemBase {
         if (RobotBase.isSimulation()) {
             turnPID = new PIDController(Constants.Bot.simTurnP, 0, 0);
         } else {
-            turnPID = new PIDController(Constants.Bot.turnP, 0, 0);
+            turnPID = new PIDController(Constants.Bot.turnP, 0, Constants.Bot.turnD);
         }
         /////// END AI CODE ///////
 
