@@ -15,4 +15,8 @@ public abstract class AimType {
 
     public void deactivate() {
     };
+
+    public double getLookDirection() {
+        return 0;
+    };
 }

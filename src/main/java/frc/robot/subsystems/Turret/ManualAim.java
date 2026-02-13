@@ -2,6 +2,7 @@ package frc.robot.subsystems.Turret;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.Controller;
+import frc.robot.subsystems.odometry.Odometry;
 
 public class ManualAim extends AimType {
     private XboxController controller = Controller.getInstance().secondaryController;
@@ -9,7 +10,10 @@ public class ManualAim extends AimType {
     private final double manualAimRotationSpeed = 60; // degrees per second
     private final double manualAimHoodSpeed = 30; // degrees per second
 
+    private double desiredRotationAngle = 0;
+
     public ManualAim() {
+        desiredRotationAngle = 0;
         rotationAngle = 0;
         hoodAngle = 0;
         flywheelSpeed = 0;
@@ -17,8 +21,9 @@ public class ManualAim extends AimType {
 
     @Override
     public void periodic(double deltaTime) {
-        rotationAngle += -controller.getRightX() * manualAimRotationSpeed * deltaTime;
+        desiredRotationAngle += -controller.getRightX() * manualAimRotationSpeed * deltaTime;
         hoodAngle += -controller.getLeftY() * manualAimHoodSpeed * deltaTime;
+        rotationAngle = desiredRotationAngle - Odometry.getInstance().getRotation().getDegrees();
     }
 
     @Override
@@ -31,4 +36,8 @@ public class ManualAim extends AimType {
 
     }
 
+    @Override
+    public double getLookDirection() {
+        return desiredRotationAngle;
+    }
 }

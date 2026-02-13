@@ -63,6 +63,10 @@ public class TurretMain extends SubsystemBase {
   double flywheelSetpoint = 0; // RPM
   @AutoLogOutput
   double turretSetpoint = 0; // degrees
+  @AutoLogOutput
+  boolean shouldShoot = false;
+
+  boolean shouldShootMode = false;
 
   public PIDController hoodPID;
   public PIDController rotationProfiledPID;
@@ -177,6 +181,8 @@ public class TurretMain extends SubsystemBase {
     aimTypes.put(AimOpt.MANUAL, new ManualAim());
 
     turretSetpoint = turretEncoder.getAbsolutePosition();
+    clampTurretSetpoint();
+
     hoodSetpoint = hoodEncoder.getAbsolutePosition();
     flywheelSetpoint = 0;
 
@@ -206,7 +212,7 @@ public class TurretMain extends SubsystemBase {
   }
 
   public boolean shouldShoot() {
-    return aimTypes.get(currentMode).shouldShoot;
+    return shouldShoot;
     // && Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <=
     // flywheelSpeedTolerance;
   }
@@ -217,6 +223,18 @@ public class TurretMain extends SubsystemBase {
 
   public void setRotationAngle(double angle) {
     turretSetpoint = angle;
+    clampTurretSetpoint();
+  }
+
+  private boolean shouldStow() {
+    Vector2 botPosition = Odometry.getInstance().getPosition();
+    Vector2 turretDirection = Constants.PathplannerConstants.botTurretOffset.rotate(Odometry.getInstance().getAngle());
+    Vector2 turretPosition = botPosition.add(turretDirection);
+
+    // TODO: Logic to check if it needs to stow based on turretPosition
+    boolean shouldStow = false;
+
+    return shouldStow;
   }
 
   @Override
@@ -230,6 +248,7 @@ public class TurretMain extends SubsystemBase {
         lastUpdateTimestamp = Timer.getFPGATimestamp();
         // first update, setup
         // TODO: read hood setpoint from encoder so that predict can work properly
+        shouldShootMode = false;
       } else {
         double t = Timer.getFPGATimestamp();
         double deltaTime = t - lastUpdateTimestamp;
@@ -240,16 +259,16 @@ public class TurretMain extends SubsystemBase {
         type.periodic(deltaTime);
 
         flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
-
         hoodSetpoint = type.hoodAngle;
         turretSetpoint = type.rotationAngle;
-        flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
-        hoodSetpoint = type.hoodAngle;
-        turretSetpoint = type.rotationAngle;
+        shouldShootMode = type.shouldShoot && clampTurretSetpoint();
       }
     }
 
-    hoodPID.setSetpoint(hoodSetpoint);
+    boolean stow = shouldStow();
+    shouldShoot = shouldShootMode && !stow;
+
+    hoodPID.setSetpoint(stow ? hoodSetpoint : 90);  // TODO: Is this right? I think it is but make sure. Maybe its more like 80? Maybe use the Constants.Limits.Turret.MaxPitch
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.getAbsolutePosition()));
@@ -278,6 +297,29 @@ public class TurretMain extends SubsystemBase {
 
     Robot.mecanismPoses[1] = turretPose;
     Robot.mecanismPoses[2] = hoodPose;
+  }
+
+  private boolean clampTurretSetpoint() {
+    while (turretSetpoint <= -180) {
+      turretSetpoint += 360;
+    }
+    while (turretSetpoint > 180) {
+      turretSetpoint -= 360;
+    }
+
+    if (turretSetpoint < Constants.Limits.Turret.minYaw) {
+      turretSetpoint = Constants.Limits.Turret.minYaw;
+      return false;
+    } else if (turretSetpoint > Constants.Limits.Turret.maxYaw) {
+      turretSetpoint = Constants.Limits.Turret.maxYaw;
+      return false;
+    }
+
+    return true;
+  }
+
+  public double getLookDirection() {
+    return aimTypes.get(currentMode).getLookDirection();
   }
 
   public void simFuel(double dt) {

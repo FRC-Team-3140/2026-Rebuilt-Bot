@@ -32,11 +32,11 @@ public class TestTurret extends Test {
         switch (stage) {
             case 0:
                 // First section of code
-                turret.setHoodAngle(Constants.Limits.Turret.maxAngle);
+                turret.setHoodAngle(Constants.Limits.Turret.maxPitch);
                 break;
             case 1:
                 // Second section of code
-                turret.setHoodAngle(Constants.Limits.Turret.minAngle);
+                turret.setHoodAngle(Constants.Limits.Turret.minPitch);
                 break;
             case 2:
                 // Third section of code

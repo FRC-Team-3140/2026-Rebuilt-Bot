@@ -35,7 +35,7 @@ public class SimpleShoot extends SequentialCommandGroup {
     // TODO: ADD SHOOT LOGIC WITH CHECKBOX TO TACK ON CLIMBING (WHILE SHOOTING)
     this.addCommands(
         pathCommand,
-        new InstantCommand(() -> TurretMain.getInstance().setHoodAngle(Constants.Limits.Turret.minAngle)),
+        new InstantCommand(() -> TurretMain.getInstance().setHoodAngle(Constants.Limits.Turret.minPitch)),
         new Fire_Away(TurretMain.getInstance()));
   }
 }

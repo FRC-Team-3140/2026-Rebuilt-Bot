@@ -48,8 +48,8 @@ public class AutoAim extends AimType {
             ));
     private Target currentTarget = hubTarget;
     private ShotPredictor shotPredictor = new ShotPredictor(
-            Constants.Limits.Turret.minAngle,
-            Constants.Limits.Turret.maxAngle,
+            Constants.Limits.Turret.minPitch,
+            Constants.Limits.Turret.maxPitch,
             Constants.Limits.Turret.maxAngularVelocity,
             currentTarget.heightBounds);
 
@@ -73,8 +73,8 @@ public class AutoAim extends AimType {
         // this is used to get centripetal velocity
         // calculate for when the bot is facing in the positive x direction
         // might want to put this in constants too
-        Vector2 turretPosition = new Vector2(-0.1366, 0); // this is a guess
-
+        Vector2 turretPosition = Constants.PathplannerConstants.botTurretOffset;
+        
         double futureRotation = odometry.getAngle() + odometry.getAngularVelocity() * dt; // in rads
         Vector2 rotatedTurretPosition = turretPosition.rotate(futureRotation);
 
@@ -140,4 +140,9 @@ public class AutoAim extends AimType {
 
     }
 
+    @Override
+    public double getLookDirection() {
+        Vector2 relTargetPos = currentTarget.position.sub(Odometry.getInstance().getPosition());
+        return Math.toDegrees(Math.atan2(relTargetPos.Y, relTargetPos.X) - Odometry.getInstance().getAngle());
+    }
 }

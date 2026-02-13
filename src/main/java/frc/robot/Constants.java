@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
+import frc.robot.libs.Vector2;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -225,11 +226,14 @@ public final class Constants {
 
   public static class Limits {
     public static class Turret {
-      public static final double minAngle = 45; // degrees above horizontal
-      public static final double maxAngle = 80;
+      public static final double minPitch = 45; // degrees above horizontal
+      public static final double maxPitch = 80;
       public static final double maxAngularVelocity = 30; // degrees per second
 
       public static final double maxFuelVelocity = 15;
+
+      public static final double minYaw = -90;
+      public static final double maxYaw = 90;
     }
 
     public static class Intake {
@@ -273,6 +277,8 @@ public final class Constants {
     public static final double FuelDiameterInches = 5.91;
     public static final double FuelRadiusInches = FuelDiameterInches / 2;
     public static final double TopOfHubHeightInches = 72;
+
+    public static final Vector2 botTurretOffset = new Vector2(-0.1366, 0); // when the robot is facing positive x at the origin, position of turret.
 
     // Translation PID Values
     public static final double TransP = 12;
