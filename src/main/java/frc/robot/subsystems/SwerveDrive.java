@@ -13,6 +13,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,12 +24,14 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.libs.NetworkTables;
+import frc.robot.subsystems.Turret.TurretMain;
 import frc.robot.subsystems.odometry.Odometry;
 
 /** Represents a swerve drive style drivetrain. */
@@ -36,6 +39,7 @@ public class SwerveDrive extends SubsystemBase {
 
   private static SwerveDrive instance = SwerveDrive.getInstance();
   ProfiledPIDController thetaController = new ProfiledPIDController(2, 0, .1, new Constraints(360, 720));
+  PIDController turnToFaceController = new PIDController(2, 0, 0.5);
   SwerveModuleState[] swerveModuleStates = new SwerveModuleState[4];
   // private Camera camera = Camera.getInstance();
   public static Odometry odometry;
@@ -95,6 +99,8 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   private SwerveDrive() {
+    NetworkTables.lookTowardsTarget_b.setBoolean(true);
+    
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setTolerance(Math.PI / 45); // 4 degrees
     odometry = Odometry.getInstance();
@@ -149,7 +155,7 @@ public class SwerveDrive extends SubsystemBase {
    * @param fieldRelative Whether the provided x and y speeds are relative to the
    *                      field.
    */
-  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative, boolean lookAtTurretTarget) {
     if (RobotBase.isSimulation()) {
       xSpeed *= -1;
       ySpeed *= -1;
@@ -161,11 +167,17 @@ public class SwerveDrive extends SubsystemBase {
       /////// END AI CODE ///////
     }
 
+    if (!fieldRelative && lookAtTurretTarget) {
+      System.err.println("lookAtTurretTarget will not work when fieldRelative is false. (SwerveDrive.drive())");
+    }
+
     ChassisSpeeds.discretize(new ChassisSpeeds(xSpeed, ySpeed, rot), .02);
     swerveModuleStates = kinematics.toSwerveModuleStates(
         ChassisSpeeds.discretize(
             fieldRelative
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, rot,
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, lookAtTurretTarget ? 
+                Units.degreesToRadians(turnToFaceController.calculate(odometry.getRotation().getDegrees(), TurretMain.getInstance().getLookDirection()))
+                : rot,
                     odometry.getGyroRotation().plus(new Rotation2d(Math.PI)))
                 : new ChassisSpeeds(xSpeed, ySpeed, rot),
             .02));
@@ -174,6 +186,10 @@ public class SwerveDrive extends SubsystemBase {
     for (int i = 0; i < 4; i++) {
       modules[i].setStates(swerveModuleStates[i]);
     }
+  }
+
+  public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
+    drive(xSpeed, ySpeed, rot, fieldRelative, false);
   }
 
   /////// AI CODE ///////

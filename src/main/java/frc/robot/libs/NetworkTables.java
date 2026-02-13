@@ -92,5 +92,6 @@ public class NetworkTables {
     public static NetworkTableEntry driveModeManual_b = misc.getEntry("driveModeManual_b");
     public static NetworkTableEntry fieldOriented_b = misc.getEntry("fieldOriented_b");
     public static NetworkTableEntry shouldShoot_b = misc.getEntry("shouldShoot_b");
+    public static NetworkTableEntry lookTowardsTarget_b = misc.getEntry("lookTowardsTarget_b");
 }
   

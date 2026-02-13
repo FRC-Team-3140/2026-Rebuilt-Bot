@@ -53,6 +53,10 @@ public class SwerveDriveManualControl extends LoggedCommand {
             locked = !locked;
         }
 
+        if (controller.primaryController.getRightBumperButtonPressed()) {
+            NetworkTables.lookTowardsTarget_b.setBoolean(!NetworkTables.lookTowardsTarget_b.getBoolean(true));
+        }
+
         if (controller.primaryController.getBackButtonPressed())
             fieldRelative = !fieldRelative;
 
@@ -77,7 +81,8 @@ public class SwerveDriveManualControl extends LoggedCommand {
             int driveNegation = (((DriverStation.getAlliance().get() == DriverStation.Alliance.Red) && fieldRelative)
                     ? -1
                     : 1);
-            swerveDrive.drive(xSpeed * driveNegation, ySpeed * driveNegation, rot, fieldRelative); // Drive the swerve
+            swerveDrive.drive(xSpeed * driveNegation, ySpeed * driveNegation, rot, fieldRelative, fieldRelative
+                && NetworkTables.lookTowardsTarget_b.getBoolean(true)); // Drive the swerve
                                                                                                    // drive
         } else {
             swerveDrive.setSwerveModuleStates(Constants.Bot.defaultSwerveStates, true);
