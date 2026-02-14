@@ -175,8 +175,8 @@ public class SwerveDrive extends SubsystemBase {
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed,
                     lookAtTurretTarget
-                        ? Units.degreesToRadians(turnToFaceController.calculate(odometry.getRotation().getDegrees(),
-                            TurretMain.getInstance().getLookDirection()))
+                        ? thetaController.calculate(odometry.getAngle(),
+                            Units.degreesToRadians(TurretMain.getInstance().getLookDirection()))
                         : rot,
                     odometry.getGyroRotation()
                         .plus(!RobotBase.isSimulation() ? new Rotation2d(Math.PI) : new Rotation2d(0)))
