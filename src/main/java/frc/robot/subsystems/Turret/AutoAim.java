@@ -17,7 +17,7 @@ public class AutoAim extends AimType {
     private static double predictForwardTime = 0;
 
     public static class Target {
-        public Vector2 position;
+        private Vector2 position;
         public double targetHeight;
         public boolean flipIfRed;
         public ShotPredictor.HeightBounds heightBounds;
@@ -142,7 +142,7 @@ public class AutoAim extends AimType {
 
     @Override
     public double getLookDirection() {
-        Vector2 relTargetPos = currentTarget.position.sub(Odometry.getInstance().getPosition());
+        Vector2 relTargetPos = currentTarget.getPosition().sub(Odometry.getInstance().getPosition());
         return Math.toDegrees(Math.atan2(relTargetPos.Y, relTargetPos.X));
     }
 }
