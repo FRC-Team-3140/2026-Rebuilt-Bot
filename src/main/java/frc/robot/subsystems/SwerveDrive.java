@@ -100,7 +100,7 @@ public class SwerveDrive extends SubsystemBase {
 
   private SwerveDrive() {
     NetworkTables.lookTowardsTarget_b.setBoolean(true);
-    
+
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setTolerance(Math.PI / 45); // 4 degrees
     odometry = Odometry.getInstance();
@@ -175,10 +175,13 @@ public class SwerveDrive extends SubsystemBase {
     swerveModuleStates = kinematics.toSwerveModuleStates(
         ChassisSpeeds.discretize(
             fieldRelative
-                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, lookAtTurretTarget ? 
-                Units.degreesToRadians(turnToFaceController.calculate(odometry.getRotation().getDegrees(), TurretMain.getInstance().getLookDirection()))
-                : rot,
-                    odometry.getGyroRotation().plus(new Rotation2d(Math.PI)))
+                ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed,
+                    lookAtTurretTarget
+                        ? Units.degreesToRadians(turnToFaceController.calculate(odometry.getRotation().getDegrees(),
+                            TurretMain.getInstance().getLookDirection()))
+                        : rot,
+                    odometry.getGyroRotation()
+                        .plus(!RobotBase.isSimulation() ? new Rotation2d(Math.PI) : new Rotation2d(0)))
                 : new ChassisSpeeds(xSpeed, ySpeed, rot),
             .02));
     SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, Constants.Bot.maxChassisSpeed);
