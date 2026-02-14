@@ -66,12 +66,23 @@ public class Controller extends SubsystemBase {
 
     if (trigger) {
       if (controller == controllers.PRIMARY) {
+        if (leftTriggerTriggeredPrimary) {
+          return false;
+        }
         leftTriggerTriggeredPrimary = true;
       } else {
+        if (leftTriggerTriggeredSecondary) {
+          return false;
+        }
         leftTriggerTriggeredSecondary = true;
       }
-      return trigger;
+      return true;
     } else {
+      if (controller == controllers.PRIMARY) {
+        leftTriggerTriggeredPrimary = false;
+      } else {
+        leftTriggerTriggeredSecondary = false;
+      }
       return false;
     }
   }
