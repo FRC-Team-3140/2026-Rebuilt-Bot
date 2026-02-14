@@ -55,6 +55,7 @@ public class SwerveDriveManualControl extends LoggedCommand {
 
         if (controller.primaryController.getRightBumperButtonPressed()) {
             NetworkTables.lookTowardsTarget_b.setBoolean(!NetworkTables.lookTowardsTarget_b.getBoolean(true));
+            System.out.println("TOGGLE! ==========================");
         }
 
         if (controller.primaryController.getBackButtonPressed())

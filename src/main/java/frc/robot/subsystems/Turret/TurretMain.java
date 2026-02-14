@@ -319,7 +319,7 @@ public class TurretMain extends SubsystemBase {
   }
 
   public double getLookDirection() {
-    return aimTypes.get(currentMode).getLookDirection();
+    return aimTypes.get(currentMode).getLookDirection() + 180;
   }
 
   public void simFuel(double dt) {
