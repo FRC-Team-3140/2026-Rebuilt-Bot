@@ -13,7 +13,6 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -39,7 +38,6 @@ public class SwerveDrive extends SubsystemBase {
 
   private static SwerveDrive instance = SwerveDrive.getInstance();
   ProfiledPIDController thetaController = new ProfiledPIDController(2, 0, .1, new Constraints(360, 720));
-  PIDController turnToFaceController = new PIDController(2, 0, 0.5);
   SwerveModuleState[] swerveModuleStates = new SwerveModuleState[4];
   // private Camera camera = Camera.getInstance();
   public static Odometry odometry;
@@ -176,7 +174,7 @@ public class SwerveDrive extends SubsystemBase {
         ChassisSpeeds.discretize(
             fieldRelative
                 ? ChassisSpeeds.fromFieldRelativeSpeeds(xSpeed, ySpeed, lookAtTurretTarget ? 
-                Units.degreesToRadians(turnToFaceController.calculate(odometry.getRotation().getDegrees(), TurretMain.getInstance().getLookDirection()))
+                thetaController.calculate(odometry.getAngle(), Units.degreesToRadians(TurretMain.getInstance().getLookDirection()))
                 : rot,
                     odometry.getGyroRotation().plus(new Rotation2d(Math.PI)))
                 : new ChassisSpeeds(xSpeed, ySpeed, rot),

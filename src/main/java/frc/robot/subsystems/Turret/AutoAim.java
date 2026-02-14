@@ -74,7 +74,7 @@ public class AutoAim extends AimType {
         // calculate for when the bot is facing in the positive x direction
         // might want to put this in constants too
         Vector2 turretPosition = Constants.PathplannerConstants.botTurretOffset;
-        
+
         double futureRotation = odometry.getAngle() + odometry.getAngularVelocity() * dt; // in rads
         Vector2 rotatedTurretPosition = turretPosition.rotate(futureRotation);
 
@@ -143,6 +143,6 @@ public class AutoAim extends AimType {
     @Override
     public double getLookDirection() {
         Vector2 relTargetPos = currentTarget.position.sub(Odometry.getInstance().getPosition());
-        return Math.toDegrees(Math.atan2(relTargetPos.Y, relTargetPos.X) - Odometry.getInstance().getAngle());
+        return Math.toDegrees(Math.atan2(relTargetPos.Y, relTargetPos.X));
     }
 }
