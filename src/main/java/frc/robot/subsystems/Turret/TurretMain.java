@@ -8,8 +8,11 @@ package frc.robot.subsystems.Turret;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
+import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.inputs.LoggableInputs;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
@@ -33,6 +36,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.libs.AbsoluteEncoder;
+import frc.robot.libs.PIDLoggerAutoLogged;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.TestRunner;
 import frc.robot.subsystems.TestRunner.TestType;
@@ -69,12 +73,14 @@ public class TurretMain extends SubsystemBase {
   boolean shouldShootMode = false;
 
   public PIDController hoodPID;
+  public PIDLoggerAutoLogged hoodLogger;
   public PIDController rotationProfiledPID;
   public SimpleMotorFeedforward flywheelFeedforward;
 
   private boolean spinup = false;
 
   private static final double RPMSpeedConversion = 0.0762 * 2 * Math.PI; // convert from m/s to RPM
+
 
   public enum AimOpt {
     AUTO,
@@ -96,6 +102,7 @@ public class TurretMain extends SubsystemBase {
 
   private ArrayList<Fuel> gamePieces = new ArrayList<Fuel>();
   private ArrayList<Pose3d> publishedGamePieces = new ArrayList<Pose3d>();
+
 
   private class Fuel {
     private static final double GRAVITY = -9.81; // m/s^2, downward
@@ -155,9 +162,11 @@ public class TurretMain extends SubsystemBase {
     hoodPID = new PIDController(Constants.PID.Turret.hoodP,
         Constants.PID.Turret.hoodI,
         Constants.PID.Turret.hoodD);
+    hoodLogger = new PIDLoggerAutoLogged(hoodPID);
+
     rotationProfiledPID = new PIDController(Constants.PID.Turret.rotationP,
         Constants.PID.Turret.rotationI,
-        Constants.PID.Turret.rotationD);
+         Constants.PID.Turret.rotationD);
 
     hoodPID.enableContinuousInput(0, 360);
     rotationProfiledPID.enableContinuousInput(0, 360);
@@ -362,9 +371,9 @@ public class TurretMain extends SubsystemBase {
     // rotation
     Rotation3d shooterRot = new Rotation3d(
         0,
-        Math.toRadians(/* hoodEncoder.getAbsolutePosition() */hoodSetpoint),
+        Math.toRadians(hoodEncoder.getAbsolutePosition()),
         Math.toRadians(
-            turretSetpoint/* turretEncoder.getAbsolutePosition() */ + robotFieldPose.getRotation().getDegrees()));
+            turretEncoder.getAbsolutePosition() + robotFieldPose.getRotation().getDegrees()));
 
     Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
 
