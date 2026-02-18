@@ -13,6 +13,7 @@ import org.littletonrobotics.junction.AutoLogOutput;
 import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.inputs.LoggableInputs;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
@@ -36,7 +37,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.libs.AbsoluteEncoder;
-import frc.robot.libs.PIDLoggerAutoLogged;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.TestRunner;
 import frc.robot.subsystems.TestRunner.TestType;
@@ -72,9 +72,20 @@ public class TurretMain extends SubsystemBase {
 
   boolean shouldShootMode = false;
 
-  public PIDController hoodPID;
-  public PIDLoggerAutoLogged hoodLogger;
-  public PIDController rotationProfiledPID;
+  public PIDController hoodPID = new PIDController(0, 0, 0);
+  public LoggedPIDInputs hoodPIDInputs = 
+    new LoggedPIDInputs("HoodPID", 
+        Constants.PID.Turret.hoodP, 
+        Constants.PID.Turret.hoodI, 
+        Constants.PID.Turret.hoodD);
+
+  public PIDController rotationProfiledPID = new PIDController(0, 0, 0);
+  public LoggedPIDInputs rotationPIDInputs = 
+    new LoggedPIDInputs("RotationPID", 
+        Constants.PID.Turret.rotationP, 
+        Constants.PID.Turret.rotationI, 
+        Constants.PID.Turret.rotationD);
+
   public SimpleMotorFeedforward flywheelFeedforward;
 
   private boolean spinup = false;
@@ -103,6 +114,37 @@ public class TurretMain extends SubsystemBase {
   private ArrayList<Fuel> gamePieces = new ArrayList<Fuel>();
   private ArrayList<Pose3d> publishedGamePieces = new ArrayList<Pose3d>();
 
+  private static class LoggedPIDInputs {
+    private final LoggedNetworkNumber kP;
+    private final LoggedNetworkNumber kI;
+    private final LoggedNetworkNumber kD;
+    private final LoggedNetworkNumber setpoint;
+    private final LoggedNetworkNumber measurement; 
+
+
+    public LoggedPIDInputs(String name, double defaultP, double defaultI, double defaultD) {
+      kP = new LoggedNetworkNumber("PID/" + name + "/kP", defaultP);
+      kI = new LoggedNetworkNumber("PID/" + name + "/kI", defaultI);
+      kD = new LoggedNetworkNumber("PID/" + name + "/kD", defaultD);
+      setpoint = new LoggedNetworkNumber("PID/" + name + "/setpoint", 0);
+      measurement = new LoggedNetworkNumber("PID/" + name + "/measurement", 0);
+    }
+    public double getP() {
+      return kP.get();
+    }
+    public double getI() {
+      return kI.get();
+    }
+    public double getD() {
+      return kD.get();
+    }
+    public void setSetpoint(double sp) {
+      setpoint.set(sp);
+    }
+    public void setMeasurement(double m) {
+      measurement.set(m);
+    }
+  }
 
   private class Fuel {
     private static final double GRAVITY = -9.81; // m/s^2, downward
@@ -154,19 +196,13 @@ public class TurretMain extends SubsystemBase {
 
   /** Creates a new Turret. */
   public TurretMain() {
+    hoodPID.setPID(hoodPIDInputs.getP(), hoodPIDInputs.getI(), hoodPIDInputs.getD());
+    rotationProfiledPID.setPID(rotationPIDInputs.getP(), rotationPIDInputs.getI(), rotationPIDInputs.getD());
+
     flywheelFeedforward = new SimpleMotorFeedforward(
         Constants.FeedFoward.Turret.flywheelS,
         Constants.FeedFoward.Turret.flywheelV,
         Constants.FeedFoward.Turret.flywheelA);
-
-    hoodPID = new PIDController(Constants.PID.Turret.hoodP,
-        Constants.PID.Turret.hoodI,
-        Constants.PID.Turret.hoodD);
-    hoodLogger = new PIDLoggerAutoLogged(hoodPID);
-
-    rotationProfiledPID = new PIDController(Constants.PID.Turret.rotationP,
-        Constants.PID.Turret.rotationI,
-         Constants.PID.Turret.rotationD);
 
     hoodPID.enableContinuousInput(0, 360);
     rotationProfiledPID.enableContinuousInput(0, 360);
@@ -248,7 +284,17 @@ public class TurretMain extends SubsystemBase {
 
   @Override
   public void periodic() {
-    hoodPID.setSetpoint(hoodSetpoint);
+
+    hoodPID.setPID(hoodPIDInputs.getP(), hoodPIDInputs.getI(), hoodPIDInputs.getD());
+    rotationProfiledPID.setPID(rotationPIDInputs.getP(), rotationPIDInputs.getI(), rotationPIDInputs.getD());
+
+    hoodPIDInputs.setMeasurement(hoodEncoder.getAbsolutePosition());
+    rotationPIDInputs.setMeasurement(turretEncoder.getAbsolutePosition());
+
+    hoodPIDInputs.setSetpoint(hoodSetpoint);
+    rotationPIDInputs.setSetpoint((turretSetpoint % 360 + 360) % 360);
+
+
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
@@ -277,7 +323,7 @@ public class TurretMain extends SubsystemBase {
     boolean stow = shouldStow();
     shouldShoot = shouldShootMode && !stow;
 
-    hoodPID.setSetpoint(stow ? hoodSetpoint : 90);  // TODO: Is this right? I think it is but make sure. Maybe its more like 80? Maybe use the Constants.Limits.Turret.MaxPitch
+    hoodPID.setSetpoint(stow ? 90 : hoodSetpoint );  // TODO: Is this right? I think it is but make sure. Maybe its more like 80? Maybe use the Constants.Limits.Turret.MaxPitch
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.getAbsolutePosition()));

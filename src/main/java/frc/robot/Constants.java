@@ -115,7 +115,7 @@ public final class Constants {
 
   public static class PID {
     public static class Turret {
-      public static final double hoodP = 0.009;
+      public static final double hoodP = 0.01;
       public static final double hoodI = 0.0;
       public static final double hoodD = 0.0;
 
