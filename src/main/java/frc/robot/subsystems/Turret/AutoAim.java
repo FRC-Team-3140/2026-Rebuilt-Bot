@@ -1,7 +1,6 @@
 package frc.robot.subsystems.Turret;
 
 import java.util.Optional;
-import java.util.Vector;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -147,10 +146,10 @@ public class AutoAim extends AimType {
 
         Vector2 inheritedVelocity = futureState.getSecond();
 
-        Vector2 horizontalVelocity = new Vector2(Math.cos(hoodMeasurement)*flywheelMeasurement, 0)
+        Vector2 horizontalVelocity = new Vector2(Math.cos(Math.toRadians(hoodMeasurement))*flywheelMeasurement, 0)
             .rotate(rotation + rotationMeasurement)
             .add(inheritedVelocity);
-        double verticalVelocity = Math.sin(hoodMeasurement) * flywheelMeasurement + getBotVerticalVelocity();
+        double verticalVelocity = Math.sin(Math.toRadians(hoodMeasurement)) * flywheelMeasurement + getBotVerticalVelocity();
 
         double relativeTargetHeight = currentTarget.targetHeight - initialHeight;
         Vector2 targetPosition = currentTarget.getPosition();
