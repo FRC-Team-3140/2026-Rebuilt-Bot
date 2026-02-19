@@ -115,13 +115,13 @@ public final class Constants {
 
   public static class PID {
     public static class Turret {
-      public static final double hoodP = 0.01;
-      public static final double hoodI = 0.0;
-      public static final double hoodD = 0.0;
+      public static final double hoodP = 0.008;
+      public static final double hoodI = 0.015;
+      public static final double hoodD = 0.0001;
 
-      public static final double rotationP = 0.004;
-      public static final double rotationI = 0.0;
-      public static final double rotationD = 0.0;
+      public static final double rotationP = 0.0075;
+      public static final double rotationI = 0.004;
+      public static final double rotationD = 0.0001;
 
     }
 
