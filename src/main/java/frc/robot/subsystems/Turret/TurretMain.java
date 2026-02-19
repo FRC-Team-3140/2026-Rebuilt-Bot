@@ -8,11 +8,8 @@ package frc.robot.subsystems.Turret;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import org.littletonrobotics.junction.AutoLog;
 import org.littletonrobotics.junction.AutoLogOutput;
-import org.littletonrobotics.junction.LogTable;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.inputs.LoggableInputs;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.revrobotics.PersistMode;
@@ -311,9 +308,14 @@ public class TurretMain extends SubsystemBase {
 
         AimType type = aimTypes.get(currentMode);
 
-        type.periodic(deltaTime);
+        type.periodic(
+          deltaTime,
+          hoodEncoder.getAbsolutePosition(),
+          FlywheelRPMToSpeed(flywheelMotor.getEncoder().getVelocity()),
+          turretEncoder.getAbsolutePosition()
+          );
 
-        flywheelSetpoint = type.flywheelSpeed / RPMSpeedConversion; // convert from m/s to RPM
+        flywheelSetpoint = FlywheelSpeedToRPM(type.flywheelSpeed); // convert from m/s to RPM
         hoodSetpoint = type.hoodAngle;
         turretSetpoint = type.rotationAngle;
         shouldShootMode = type.shouldShoot && clampTurretSetpoint();
@@ -377,6 +379,14 @@ public class TurretMain extends SubsystemBase {
     return aimTypes.get(currentMode).getLookDirection() + 180;
   }
 
+  public double FlywheelRPMToSpeed(double RPM) {
+    return RPM * RPMSpeedConversion;
+  }
+
+  public double FlywheelSpeedToRPM(double speed) {
+    return speed / RPMSpeedConversion;
+  }
+
   public void simFuel(double dt) {
 
     for (int i = 0; i < gamePieces.size(); i++) {
@@ -429,7 +439,7 @@ public class TurretMain extends SubsystemBase {
     double robotVelZ = 0; // usually 0 unless you have a swerve module that can jump :)
 
     // Calculate projectile speed (magnitude)
-    double projectileSpeed = flywheelSetpoint * RPMSpeedConversion; // flywheelMotor.getEncoder().getVelocity()/*flywheelSetpoint*/
+    double projectileSpeed = FlywheelRPMToSpeed(flywheelSetpoint); // flywheelMotor.getEncoder().getVelocity()/*flywheelSetpoint*/
                                                                     // * RPMSpeedConversion /
                                                                     // Constants.Bot.flywheelGearRatio;
 

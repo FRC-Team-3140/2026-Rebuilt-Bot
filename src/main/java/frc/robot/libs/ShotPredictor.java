@@ -16,7 +16,7 @@ public class ShotPredictor {
 
     private static final int NewtonRepetitions = 8;
     private static final double maxNewtonError = 0.1;
-    private static final double gravity = -9.8;
+    public static final double gravity = -9.8;
 
     private static final int updateSteps = 5; // divides the possible angle range
     private static final int updateRepetitions = 5; // repeats the process like a binary search

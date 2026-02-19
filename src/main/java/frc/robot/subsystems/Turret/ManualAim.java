@@ -20,7 +20,7 @@ public class ManualAim extends AimType {
     }
 
     @Override
-    public void periodic(double deltaTime) {
+    public void periodic(double deltaTime, double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
         desiredRotationAngle += -controller.getRightX() * manualAimRotationSpeed * deltaTime;
         hoodAngle += -controller.getLeftY() * manualAimHoodSpeed * deltaTime;
         rotationAngle = desiredRotationAngle - Odometry.getInstance().getRotation().getDegrees();

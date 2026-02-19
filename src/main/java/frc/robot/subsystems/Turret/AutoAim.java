@@ -1,6 +1,7 @@
 package frc.robot.subsystems.Turret;
 
 import java.util.Optional;
+import java.util.Vector;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -15,19 +16,22 @@ import frc.robot.subsystems.odometry.Odometry;
 
 public class AutoAim extends AimType {
     private static double predictForwardTime = 0;
+    private static double predictForwardWhenCheckingMultiplier = 1; // Multiplies predict forward time when checking if a shot will go in for should shoot.
 
     public static class Target {
         private Vector2 position;
         public double targetHeight;
         public boolean flipIfRed;
         public ShotPredictor.HeightBounds heightBounds;
+        public double scoreTolerance;
 
         public Target(Vector2 position, double targetHeight, boolean flipIfRed,
-                ShotPredictor.HeightBounds heightBounds) {
+                ShotPredictor.HeightBounds heightBounds, double scoreTolerance) {
             this.position = position;
             this.targetHeight = targetHeight;
             this.flipIfRed = flipIfRed;
             this.heightBounds = heightBounds;
+            this.scoreTolerance = scoreTolerance;
         }
 
         public Vector2 getPosition() {
@@ -45,7 +49,9 @@ public class AutoAim extends AimType {
                             + Constants.PathplannerConstants.FuelRadiusInches), // desired height
                     Units.inchesToMeters(1 + Constants.PathplannerConstants.TopOfHubHeightInches
                             + Constants.PathplannerConstants.FuelRadiusInches) // min height
-            ));
+            ),
+            Units.inchesToMeters(21 - 5) // radius of hub top but less forgiving
+        );
     private Target currentTarget = hubTarget;
     private ShotPredictor shotPredictor = new ShotPredictor(
             Constants.Limits.Turret.minPitch,
@@ -87,10 +93,18 @@ public class AutoAim extends AimType {
                 futureTurretVelocity);
     }
 
-    private void predict(double deltaTime) {
+    private double getBotVerticalVelocity() {
+        return 0; // TODO: (optional) make this work
+    }
+
+    private double getTurretHeight() {
+        return Units.inchesToMeters(18); // TODO: (optional) offset this up as we climb
+    }
+
+    private boolean predict(double deltaTime) {
         shotPredictor.Bounds = currentTarget.heightBounds; // incase we want to change desired velocity
 
-        double turretHeight = Units.inchesToMeters(18);
+        double turretHeight = getTurretHeight();
 
         Pair<Pose2d, Vector2> futureStatePair = getFutureState(predictForwardTime);
         Pose2d futurePose = futureStatePair.getFirst();
@@ -102,7 +116,7 @@ public class AutoAim extends AimType {
 
         // boolean isShooting =
         // Controller.getInstance().primaryController.getRightBumperButton();
-        double verticalVelocity = 0; // TODO: (optional) make this work
+        double verticalVelocity = getBotVerticalVelocity();
         Optional<Result> result = shotPredictor.Update(
                 true, // !isShooting,
                 hoodAngle,
@@ -113,19 +127,117 @@ public class AutoAim extends AimType {
                 currentTarget.targetHeight,
                 turretHeight);
 
-        shouldShoot = result.isPresent() && result.get().ShotSpeed <= Constants.Limits.Turret.maxFuelVelocity;
-
         if (result.isPresent()) {
             hoodAngle = result.get().ShotAngle;
             flywheelSpeed = result.get().ShotSpeed; // Convereted to RPM in TurretMain
             rotationAngle = Math
                     .toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
         }
+
+        return result.isPresent() && result.get().ShotSpeed <= Constants.Limits.Turret.maxFuelVelocity;
+    }
+
+    private boolean EstimateWillScore(double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
+        Pair<Pose2d, Vector2> futureState = getFutureState(predictForwardTime * predictForwardWhenCheckingMultiplier);
+        Pose2d pose = futureState.getFirst();
+
+        Vector2 initialPosition = new Vector2(pose.getX(), pose.getY());
+        double initialHeight = getTurretHeight();
+        double rotation = pose.getRotation().getRadians();
+
+        Vector2 inheritedVelocity = futureState.getSecond();
+
+        Vector2 horizontalVelocity = new Vector2(Math.cos(hoodMeasurement)*flywheelMeasurement, 0)
+            .rotate(rotation + rotationMeasurement)
+            .add(inheritedVelocity);
+        double verticalVelocity = Math.sin(hoodMeasurement) * flywheelMeasurement + getBotVerticalVelocity();
+
+        double relativeTargetHeight = currentTarget.targetHeight - initialHeight;
+        Vector2 targetPosition = currentTarget.getPosition();
+        
+        // d_y = v_0*t + 0.5*g*t^2
+        // 0.5*g*t^2 + v_0*t - d_y = 0
+        // (-b +- sqrt(b^2 - 4ac))/(2a)
+        double a = 0.5*ShotPredictor.gravity;
+        double b = verticalVelocity;
+        double c = -relativeTargetHeight;
+        double determinant = b*b - 4*a*c;
+        
+        if (determinant < 0) {
+            return false;
+        }
+
+        // the times that the ball is at the right height
+        double[] ScoreTs = {(-b - Math.sqrt(determinant))/(2*a), (-b + Math.sqrt(determinant))/(2*a)};
+
+        double bestDist = Double.MAX_VALUE;
+        Optional<Double> bestT = Optional.empty(); 
+
+        // check which t is most likely to be when it scores by checking horizontal distance
+        for (int i = 0; i < ScoreTs.length; i ++) {
+            double t = ScoreTs[i];
+
+            if (t <= 0) {
+                continue;
+            }
+
+            double scoreDistSq = horizontalVelocity.mult(t).add(initialPosition).sub(targetPosition).magSq();
+            if (scoreDistSq > currentTarget.scoreTolerance*currentTarget.scoreTolerance) {
+                continue;
+            }
+
+            if (scoreDistSq < bestDist) {
+                bestDist = scoreDistSq;
+                bestT = Optional.of(t);
+            }
+        }
+
+        if (bestT.isEmpty()) {
+            return false;
+        }
+
+        double scoreT = bestT.get();
+
+        Vector2 deltaPosition = targetPosition.sub(initialPosition);
+        double checkDist = currentTarget.heightBounds.DistanceFromTarget;
+        // dist^2 = (dx - vx*t)^2 + (dy - vy*t)^2
+        // dist^2 = dx^2 - 2*dx*vx*t + vx^2*t^2 + dy^2 - 2*dy*vy*t + vy^2*t^2
+        // 0 = (dx^2 + dy^2 - dist^2) - (2*dx*vx + 2*dy*vy) * t + (vx^2 + vy^2)*t^2
+        a = horizontalVelocity.X*horizontalVelocity.X + horizontalVelocity.Y*horizontalVelocity.Y;
+        b = -2*(deltaPosition.X*horizontalVelocity.X + deltaPosition.Y*horizontalVelocity.Y);
+        c = deltaPosition.X*deltaPosition.X + deltaPosition.Y*deltaPosition.Y - checkDist*checkDist;
+        determinant = b*b - 4*a*c;
+
+        if (determinant < 0) {
+            return false;
+        }
+
+        // the times that the ball passes the height check radius for the target
+        double[] CheckTs = {(-b - Math.sqrt(determinant))/(2*a), (-b + Math.sqrt(determinant))/(2*a)};
+
+        // succeed if the ball passes over the check radius, and all times that it does before scoring, its in the proper height bounds
+        boolean success = false;
+        for (int i = 0; i < CheckTs.length; i ++) {
+            double t = CheckTs[i];
+
+            if (t <= 0 || t > scoreT) {
+                continue;
+            }
+
+            double height = initialHeight + verticalVelocity*t + 0.5*ShotPredictor.gravity*t*t;
+            if (!currentTarget.heightBounds.IsInBounds(height)) {
+                return false;
+            }
+
+            success = true;
+        }
+
+        return success;
     }
 
     @Override
-    public void periodic(double deltaTime) {
-        predict(deltaTime);
+    public void periodic(double deltaTime, double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
+        shouldShoot = predict(deltaTime) && EstimateWillScore(hoodMeasurement, flywheelMeasurement, rotationMeasurement);
     }
 
     @Override

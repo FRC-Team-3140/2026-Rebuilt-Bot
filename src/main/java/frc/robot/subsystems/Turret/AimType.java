@@ -7,7 +7,7 @@ public abstract class AimType {
 
     public boolean shouldShoot = false;
 
-    public void periodic(double deltaTime) {
+    public void periodic(double deltaTime, double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
     };
 
     public void activate(double rotationAngle, double hoodAngle, double flywheelSpeed) {
