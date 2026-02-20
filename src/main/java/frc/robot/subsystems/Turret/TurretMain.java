@@ -87,7 +87,7 @@ public class TurretMain extends SubsystemBase {
 
   private boolean spinup = false;
 
-  private static final double RPMSpeedConversion = 0.0762 * 2 * Math.PI; // convert from m/s to RPM
+  private static final double RPMSpeedConversion = 0.0762 * 2 * Math.PI / 60; // convert from m/s to RPM
 
 
   public enum AimOpt {
@@ -228,7 +228,7 @@ public class TurretMain extends SubsystemBase {
     hoodSetpoint = hoodEncoder.getAbsolutePosition();
     flywheelSetpoint = 0;
 
-    aimTypes.get(currentMode).activate(turretSetpoint, hoodSetpoint, flywheelSetpoint * RPMSpeedConversion);
+    aimTypes.get(currentMode).activate(turretSetpoint, hoodSetpoint, FlywheelRPMToSpeed(flywheelSetpoint));
 
     if (RobotBase.isSimulation()) {
       turretRotationMotorSim = new SparkMaxSim(turretRotationMotor, DCMotor.getNEO(1));
@@ -241,7 +241,7 @@ public class TurretMain extends SubsystemBase {
     if (mode != currentMode) {
       aimTypes.get(currentMode).deactivate();
       currentMode = mode;
-      aimTypes.get(currentMode).activate(turretSetpoint, hoodSetpoint, flywheelSetpoint * RPMSpeedConversion);
+      aimTypes.get(currentMode).activate(turretSetpoint, hoodSetpoint, FlywheelRPMToSpeed(flywheelSetpoint));
     }
   }
 

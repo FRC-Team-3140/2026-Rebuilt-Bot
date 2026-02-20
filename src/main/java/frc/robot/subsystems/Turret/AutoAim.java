@@ -137,6 +137,7 @@ public class AutoAim extends AimType {
     }
 
     private boolean EstimateWillScore(double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
+        System.out.println("Flywheel: " + flywheelMeasurement);
         Pair<Pose2d, Vector2> futureState = getFutureState(predictForwardTime * predictForwardWhenCheckingMultiplier);
         Pose2d pose = futureState.getFirst();
 
@@ -147,7 +148,7 @@ public class AutoAim extends AimType {
         Vector2 inheritedVelocity = futureState.getSecond();
 
         Vector2 horizontalVelocity = new Vector2(Math.cos(Math.toRadians(hoodMeasurement))*flywheelMeasurement, 0)
-            .rotate(rotation + rotationMeasurement)
+            .rotate(rotation + Math.toRadians(rotationMeasurement))
             .add(inheritedVelocity);
         double verticalVelocity = Math.sin(Math.toRadians(hoodMeasurement)) * flywheelMeasurement + getBotVerticalVelocity();
 
@@ -160,14 +161,15 @@ public class AutoAim extends AimType {
         double a = 0.5*ShotPredictor.gravity;
         double b = verticalVelocity;
         double c = -relativeTargetHeight;
-        double determinant = b*b - 4*a*c;
+        double desc = b*b - 4*a*c;
         
-        if (determinant < 0) {
+        if (desc < 0) {
+            System.out.println("Never reaches height!");
             return false;
         }
 
         // the times that the ball is at the right height
-        double[] ScoreTs = {(-b - Math.sqrt(determinant))/(2*a), (-b + Math.sqrt(determinant))/(2*a)};
+        double[] ScoreTs = {(-b + Math.sqrt(desc))/(2*a), (-b - Math.sqrt(desc))/(2*a)};
 
         double bestDist = Double.MAX_VALUE;
         Optional<Double> bestT = Optional.empty(); 
@@ -181,6 +183,7 @@ public class AutoAim extends AimType {
             }
 
             double scoreDistSq = horizontalVelocity.mult(t).add(initialPosition).sub(targetPosition).magSq();
+            System.out.println("Score dist: " + Math.sqrt(scoreDistSq));
             if (scoreDistSq > currentTarget.scoreTolerance*currentTarget.scoreTolerance) {
                 continue;
             }
@@ -192,6 +195,7 @@ public class AutoAim extends AimType {
         }
 
         if (bestT.isEmpty()) {
+            System.out.println("No good score time!");
             return false;
         }
 
@@ -205,14 +209,15 @@ public class AutoAim extends AimType {
         a = horizontalVelocity.X*horizontalVelocity.X + horizontalVelocity.Y*horizontalVelocity.Y;
         b = -2*(deltaPosition.X*horizontalVelocity.X + deltaPosition.Y*horizontalVelocity.Y);
         c = deltaPosition.X*deltaPosition.X + deltaPosition.Y*deltaPosition.Y - checkDist*checkDist;
-        determinant = b*b - 4*a*c;
+        desc = b*b - 4*a*c;
 
-        if (determinant < 0) {
+        if (desc < 0) {
+            System.out.println("Never enters ring!");
             return false;
         }
 
         // the times that the ball passes the height check radius for the target
-        double[] CheckTs = {(-b - Math.sqrt(determinant))/(2*a), (-b + Math.sqrt(determinant))/(2*a)};
+        double[] CheckTs = {(-b - Math.sqrt(desc))/(2*a), (-b + Math.sqrt(desc))/(2*a)};
 
         // succeed if the ball passes over the check radius, and all times that it does before scoring, its in the proper height bounds
         boolean success = false;
@@ -225,6 +230,7 @@ public class AutoAim extends AimType {
 
             double height = initialHeight + verticalVelocity*t + 0.5*ShotPredictor.gravity*t*t;
             if (!currentTarget.heightBounds.IsInBounds(height)) {
+                System.out.println("Passes ring out of height bounds!!");
                 return false;
             }
 
