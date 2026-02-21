@@ -201,8 +201,7 @@ public class TurretMain extends SubsystemBase {
         Constants.FeedFoward.Turret.flywheelV,
         Constants.FeedFoward.Turret.flywheelA);
 
-    hoodPID.enableContinuousInput(0, 360);
-    rotationProfiledPID.enableContinuousInput(0, 360);
+    //hoodPID.enableContinuousInput(0, 360);
 
     SparkMaxConfig turretConfig = new SparkMaxConfig();
     SparkFlexConfig flywheelConfig = new SparkFlexConfig();
@@ -311,14 +310,15 @@ public class TurretMain extends SubsystemBase {
         type.periodic(
           deltaTime,
           hoodEncoder.getAbsolutePosition(),
-          FlywheelRPMToSpeed(flywheelMotor.getEncoder().getVelocity()),
+          FlywheelRPMToSpeed(RobotBase.isSimulation() ? flywheelSetpoint : flywheelMotor.getEncoder().getVelocity()),
           turretEncoder.getAbsolutePosition()
           );
 
         flywheelSetpoint = FlywheelSpeedToRPM(type.flywheelSpeed); // convert from m/s to RPM
         hoodSetpoint = type.hoodAngle;
         turretSetpoint = type.rotationAngle;
-        shouldShootMode = type.shouldShoot && clampTurretSetpoint();
+        boolean hadToClamp = clampTurretSetpoint();
+        shouldShootMode = type.shouldShoot && hadToClamp;
       }
     }
 
@@ -329,7 +329,16 @@ public class TurretMain extends SubsystemBase {
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.getAbsolutePosition()));
-    turretRotationMotor.set(rotationProfiledPID.calculate(turretEncoder.getAbsolutePosition()));
+
+    double encoderValue = turretEncoder.getAbsolutePosition();
+    while (encoderValue > 180) {
+      encoderValue -= 360;
+    }
+    while (encoderValue <= -180) {
+      encoderValue += 360;
+    }
+    System.out.println("Enc: "+encoderValue+"\tSetp: "+turretSetpoint);
+    turretRotationMotor.set(rotationProfiledPID.calculate(encoderValue));
 
     if (spinup) {
       flywheelMotor.set(flywheelFeedforward.calculate(flywheelSetpoint) / 12);

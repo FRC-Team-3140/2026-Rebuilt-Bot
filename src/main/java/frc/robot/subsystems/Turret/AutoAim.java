@@ -137,7 +137,7 @@ public class AutoAim extends AimType {
     }
 
     private boolean EstimateWillScore(double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
-        System.out.println("Flywheel: " + flywheelMeasurement);
+        // System.out.println("Flywheel: " + flywheelMeasurement);
         Pair<Pose2d, Vector2> futureState = getFutureState(predictForwardTime * predictForwardWhenCheckingMultiplier);
         Pose2d pose = futureState.getFirst();
 
@@ -164,7 +164,7 @@ public class AutoAim extends AimType {
         double desc = b*b - 4*a*c;
         
         if (desc < 0) {
-            System.out.println("Never reaches height!");
+            // System.out.println("Never reaches height!");
             return false;
         }
 
@@ -183,7 +183,7 @@ public class AutoAim extends AimType {
             }
 
             double scoreDistSq = horizontalVelocity.mult(t).add(initialPosition).sub(targetPosition).magSq();
-            System.out.println("Score dist: " + Math.sqrt(scoreDistSq));
+            //System.out.println("Score dist: " + Math.sqrt(scoreDistSq));
             if (scoreDistSq > currentTarget.scoreTolerance*currentTarget.scoreTolerance) {
                 continue;
             }
@@ -195,7 +195,7 @@ public class AutoAim extends AimType {
         }
 
         if (bestT.isEmpty()) {
-            System.out.println("No good score time!");
+            //System.out.println("No good score time!");
             return false;
         }
 
@@ -212,7 +212,7 @@ public class AutoAim extends AimType {
         desc = b*b - 4*a*c;
 
         if (desc < 0) {
-            System.out.println("Never enters ring!");
+            // System.out.println("Never enters ring!");
             return false;
         }
 
@@ -230,7 +230,7 @@ public class AutoAim extends AimType {
 
             double height = initialHeight + verticalVelocity*t + 0.5*ShotPredictor.gravity*t*t;
             if (!currentTarget.heightBounds.IsInBounds(height)) {
-                System.out.println("Passes ring out of height bounds!!");
+                // System.out.println("Passes ring out of height bounds!!");
                 return false;
             }
 
