@@ -70,25 +70,22 @@ public class TurretMain extends SubsystemBase {
   boolean shouldShootMode = false;
 
   public PIDController hoodPID = new PIDController(0, 0, 0);
-  public LoggedPIDInputs hoodPIDInputs = 
-    new LoggedPIDInputs("HoodPID", 
-        Constants.PID.Turret.hoodP, 
-        Constants.PID.Turret.hoodI, 
-        Constants.PID.Turret.hoodD);
+  public LoggedPIDInputs hoodPIDInputs = new LoggedPIDInputs("HoodPID",
+      Constants.PID.Turret.hoodP,
+      Constants.PID.Turret.hoodI,
+      Constants.PID.Turret.hoodD);
 
   public PIDController rotationProfiledPID = new PIDController(0, 0, 0);
-  public LoggedPIDInputs rotationPIDInputs = 
-    new LoggedPIDInputs("RotationPID", 
-        Constants.PID.Turret.rotationP, 
-        Constants.PID.Turret.rotationI, 
-        Constants.PID.Turret.rotationD);
+  public LoggedPIDInputs rotationPIDInputs = new LoggedPIDInputs("RotationPID",
+      Constants.PID.Turret.rotationP,
+      Constants.PID.Turret.rotationI,
+      Constants.PID.Turret.rotationD);
 
   public SimpleMotorFeedforward flywheelFeedforward;
 
   private boolean spinup = false;
 
   private static final double RPMSpeedConversion = 0.0762 * 2 * Math.PI / 60; // convert from m/s to RPM
-
 
   public enum AimOpt {
     AUTO,
@@ -116,8 +113,7 @@ public class TurretMain extends SubsystemBase {
     private final LoggedNetworkNumber kI;
     private final LoggedNetworkNumber kD;
     private final LoggedNetworkNumber setpoint;
-    private final LoggedNetworkNumber measurement; 
-
+    private final LoggedNetworkNumber measurement;
 
     public LoggedPIDInputs(String name, double defaultP, double defaultI, double defaultD) {
       kP = new LoggedNetworkNumber("PID/" + name + "/kP", defaultP);
@@ -126,18 +122,23 @@ public class TurretMain extends SubsystemBase {
       setpoint = new LoggedNetworkNumber("PID/" + name + "/setpoint", 0);
       measurement = new LoggedNetworkNumber("PID/" + name + "/measurement", 0);
     }
+
     public double getP() {
       return kP.get();
     }
+
     public double getI() {
       return kI.get();
     }
+
     public double getD() {
       return kD.get();
     }
+
     public void setSetpoint(double sp) {
       setpoint.set(sp);
     }
+
     public void setMeasurement(double m) {
       measurement.set(m);
     }
@@ -201,7 +202,7 @@ public class TurretMain extends SubsystemBase {
         Constants.FeedFoward.Turret.flywheelV,
         Constants.FeedFoward.Turret.flywheelA);
 
-    //hoodPID.enableContinuousInput(0, 360);
+    // hoodPID.enableContinuousInput(0, 360);
 
     SparkMaxConfig turretConfig = new SparkMaxConfig();
     SparkFlexConfig flywheelConfig = new SparkFlexConfig();
@@ -290,7 +291,6 @@ public class TurretMain extends SubsystemBase {
     hoodPIDInputs.setSetpoint(hoodSetpoint);
     rotationPIDInputs.setSetpoint((turretSetpoint % 360 + 360) % 360);
 
-
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
@@ -308,11 +308,10 @@ public class TurretMain extends SubsystemBase {
         AimType type = aimTypes.get(currentMode);
 
         type.periodic(
-          deltaTime,
-          hoodEncoder.getAbsolutePosition(),
-          FlywheelRPMToSpeed(RobotBase.isSimulation() ? flywheelSetpoint : flywheelMotor.getEncoder().getVelocity()),
-          turretEncoder.getAbsolutePosition()
-          );
+            deltaTime,
+            hoodEncoder.getAbsolutePosition(),
+            FlywheelRPMToSpeed(RobotBase.isSimulation() ? flywheelSetpoint : flywheelMotor.getEncoder().getVelocity()),
+            turretEncoder.getAbsolutePosition());
 
         flywheelSetpoint = FlywheelSpeedToRPM(type.flywheelSpeed); // convert from m/s to RPM
         hoodSetpoint = type.hoodAngle;
@@ -325,7 +324,8 @@ public class TurretMain extends SubsystemBase {
     boolean stow = shouldStow();
     shouldShoot = shouldShootMode && !stow;
 
-    hoodPID.setSetpoint(stow ? 90 : hoodSetpoint );  // TODO: Is this right? I think it is but make sure. Maybe its more like 80? Maybe use the Constants.Limits.Turret.MaxPitch
+    hoodPID.setSetpoint(stow ? 90 : hoodSetpoint); // TODO: Is this right? I think it is but make sure. Maybe its more
+                                                   // like 80? Maybe use the Constants.Limits.Turret.MaxPitch
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.getAbsolutePosition()));
@@ -337,7 +337,7 @@ public class TurretMain extends SubsystemBase {
     while (encoderValue <= -180) {
       encoderValue += 360;
     }
-    System.out.println("Enc: "+encoderValue+"\tSetp: "+turretSetpoint);
+    // System.out.println("Enc: "+encoderValue+"\tSetp: "+turretSetpoint);
     turretRotationMotor.set(rotationProfiledPID.calculate(encoderValue));
 
     if (spinup) {
@@ -449,8 +449,8 @@ public class TurretMain extends SubsystemBase {
 
     // Calculate projectile speed (magnitude)
     double projectileSpeed = FlywheelRPMToSpeed(flywheelSetpoint); // flywheelMotor.getEncoder().getVelocity()/*flywheelSetpoint*/
-                                                                    // * RPMSpeedConversion /
-                                                                    // Constants.Bot.flywheelGearRatio;
+                                                                   // * RPMSpeedConversion /
+                                                                   // Constants.Bot.flywheelGearRatio;
 
     // Calculate launch direction from shooter pose
     Rotation3d rot = shooterPose.getRotation();

@@ -82,8 +82,8 @@ public class SwerveDriveManualControl extends LoggedCommand {
                     ? -1
                     : 1);
             swerveDrive.drive(xSpeed * driveNegation, ySpeed * driveNegation, rot, fieldRelative, fieldRelative
-                && NetworkTables.lookTowardsTarget_b.getBoolean(true)); // Drive the swerve
-                                                                                                   // drive
+                    && NetworkTables.lookTowardsTarget_b.getBoolean(true)); // Drive the swerve
+                                                                            // drive
         } else {
             swerveDrive.setSwerveModuleStates(Constants.Bot.defaultSwerveStates, true);
         }

@@ -6,9 +6,7 @@ package frc.robot;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 
-///* AI CODE *///
 import java.util.function.Supplier;
-///* AI CODE *///
 
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -112,18 +110,16 @@ public class RobotContainer {
 
       return new Drive(1000, false, Constants.Bot.maxChassisSpeed / 2, 0, 0);
 
-    /// * AI CODE *///
     // If we are going to climb, do NOT append the extra pathfind-to-shoot pose on
     /// L2R/R2L.
     // If we are NOT climbing, we DO append it (original behavior).
     Supplier<Command> climbSupplier = Climb.getSelected();
     boolean willClimb = (climbSupplier != null);
-    /// * AI CODE *///
 
-    SequentialCommandGroup autoCommand = null;
+    SequentialCommandGroup autoCommand = new SequentialCommandGroup();
     if (NetworkTables.shouldShoot_b.getBoolean(false)) {
 
-      switch (selectedPath) {
+      switch (selectedPath != null ? selectedPath : "") {
 
         case "SS":
           // Simple Shoot
@@ -132,24 +128,24 @@ public class RobotContainer {
 
         case "L2R":
           // Left-to-Right neutral path with shooting
-          /// * AI CODE *///
+
           autoCommand = willClimb
               ? new L2R_Neutral()
               : new L2R_Neutral().andThen(AutoBuilder
                   .pathfindToPose(FlipPose.flipIfRed(Constants.PathplannerConstants.shootPoseR),
                       Constants.PathplannerConstants.pathplannerConstraints));
-          /// * AI CODE *///
+
           break;
 
         case "R2L":
           // Right-to-Left neutral path with shooting
-          /// * AI CODE *///
+
           autoCommand = willClimb
               ? new R2L_Neutral()
               : new R2L_Neutral().andThen(AutoBuilder
                   .pathfindToPose(FlipPose.flipIfRed(Constants.PathplannerConstants.shootPoseL),
                       Constants.PathplannerConstants.pathplannerConstraints));
-          /// * AI CODE *///
+
           break;
 
         case "O":
@@ -164,11 +160,11 @@ public class RobotContainer {
 
         default:
           // No autonomous selected / fallback
-          return null;
+          return autoCommand;
       }
     } else {
 
-      switch (selectedPath) {
+      switch (selectedPath != null ? selectedPath : "") {
 
         case "SS":
           // Simple Shoot
@@ -197,17 +193,15 @@ public class RobotContainer {
 
         default:
           // No autonomous selected / fallback
-          return null;
+          return autoCommand;
       }
     }
 
-    /// * AI CODE *///
     // Re-use the same climbSupplier computed above (factory), and instantiate a
     /// fresh command now.
     if (willClimb && autoCommand != null) {
       autoCommand = autoCommand.andThen(climbSupplier.get());
     }
-    /// * AI CODE *///
 
     if (NetworkTables.shouldShoot_b.getBoolean(false))
       return autoCommand.alongWith(new Fire_Away(turret));
