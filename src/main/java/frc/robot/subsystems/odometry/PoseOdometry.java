@@ -17,6 +17,8 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
+import edu.wpi.first.math.filter.LinearFilter;
+
 import org.littletonrobotics.junction.Logger;
 
 public class PoseOdometry extends Odometry {
@@ -25,6 +27,11 @@ public class PoseOdometry extends Odometry {
   protected SwerveDrivePoseEstimator estimator = null;
   protected SwerveDrivePoseEstimator simEstimator = null;
   protected SwerveDrivePoseEstimator simDriftEstimator = null;
+  private LinearFilter velXFilter = LinearFilter.movingAverage(4);
+  private LinearFilter velYFilter = LinearFilter.movingAverage(4);
+  private LinearFilter rotVelFilter = LinearFilter.movingAverage(4);
+  private Vector2 smoothedVelocity = new Vector2();
+  private double smoothedRotVel = 0;
   private boolean knowsPosition = false;
   private Pose2d nullPose = new Pose2d(0, 0, new Rotation2d(0));
 
@@ -123,6 +130,15 @@ public class PoseOdometry extends Odometry {
     Logger.recordOutput("Accel/Field/X", accel.vxMetersPerSecond);
     Logger.recordOutput("Accel/Field/Y", accel.vyMetersPerSecond);
     Logger.recordOutput("Accel/Field/Angular", accel.omegaRadiansPerSecond);
+
+    Vector2 rawVel = getRawBotVelocity();
+    smoothedVelocity = new Vector2(velXFilter.calculate(rawVel.X), velYFilter.calculate(rawVel.Y));
+    smoothedRotVel = rotVelFilter.calculate(getRawAngularVelocity());
+
+    Logger.recordOutput("Odometry/speed", smoothedVelocity.magnitude());
+    Logger.recordOutput("Odometry/rotSpeed", smoothedRotVel);
+    Logger.recordOutput("Odometry/speedRaw", rawVel.magnitude());
+    Logger.recordOutput("Odometry/rotSpeedRaw", getRawAngularVelocity());
   }
 
   public void resetGyro() {
@@ -216,7 +232,15 @@ public class PoseOdometry extends Odometry {
     return SwerveDrive.getInstance().getFieldRelativeSpeeds().omegaRadiansPerSecond;
   }
 
+  public double getRawAngularVelocity() {
+    return smoothedRotVel;
+  }
+
   public Vector2 getBotVelocity() {
+    return smoothedVelocity;
+  }
+
+  public Vector2 getRawBotVelocity() {
     return new Vector2(SwerveDrive.getInstance().getRobotRelativeSpeeds().vxMetersPerSecond,
         SwerveDrive.getInstance().getRobotRelativeSpeeds().vyMetersPerSecond);
   }
