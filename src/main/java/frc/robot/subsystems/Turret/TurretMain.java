@@ -108,7 +108,7 @@ public class TurretMain extends SubsystemBase {
   private ArrayList<Fuel> gamePieces = new ArrayList<Fuel>();
   private ArrayList<Pose3d> publishedGamePieces = new ArrayList<Pose3d>();
 
-  private static class LoggedPIDInputs {
+  public static class LoggedPIDInputs {
     private final LoggedNetworkNumber kP;
     private final LoggedNetworkNumber kI;
     private final LoggedNetworkNumber kD;
