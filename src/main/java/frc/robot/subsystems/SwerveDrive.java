@@ -13,7 +13,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -22,7 +22,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -31,13 +30,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.libs.NetworkTables;
 import frc.robot.subsystems.Turret.TurretMain;
+import frc.robot.subsystems.Turret.TurretMain.LoggedPIDInputs;
 import frc.robot.subsystems.odometry.Odometry;
 
 /** Represents a swerve drive style drivetrain. */
 public class SwerveDrive extends SubsystemBase {
 
   private static SwerveDrive instance = SwerveDrive.getInstance();
-  ProfiledPIDController thetaController = new ProfiledPIDController(2, 0, 0.001, new Constraints(360, 720));
+  PIDController thetaController = new PIDController(0, 0, 0);
+  LoggedPIDInputs thetaPIDInputs = new LoggedPIDInputs("ThetaController", 0, 0, 0);
   SwerveModuleState[] swerveModuleStates = new SwerveModuleState[4];
   // private Camera camera = Camera.getInstance();
   public static Odometry odometry;
@@ -97,6 +98,10 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   private SwerveDrive() {
+
+    thetaController.setPID(thetaPIDInputs.getP(), thetaPIDInputs.getI(), thetaPIDInputs.getD());
+
+
     NetworkTables.lookTowardsTarget_b.setBoolean(true);
 
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
@@ -140,6 +145,8 @@ public class SwerveDrive extends SubsystemBase {
   }
 
   public void periodic() {
+    thetaController.setPID(thetaPIDInputs.getP(), thetaPIDInputs.getI(), thetaPIDInputs.getD());
+    thetaPIDInputs.update(TurretMain.getInstance().getLookDirection(), ((odometry.getGyroRotation().getDegrees() + 180) % 360 + 360) % 360);
     odometry.update();
     updateNetworktables();
   }
@@ -158,11 +165,6 @@ public class SwerveDrive extends SubsystemBase {
       xSpeed *= -1;
       ySpeed *= -1;
       rot *= -1;
-
-      /////// AI CODE ///////
-      // Apply rotational momentum (simulation only)
-      rot = applyRotationalMomentum(rot);
-      /////// END AI CODE ///////
     }
 
     if (!fieldRelative && lookAtTurretTarget) {
@@ -196,46 +198,6 @@ public class SwerveDrive extends SubsystemBase {
   public void drive(double xSpeed, double ySpeed, double rot, boolean fieldRelative) {
     drive(xSpeed, ySpeed, rot, fieldRelative, false);
   }
-
-  /////// AI CODE ///////
-  /**
-   * Applies rotational momentum for realistic turn coast-down (simulation only)
-   * 
-   * @param desiredRot Target rotational velocity (rad/s)
-   * @return Rotational velocity after applying momentum
-   */
-  private double applyRotationalMomentum(double desiredRot) {
-    double rotDifference = desiredRot - simCurrentRotationalVelocity;
-    double dt = 0.02; // 20ms loop time
-
-    if (Math.abs(desiredRot) > Math.abs(simCurrentRotationalVelocity)) {
-      // Accelerating rotation - fast response
-      double maxAccelStep = Constants.Bot.maxChassisTurnSpeed * 10 * dt; // Fast rotation accel
-      double accelStep = Math.min(Math.abs(rotDifference), maxAccelStep);
-      simCurrentRotationalVelocity += Math.signum(rotDifference) * accelStep;
-    } else {
-      // Decelerating rotation - apply slow decel + drag
-      double maxDecelStep = Constants.Bot.simMaxRotationalDeceleration * dt;
-      double dragForce = simCurrentRotationalVelocity * Constants.Bot.simDragCoefficient;
-
-      double decelStep = Math.min(Math.abs(rotDifference), maxDecelStep);
-      simCurrentRotationalVelocity -= Math.signum(simCurrentRotationalVelocity) *
-          (decelStep + Math.abs(dragForce));
-
-      // Clamp to zero at very low speeds to avoid drift
-      if (Math.abs(simCurrentRotationalVelocity) < 0.01) {
-        simCurrentRotationalVelocity = 0;
-      }
-
-      // If we've reached the desired speed, clamp to it
-      if (Math.abs(simCurrentRotationalVelocity - desiredRot) < 0.01) {
-        simCurrentRotationalVelocity = desiredRot;
-      }
-    }
-
-    return simCurrentRotationalVelocity;
-  }
-  /////// END AI CODE ///////
 
   public void driveRobotRelative(ChassisSpeeds speeds) {
     drive(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond, speeds.omegaRadiansPerSecond, false);
