@@ -2,6 +2,8 @@ package frc.robot.subsystems.Turret;
 
 import java.util.Optional;
 
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -16,7 +18,8 @@ import frc.robot.subsystems.odometry.Odometry;
 public class AutoAim extends AimType {
     private static double predictForwardTime = 0;
     private static double predictForwardWhenCheckingMultiplier = 1; // Multiplies predict forward time when checking if
-                                                                    // a shot will go in for should shoot.
+                                                                    // a shot will go in for should shoot
+    private LoggedNetworkNumber errorLog = new LoggedNetworkNumber("AutoAim/error", 0);
 
     public static class Target {
         private Vector2 position;
@@ -45,7 +48,7 @@ public class AutoAim extends AimType {
             true,
             new ShotPredictor.HeightBounds(
                     Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
-                    Units.inchesToMeters(2 + Constants.PathplannerConstants.TopOfHubHeightInches
+                    Units.inchesToMeters(5 + Constants.PathplannerConstants.TopOfHubHeightInches
                             + Constants.PathplannerConstants.FuelRadiusInches), // desired height
                     Units.inchesToMeters(1 + Constants.PathplannerConstants.TopOfHubHeightInches
                             + Constants.PathplannerConstants.FuelRadiusInches) // min height
@@ -137,7 +140,7 @@ public class AutoAim extends AimType {
         return result.isPresent() && result.get().ShotSpeed <= Constants.Limits.Turret.maxFuelVelocity;
     }
 
-    private boolean EstimateWillScore(double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
+    private Pair<Boolean, Double> EstimateWillScore(double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
         // System.out.println("Flywheel: " + flywheelMeasurement);
         Pair<Pose2d, Vector2> futureState = getFutureState(predictForwardTime * predictForwardWhenCheckingMultiplier);
         Pose2d pose = futureState.getFirst();
@@ -167,13 +170,13 @@ public class AutoAim extends AimType {
 
         if (desc < 0) {
             // System.out.println("Never reaches height!");
-            return false;
+            return new Pair<Boolean,Double>(false, Double.MAX_VALUE);
         }
 
         // the times that the ball is at the right height
         double[] ScoreTs = { (-b + Math.sqrt(desc)) / (2 * a), (-b - Math.sqrt(desc)) / (2 * a) };
 
-        double bestDist = Double.MAX_VALUE;
+        double bestDistSq = Double.MAX_VALUE;
         Optional<Double> bestT = Optional.empty();
 
         // check which t is most likely to be when it scores by checking horizontal
@@ -188,18 +191,21 @@ public class AutoAim extends AimType {
             double scoreDistSq = horizontalVelocity.mult(t).add(initialPosition).sub(targetPosition).magSq();
             // System.out.println("Score dist: " + Math.sqrt(scoreDistSq));
             if (scoreDistSq > currentTarget.scoreTolerance * currentTarget.scoreTolerance) {
+                if (scoreDistSq < bestDistSq) {
+                    bestDistSq = scoreDistSq;
+                }
                 continue;
             }
 
-            if (scoreDistSq < bestDist) {
-                bestDist = scoreDistSq;
+            if (scoreDistSq < bestDistSq) {
+                bestDistSq = scoreDistSq;
                 bestT = Optional.of(t);
             }
         }
 
         if (bestT.isEmpty()) {
             // System.out.println("No good score time!");
-            return false;
+            return new Pair<Boolean,Double>(false, bestDistSq);
         }
 
         double scoreT = bestT.get();
@@ -216,7 +222,7 @@ public class AutoAim extends AimType {
 
         if (desc < 0) {
             // System.out.println("Never enters ring!");
-            return false;
+            return new Pair<Boolean,Double>(false, Math.sqrt(bestDistSq));
         }
 
         // the times that the ball passes the height check radius for the target
@@ -235,20 +241,23 @@ public class AutoAim extends AimType {
             double height = initialHeight + verticalVelocity * t + 0.5 * ShotPredictor.gravity * t * t;
             if (!currentTarget.heightBounds.IsInBounds(height)) {
                 // System.out.println("Passes ring out of height bounds!!");
-                return false;
+                return new Pair<Boolean,Double>(false, Math.sqrt(bestDistSq));
             }
 
             success = true;
         }
 
-        return success;
+        return new Pair<Boolean,Double>(true, Math.sqrt(bestDistSq));
     }
 
     @Override
     public void periodic(double deltaTime, double hoodMeasurement, double flywheelMeasurement,
             double rotationMeasurement) {
-        shouldShoot = predict(deltaTime)
-                && EstimateWillScore(hoodMeasurement, flywheelMeasurement, rotationMeasurement);
+        predict(deltaTime);
+         
+        Pair<Boolean, Double> resultPair = EstimateWillScore(hoodMeasurement, flywheelMeasurement, rotationMeasurement);
+        shouldShoot = resultPair.getFirst();
+        errorLog.set(resultPair.getSecond());
     }
 
     @Override

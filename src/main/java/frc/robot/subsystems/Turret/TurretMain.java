@@ -112,6 +112,7 @@ public class TurretMain extends SubsystemBase {
     private final LoggedNetworkNumber kP;
     private final LoggedNetworkNumber kI;
     private final LoggedNetworkNumber kD;
+    private final LoggedNetworkNumber error;
     private final LoggedNetworkNumber setpoint;
     private final LoggedNetworkNumber measurement;
 
@@ -119,6 +120,7 @@ public class TurretMain extends SubsystemBase {
       kP = new LoggedNetworkNumber("PID/" + name + "/kP", defaultP);
       kI = new LoggedNetworkNumber("PID/" + name + "/kI", defaultI);
       kD = new LoggedNetworkNumber("PID/" + name + "/kD", defaultD);
+      error = new LoggedNetworkNumber("PID/" + name + "/error", defaultD);
       setpoint = new LoggedNetworkNumber("PID/" + name + "/setpoint", 0);
       measurement = new LoggedNetworkNumber("PID/" + name + "/measurement", 0);
     }
@@ -135,12 +137,10 @@ public class TurretMain extends SubsystemBase {
       return kD.get();
     }
 
-    public void setSetpoint(double sp) {
+    public void update(double sp, double m) {
       setpoint.set(sp);
-    }
-
-    public void setMeasurement(double m) {
       measurement.set(m);
+      error.set(Math.abs(sp - m));
     }
   }
 
@@ -285,11 +285,15 @@ public class TurretMain extends SubsystemBase {
     hoodPID.setPID(hoodPIDInputs.getP(), hoodPIDInputs.getI(), hoodPIDInputs.getD());
     rotationProfiledPID.setPID(rotationPIDInputs.getP(), rotationPIDInputs.getI(), rotationPIDInputs.getD());
 
-    hoodPIDInputs.setMeasurement(hoodEncoder.getAbsolutePosition());
-    rotationPIDInputs.setMeasurement(turretEncoder.getAbsolutePosition());
-
-    hoodPIDInputs.setSetpoint(hoodSetpoint);
-    rotationPIDInputs.setSetpoint((turretSetpoint % 360 + 360) % 360);
+    double turretEnc = turretEncoder.getAbsolutePosition();
+    while (turretEnc > 180) {
+      turretEnc -= 360;
+    }
+    while (turretEnc <= -180) {
+      turretEnc += 360;
+    }
+    hoodPIDInputs.update(hoodSetpoint, hoodEncoder.getAbsolutePosition());
+    rotationPIDInputs.update(turretSetpoint, turretEnc);
 
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
