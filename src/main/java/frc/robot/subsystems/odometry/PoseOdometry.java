@@ -135,9 +135,10 @@ public class PoseOdometry extends Odometry {
     smoothedVelocity = new Vector2(velXFilter.calculate(rawVel.X), velYFilter.calculate(rawVel.Y));
     smoothedRotVel = rotVelFilter.calculate(getRawAngularVelocity());
 
-    Logger.recordOutput("Odometry/speed", smoothedVelocity.magnitude());
+    Logger.recordOutput("Odometry/speed/X", getBotVelocity(true).X);
+    Logger.recordOutput("Odometry/speed/Y", getBotVelocity(true).Y);
+    Logger.recordOutput("Odometry/speed/magnitude", getBotVelocity(true).magnitude());
     Logger.recordOutput("Odometry/rotSpeed", smoothedRotVel);
-    Logger.recordOutput("Odometry/speedRaw", rawVel.magnitude());
     Logger.recordOutput("Odometry/rotSpeedRaw", getRawAngularVelocity());
   }
 
@@ -236,8 +237,9 @@ public class PoseOdometry extends Odometry {
     return smoothedRotVel;
   }
 
-  public Vector2 getBotVelocity() {
-    return smoothedVelocity;
+  public Vector2 getBotVelocity(boolean fieldRelative) {
+
+    return fieldRelative ? smoothedVelocity.rotate(getAngle()) : smoothedVelocity;
   }
 
   public Vector2 getRawBotVelocity() {

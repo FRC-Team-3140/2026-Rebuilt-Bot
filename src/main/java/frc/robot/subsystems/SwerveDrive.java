@@ -37,16 +37,11 @@ import frc.robot.subsystems.odometry.Odometry;
 public class SwerveDrive extends SubsystemBase {
 
   private static SwerveDrive instance = SwerveDrive.getInstance();
-  PIDController thetaController = new PIDController(0, 0, 0);
-  LoggedPIDInputs thetaPIDInputs = new LoggedPIDInputs("ThetaController", 0, 0, 0);
+  PIDController thetaController = new PIDController(0.2, 0, 0);
+  LoggedPIDInputs thetaPIDInputs = new LoggedPIDInputs("ThetaController", 0.2, 0, 0);
   SwerveModuleState[] swerveModuleStates = new SwerveModuleState[4];
   // private Camera camera = Camera.getInstance();
   public static Odometry odometry;
-
-  /////// AI CODE ///////
-  // Simulation-only rotational momentum
-  private double simCurrentRotationalVelocity = 0;
-  /////// END AI CODE ///////
 
   // Locations of the swerve modules relative to the robot center
   public final Translation2d[] locations = {

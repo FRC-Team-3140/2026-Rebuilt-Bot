@@ -70,10 +70,10 @@ public class AutoAim extends AimType {
 
     private Pair<Pose2d, Vector2> getFutureState(double dt) {
         Odometry odometry = Odometry.getInstance();
-        Vector2 futureBotVelocity = odometry.getBotVelocity().add(odometry.getBotAcceleration().mult(dt));
+        Vector2 futureBotVelocity = odometry.getBotVelocity(true).add(odometry.getBotAcceleration().mult(dt));
 
         // position = velocity*time + acceleration*0.5*time^2
-        Vector2 predictedPositionChange = odometry.getBotVelocity().mult(dt).add(
+        Vector2 predictedPositionChange = odometry.getBotVelocity(true).mult(dt).add(
                 odometry.getBotAcceleration().mult(0.5 * dt * dt));
         Vector2 futureBotPosition = odometry.getPosition().add(predictedPositionChange);
 

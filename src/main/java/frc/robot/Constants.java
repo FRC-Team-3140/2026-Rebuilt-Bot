@@ -120,8 +120,8 @@ public final class Constants {
       public static final double hoodD = 0.0001;
 
       public static final double rotationP = 0.0075;
-      public static final double rotationI = 0.004;
-      public static final double rotationD = 0.0001;
+      public static final double rotationI = 0.000;
+      public static final double rotationD = 0.00015;
 
     }
 
@@ -131,11 +131,10 @@ public final class Constants {
       public static final double intakeD = 0.0;
     }
   }
-
   public static class FeedFoward {
     public static class Turret {
-      public static final double flywheelS = 0.02;
-      public static final double flywheelV = 0.0167;
+      public static final double flywheelS = 0.1;
+      public static final double flywheelV = 0.001642;
       public static final double flywheelA = 0.0;
     }
 

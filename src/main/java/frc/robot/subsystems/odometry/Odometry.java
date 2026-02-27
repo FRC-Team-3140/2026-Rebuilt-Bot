@@ -138,7 +138,7 @@ abstract public class Odometry extends SubsystemBase {
       return getGyro().isMoving();
   }
 
-  abstract public Vector2 getBotVelocity();
+  abstract public Vector2 getBotVelocity(boolean fieldRelative);
 
   abstract public Vector2 getBotAcceleration();
 

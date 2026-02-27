@@ -151,7 +151,8 @@ public class CustomOdometry extends Odometry {
     return super.getPose();
   }
 
-  public Vector2 getBotVelocity() {
+  public Vector2 getBotVelocity(boolean fieldRelative) {
+    // TODO: add field-relative velocity if needed
     return botVelocity;
   }
 

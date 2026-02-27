@@ -82,7 +82,10 @@ public class TurretMain extends SubsystemBase {
       Constants.PID.Turret.rotationD);
 
   public SimpleMotorFeedforward flywheelFeedforward;
-
+  public LoggedPIDInputs flywheelFeedfowardInputs = new LoggedPIDInputs("FlywheelFeedforward",
+      Constants.FeedFoward.Turret.flywheelS,
+      Constants.FeedFoward.Turret.flywheelV,
+      Constants.FeedFoward.Turret.flywheelA);
   private boolean spinup = false;
 
   private static final double RPMSpeedConversion = 0.0762 * 2 * Math.PI / 60; // convert from m/s to RPM
@@ -196,11 +199,11 @@ public class TurretMain extends SubsystemBase {
   public TurretMain() {
     hoodPID.setPID(hoodPIDInputs.getP(), hoodPIDInputs.getI(), hoodPIDInputs.getD());
     rotationProfiledPID.setPID(rotationPIDInputs.getP(), rotationPIDInputs.getI(), rotationPIDInputs.getD());
-
     flywheelFeedforward = new SimpleMotorFeedforward(
-        Constants.FeedFoward.Turret.flywheelS,
-        Constants.FeedFoward.Turret.flywheelV,
-        Constants.FeedFoward.Turret.flywheelA);
+        flywheelFeedfowardInputs.getP(),
+        flywheelFeedfowardInputs.getI(),
+        flywheelFeedfowardInputs.getD());
+
 
     // hoodPID.enableContinuousInput(0, 360);
 
@@ -284,6 +287,9 @@ public class TurretMain extends SubsystemBase {
 
     hoodPID.setPID(hoodPIDInputs.getP(), hoodPIDInputs.getI(), hoodPIDInputs.getD());
     rotationProfiledPID.setPID(rotationPIDInputs.getP(), rotationPIDInputs.getI(), rotationPIDInputs.getD());
+    flywheelFeedforward.setKs(flywheelFeedfowardInputs.getP());
+    flywheelFeedforward.setKv(flywheelFeedfowardInputs.getI());
+    flywheelFeedforward.setKa(flywheelFeedfowardInputs.getD());
 
     double turretEnc = turretEncoder.getAbsolutePosition();
     while (turretEnc > 180) {
@@ -294,6 +300,7 @@ public class TurretMain extends SubsystemBase {
     }
     hoodPIDInputs.update(hoodSetpoint, hoodEncoder.getAbsolutePosition());
     rotationPIDInputs.update(turretSetpoint, turretEnc);
+    flywheelFeedfowardInputs.update(flywheelSetpoint, flywheelMotor.getEncoder().getVelocity());
 
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
@@ -314,7 +321,7 @@ public class TurretMain extends SubsystemBase {
         type.periodic(
             deltaTime,
             hoodEncoder.getAbsolutePosition(),
-            FlywheelRPMToSpeed(RobotBase.isSimulation() ? flywheelSetpoint : flywheelMotor.getEncoder().getVelocity()),
+            FlywheelRPMToSpeed(  flywheelMotor.getEncoder().getVelocity()),
             turretEncoder.getAbsolutePosition());
 
         flywheelSetpoint = FlywheelSpeedToRPM(type.flywheelSpeed); // convert from m/s to RPM
@@ -349,9 +356,6 @@ public class TurretMain extends SubsystemBase {
     } else {
       flywheelMotor.setVoltage(0);
     }
-    Logger.recordOutput("TurretMain/Flywheel/Setpoint", flywheelSetpoint);
-    Logger.recordOutput("TurretMain/Flywheel/Speed", flywheelMotor.getEncoder().getVelocity());
-    Logger.recordOutput("TurretMain/Flywheel/FeedFowardOutput", flywheelFeedforward.calculate(flywheelSetpoint));
 
     hoodPose = new Pose3d(
         Constants.SIM.hoodMechOffset.getX(),
@@ -447,14 +451,12 @@ public class TurretMain extends SubsystemBase {
     Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
 
     // Calculate robot's velocity direction (field-relative)
-    double robotVelX = Odometry.getInstance().getBotVelocity().X; // implement or replace with your method
-    double robotVelY = Odometry.getInstance().getBotVelocity().Y; // implement or replace with your method
+    double robotVelX = Odometry.getInstance().getBotVelocity(true).X; // implement or replace with your method
+    double robotVelY = Odometry.getInstance().getBotVelocity(true).Y; // implement or replace with your method
     double robotVelZ = 0; // usually 0 unless you have a swerve module that can jump :)
 
     // Calculate projectile speed (magnitude)
-    double projectileSpeed = FlywheelRPMToSpeed(flywheelSetpoint); // flywheelMotor.getEncoder().getVelocity()/*flywheelSetpoint*/
-                                                                   // * RPMSpeedConversion /
-                                                                   // Constants.Bot.flywheelGearRatio;
+    double projectileSpeed = FlywheelRPMToSpeed(flywheelMotor.getEncoder().getVelocity());
 
     // Calculate launch direction from shooter pose
     Rotation3d rot = shooterPose.getRotation();
