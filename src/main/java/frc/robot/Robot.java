@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.commands.swerveDrive.SetSwerveStates;
 import frc.robot.commands.swerveDrive.SwerveDriveManualControl;
-import frc.robot.commands.turret.Fire_Away;
+import frc.robot.commands.turret.FireAway;
 import frc.robot.libs.NetworkTables;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.SwerveDrive;
@@ -159,8 +159,8 @@ public class Robot extends LoggedRobot {
         Constants.Bot.maxChassisSpeed, Constants.Bot.maxChassisTurnSpeed, true));
 
     // TODO: Determine if we want this to happen IRL as well
-    if (Robot.isSimulation())
-      RobotContainer.turret.setDefaultCommand(new Fire_Away(RobotContainer.turret));
+    // if (Robot.isSimulation())
+    //   RobotContainer.turret.setDefaultCommand(new FireAway(RobotContainer.turret));
 
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to

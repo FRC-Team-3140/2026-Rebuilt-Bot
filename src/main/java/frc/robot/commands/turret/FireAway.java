@@ -14,7 +14,7 @@ import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Turret.TurretMain;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
-public class Fire_Away extends Command {
+public class FireAway extends Command {
   private final SwerveDrive swerve = SwerveDrive.getInstance();
   private final TurretMain turret;
 
@@ -30,7 +30,7 @@ public class Fire_Away extends Command {
    *               <p>
    *               Simply shoots <b><i>UNTIL CANCELLED</i></b>.
    */
-  public Fire_Away(TurretMain turret) {
+  public FireAway(TurretMain turret) {
     this.turret = turret;
 
     // Use addRequirements() here to declare subsystem dependencies.

@@ -229,17 +229,7 @@ public class Controller extends SubsystemBase {
       Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
     }
 
-    if (primaryController.getXButtonPressed() && Robot.isSimulation()) {
-      TurretMain.getInstance().shootSimFuel();
-    }
-
-    if (primaryController.getRightBumperButtonPressed()) {
-      TurretMain.getInstance().setFlywheelActive(true);
-    }
-
-    if (primaryController.getRightBumperButtonReleased()) {
-      TurretMain.getInstance().setFlywheelActive(false);
-    }
+    TurretMain.getInstance().setFlywheelActive(primaryController.getRightTriggerAxis() > triggerThreshold);
 
     if (primaryController.getBButtonPressed()) {
       Intake.getInstance().stow();
@@ -274,13 +264,8 @@ public class Controller extends SubsystemBase {
 
     reusableDefaultControls();
 
-    if (primaryController.getRightTriggerAxis() > triggerThreshold && TurretMain.getInstance().getFlywheelActive()) {
-      Feeder.getInstance().setFeederActive(true);
-    }
-
-    if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
-      // TODO: Climb
-    }
+    System.out.println("Trigger: "+ (primaryController.getRightTriggerAxis()) + "\tBumper:" + primaryController.getRightBumperButton());    
+    Feeder.getInstance().setFeederActive(primaryController.getRightTriggerAxis() > triggerThreshold && TurretMain.getInstance().getFlywheelActive());
   }
 
   private void ManualMode() {
@@ -291,13 +276,8 @@ public class Controller extends SubsystemBase {
 
     reusableDefaultControls();
 
-    if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
-      // TODO: Climb with primary && Climb Manually With Secondary
-    }
-
-    if (secondaryController.getYButtonPressed()) {
-      TurretMain.getInstance().setAimMode(TurretMain.AimOpt.MANUAL);
-    }
+    Feeder.getInstance().setFeederActive(
+        primaryController.getRightBumperButton() && primaryController.getRightBumperButton());
   }
 
   private void OHNOManualMode() {
@@ -308,12 +288,6 @@ public class Controller extends SubsystemBase {
 
     Feeder.getInstance().setFeederActive(
         primaryController.getRightTriggerAxis() > triggerThreshold && primaryController.getRightBumperButton());
-
-    if (primaryController.getLeftTriggerAxis() > triggerThreshold) {
-      // TODO: Climb Manually With Secondary
-    }
-
-    TurretMain.getInstance().setAimMode(TurretMain.AimOpt.MANUAL);
   }
 
   private void testingMode() {

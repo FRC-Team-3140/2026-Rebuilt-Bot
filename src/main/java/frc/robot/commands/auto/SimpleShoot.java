@@ -16,7 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Constants;
-import frc.robot.commands.turret.Fire_Away;
+import frc.robot.commands.turret.FireAway;
 import frc.robot.subsystems.Turret.TurretMain;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -36,6 +36,6 @@ public class SimpleShoot extends SequentialCommandGroup {
     this.addCommands(
         pathCommand,
         new InstantCommand(() -> TurretMain.getInstance().setHoodAngle(Constants.Limits.Turret.minPitch)),
-        new Fire_Away(TurretMain.getInstance()));
+        new FireAway(TurretMain.getInstance()));
   }
 }

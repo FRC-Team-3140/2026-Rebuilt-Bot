@@ -8,6 +8,8 @@ import com.revrobotics.spark.SparkMax;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.Robot;
+import frc.robot.Constants.CurrentLimits.Turret;
 import frc.robot.subsystems.Turret.TurretMain;
 
 public class Feeder extends SubsystemBase {
@@ -35,11 +37,18 @@ public class Feeder extends SubsystemBase {
 
   @Override
   public void periodic() {
+    System.out.println("Feeder: " + feederActive + "\tShould: " + TurretMain.getInstance().shouldShoot() + "\tFlywheel: " + TurretMain.getInstance().getFlywheelActive());
     // This method will be called once per scheduler run
     if (feederActive && TurretMain.getInstance().shouldShoot()) {
       feederMotor.set(Constants.MotorSpeeds.Feeder.feederSpeed);
+
+      if (Robot.isSimulation()) {
+        TurretMain.getInstance().shootSimFuel();
+      }
     } else {
       feederMotor.set(0);
     }
+
+    
   }
 }

@@ -17,7 +17,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
-import frc.robot.commands.turret.Fire_Away;
+import frc.robot.commands.turret.FireAway;
 import frc.robot.subsystems.Intake;
 import frc.robot.subsystems.Turret.TurretMain;
 
@@ -37,6 +37,6 @@ public class Pickup_Outpost_Shoot extends SequentialCommandGroup {
 
     // TODO: ADD SHOOT LOGIC WITH CHECKBOX TO TACK ON CLIMBING (WHILE SHOOTING)
     this.addCommands(pathCommand.andThen(new InstantCommand(() -> Intake.getInstance().deploy())),
-        new WaitCommand(4).alongWith(new Fire_Away(TurretMain.getInstance())));
+        new WaitCommand(4).alongWith(new FireAway(TurretMain.getInstance())));
   }
 }

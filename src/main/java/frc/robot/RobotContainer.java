@@ -19,7 +19,7 @@ import frc.robot.commands.auto.Pickup_Outpost_Shoot;
 import frc.robot.commands.auto.R2L_Neutral;
 import frc.robot.commands.auto.SimpleShoot;
 import frc.robot.commands.swerveDrive.Drive;
-import frc.robot.commands.turret.Fire_Away;
+import frc.robot.commands.turret.FireAway;
 import frc.robot.libs.FieldAprilTags;
 import frc.robot.libs.FlipPose;
 import frc.robot.libs.NetworkTables;
@@ -204,7 +204,7 @@ public class RobotContainer {
     }
 
     if (NetworkTables.shouldShoot_b.getBoolean(false))
-      return autoCommand.alongWith(new Fire_Away(turret));
+      return autoCommand.alongWith(new FireAway(turret));
 
     return autoCommand;
   }
