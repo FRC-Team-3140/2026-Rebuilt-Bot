@@ -58,6 +58,8 @@ public class TurretMain extends SubsystemBase {
 
   double lastUpdateTimestamp = 0;
 
+  public static final double stowRange = 0.6; // meters
+
   @AutoLogOutput
   double hoodSetpoint = 0; // degrees
   @AutoLogOutput
@@ -276,8 +278,8 @@ public class TurretMain extends SubsystemBase {
     Vector2 turretDirection = Constants.PathplannerConstants.botTurretOffset.rotate(Odometry.getInstance().getAngle());
     Vector2 turretPosition = botPosition.add(turretDirection);
 
-    // TODO: Logic to check if it needs to stow based on turretPosition
-    boolean shouldStow = false;
+    boolean shouldStow = Math.abs(turretPosition.X - Constants.PathplannerConstants.blueTrenchX) < stowRange ||
+      Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
 
     return shouldStow;
   }
@@ -309,7 +311,6 @@ public class TurretMain extends SubsystemBase {
       if (lastUpdateTimestamp == 0) {
         lastUpdateTimestamp = Timer.getFPGATimestamp();
         // first update, setup
-        // TODO: read hood setpoint from encoder so that predict can work properly
         shouldShootMode = false;
       } else {
         double t = Timer.getFPGATimestamp();
@@ -335,8 +336,7 @@ public class TurretMain extends SubsystemBase {
     boolean stow = shouldStow();
     shouldShoot = shouldShootMode && !stow;
 
-    hoodPID.setSetpoint(stow ? 90 : hoodSetpoint); // TODO: Is this right? I think it is but make sure. Maybe its more
-                                                   // like 80? Maybe use the Constants.Limits.Turret.MaxPitch
+    hoodPID.setSetpoint(stow ? 90 : hoodSetpoint);
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     hoodMotor.set(hoodPID.calculate(hoodEncoder.getAbsolutePosition()));

@@ -280,6 +280,9 @@ public final class Constants {
     public static final Vector2 botTurretOffset = new Vector2(-0.1366, 0); // when the robot is facing positive x at the
                                                                            // origin, position of turret.
 
+    public static final double blueTrenchX = 4.625;
+    public static final double redTrenchX = 11.915;
+
     // Translation PID Values
     public static final double TransP = 12;
     public static final double TransI = 0;
