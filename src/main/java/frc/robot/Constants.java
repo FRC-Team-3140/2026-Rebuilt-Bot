@@ -77,13 +77,13 @@ public final class Constants {
 
   public static class SensorIDs {
     // Swerve Modules
-    public static final int FL = 2;
+    public static final int FL = 3;
 
-    public static final int FR = 1;
+    public static final int FR = 0;
 
-    public static final int BL = 3;
+    public static final int BL = 2;
 
-    public static final int BR = 0;
+    public static final int BR = 1;
 
     // Intake Absolute Encoder
     public static final int intakeEncoder = 4;
