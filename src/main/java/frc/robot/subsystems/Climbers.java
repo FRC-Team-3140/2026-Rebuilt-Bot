@@ -29,12 +29,12 @@ public class Climbers extends SubsystemBase {
   private final SparkMaxConfig rConfig = new SparkMaxConfig();
 
   // Climber objects
-  public class climber {
+  public class Climber {
     public final SparkMax motor;
     public final SparkMaxConfig config;
     public final DigitalInput limitSwitch;
 
-    private climber(SparkMax motor, SparkMaxConfig config, DigitalInput limitSwitch) {
+    private Climber(SparkMax motor, SparkMaxConfig config, DigitalInput limitSwitch) {
       this.motor = motor;
       this.config = config;
       this.limitSwitch = limitSwitch;
@@ -49,8 +49,8 @@ public class Climbers extends SubsystemBase {
     }
   }
 
-  public final climber LEFT = new climber(lClimber, lConfig, climberLimitSwitchL);
-  public final climber RIGHT = new climber(rClimber, rConfig, climberLimitSwitchR);
+  public final Climber LEFT = new Climber(lClimber, lConfig, climberLimitSwitchL);
+  public final Climber RIGHT = new Climber(rClimber, rConfig, climberLimitSwitchR);
 
   public static Climbers getInstance() {
     if (m_Instance == null) {
