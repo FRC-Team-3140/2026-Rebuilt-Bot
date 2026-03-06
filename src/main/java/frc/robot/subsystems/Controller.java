@@ -225,7 +225,11 @@ public class Controller extends SubsystemBase {
     }
 
     if (primaryController.getLeftBumperButtonPressed()) {
-      Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
+      if (Intake.getInstance().isActive()) {
+        Intake.getInstance().intake(0);
+      } else {
+        Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed/2);
+      }
     }
 
     TurretMain.getInstance().setFlywheelActive(primaryController.getRightTriggerAxis() > triggerThreshold);
@@ -263,8 +267,10 @@ public class Controller extends SubsystemBase {
 
     reusableDefaultControls();
 
-    //System.out.println("Trigger: "+ (primaryController.getRightTriggerAxis()) + "\tBumper:" + primaryController.getRightBumperButton());    
-    Feeder.getInstance().setFeederActive(primaryController.getRightBumperButton() && TurretMain.getInstance().getFlywheelActive());
+    // System.out.println("Trigger: "+ (primaryController.getRightTriggerAxis()) +
+    // "\tBumper:" + primaryController.getRightBumperButton());
+    Feeder.getInstance()
+        .setFeederActive(primaryController.getRightBumperButton() && TurretMain.getInstance().getFlywheelActive());
   }
 
   private void ManualMode() {

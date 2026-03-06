@@ -217,12 +217,13 @@ public class TurretMain extends SubsystemBase {
 
     turretConfig.idleMode(IdleMode.kBrake);
     hoodConfig.idleMode(IdleMode.kBrake);
-    flywheelConfig.idleMode(IdleMode.kCoast);
+    flywheelConfig.idleMode(IdleMode.kCoast).inverted(true);
 
     turretConfig.smartCurrentLimit(Constants.CurrentLimits.Turret.turretLimit);
 
     turretRotationMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    flywheelMotor.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
     hoodPID.setSetpoint(hoodSetpoint);
 

@@ -100,6 +100,10 @@ public class Intake extends SubsystemBase {
     intakeRollerMotor.set(-Math.abs(speed));
   }
 
+  public boolean isActive() {
+    return intakeRollerMotor.get() > 0;
+  }
+
   @Override
   public void periodic() {
     intakeArmMotor.set(intakePID.calculate(intakeEncoder.get(), intakeSetpoint));

@@ -133,8 +133,8 @@ public final class Constants {
   }
   public static class FeedFoward {
     public static class Turret {
-      public static final double flywheelS = 0;//0.1;
-      public static final double flywheelV = 0;//0.001642;
+      public static final double flywheelS = 0.1;
+      public static final double flywheelV = 0.001642;
       public static final double flywheelA = 0.0;
     }
 
