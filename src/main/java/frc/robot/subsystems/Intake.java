@@ -22,7 +22,6 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.libs.AbsoluteEncoder;
 
 public class Intake extends SubsystemBase {
   private Pose3d armPose = Constants.SIM.intakeMechOffset;

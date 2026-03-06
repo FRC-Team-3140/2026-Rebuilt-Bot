@@ -73,7 +73,7 @@ public class SwerveDrive extends SubsystemBase {
           Constants.MotorIDs.BRVortex,
           Constants.MotorIDs.BRNeo,
           Constants.Bot.BRZeroOffset,
-          false),
+          true),
       new SwerveModule("backLeft",
           Constants.SensorIDs.BL,
           Constants.MotorIDs.BLVortex,
@@ -96,8 +96,7 @@ public class SwerveDrive extends SubsystemBase {
 
     thetaController.setPID(thetaPIDInputs.getP(), thetaPIDInputs.getI(), thetaPIDInputs.getD());
 
-
-    NetworkTables.lookTowardsTarget_b.setBoolean(true);
+    NetworkTables.lookTowardsTarget_b.setBoolean(false);
 
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     thetaController.setTolerance(Math.PI / 45); // 4 degrees
@@ -141,7 +140,8 @@ public class SwerveDrive extends SubsystemBase {
 
   public void periodic() {
     thetaController.setPID(thetaPIDInputs.getP(), thetaPIDInputs.getI(), thetaPIDInputs.getD());
-    thetaPIDInputs.update(TurretMain.getInstance().getLookDirection(), ((odometry.getGyroRotation().getDegrees() + 180) % 360 + 360) % 360);
+    thetaPIDInputs.update(TurretMain.getInstance().getLookDirection(),
+        ((odometry.getGyroRotation().getDegrees() + 180) % 360 + 360) % 360);
     odometry.update();
     updateNetworktables();
   }

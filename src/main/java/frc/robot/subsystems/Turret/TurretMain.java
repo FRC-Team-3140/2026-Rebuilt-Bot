@@ -35,7 +35,6 @@ import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
-import frc.robot.libs.AbsoluteEncoder;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.TestRunner;
 import frc.robot.subsystems.TestRunner.TestType;
@@ -54,7 +53,7 @@ public class TurretMain extends SubsystemBase {
   public SparkMaxSim turretRotationMotorSim;
   public SparkFlexSim flywheelMotorSim;
   public SparkMaxSim hoodMotorSim;
-// ROBOT WIN = TRUE
+  // ROBOT WIN = TRUE
   public DutyCycleEncoder hoodEncoder = new DutyCycleEncoder(Constants.SensorIDs.hoodEncoder, 1, 0);
   public DutyCycleEncoderSim hoodEncoderSim = new DutyCycleEncoderSim(hoodEncoder);
   public DutyCycleEncoder turretEncoder = new DutyCycleEncoder(Constants.SensorIDs.turretEncoder, 1, 0);
@@ -210,7 +209,6 @@ public class TurretMain extends SubsystemBase {
         flywheelFeedfowardInputs.getI(),
         flywheelFeedfowardInputs.getD());
 
-
     // hoodPID.enableContinuousInput(0, 360);
 
     SparkMaxConfig turretConfig = new SparkMaxConfig();
@@ -283,7 +281,7 @@ public class TurretMain extends SubsystemBase {
     Vector2 turretPosition = botPosition.add(turretDirection);
 
     boolean shouldStow = Math.abs(turretPosition.X - Constants.PathplannerConstants.blueTrenchX) < stowRange ||
-      Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
+        Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
 
     return shouldStow;
   }
@@ -326,7 +324,7 @@ public class TurretMain extends SubsystemBase {
         type.periodic(
             deltaTime,
             hoodEncoder.get(),
-            FlywheelRPMToSpeed(  flywheelMotor.getEncoder().getVelocity()),
+            FlywheelRPMToSpeed(flywheelMotor.getEncoder().getVelocity()),
             turretEncoder.get());
 
         flywheelSetpoint = FlywheelSpeedToRPM(type.flywheelSpeed); // convert from m/s to RPM
