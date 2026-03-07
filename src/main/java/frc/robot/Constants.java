@@ -218,7 +218,7 @@ public final class Constants {
     };
 
     public static final double intakeGearRatio = 50;
-    public static final double turretGearRatio = 10; // TODO: FIX
+    public static final double turretGearRatio = 95/18.0; // TODO: FIX
     public static final double hoodGearRatio = 1;
     public static final double hoodZeroOffset = 52.856759 + 65.594380;
     public static final double flywheelGearRatio = 10;
