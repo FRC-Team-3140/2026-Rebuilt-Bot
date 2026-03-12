@@ -63,11 +63,11 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   public Intake() {
     SparkMaxConfig config = new SparkMaxConfig();
-    config.inverted(true);
 
     intakePID.enableContinuousInput(0, 1);
 
     intakeRollerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+    config.inverted(true);
 
     config.idleMode(IdleMode.kBrake).inverted(true);
 

@@ -228,7 +228,7 @@ public class Controller extends SubsystemBase {
       if (Intake.getInstance().isActive()) {
         Intake.getInstance().intake(0);
       } else {
-        Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed/2);
+        Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
       }
     }
 

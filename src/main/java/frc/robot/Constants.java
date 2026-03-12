@@ -103,14 +103,14 @@ public final class Constants {
 
   public static class MotorSpeeds {
     public static class Intake {
-      public static final double intakeSpeed = 0.7;
+      public static final double intakeSpeed = 1;
       public static final double outtakeSpeed = -0.7;
 
       public static final double agitateSpeed = 0.1;
     }
 
     public static class Feeder {
-      public static final double feederSpeed = 0.6;
+      public static final double feederSpeed = 1;
     }
   }
 
@@ -134,8 +134,8 @@ public final class Constants {
   }
   public static class FeedFoward {
     public static class Turret {
-      public static final double flywheelS = 0.1;
-      public static final double flywheelV = 0.001642;
+      public static final double flywheelS = 0.01; // PHISCIALLY TUNED
+      public static final double flywheelV = 0.001855; // FISICALY TUNEED
       public static final double flywheelA = 0.0;
     }
 
@@ -227,9 +227,9 @@ public final class Constants {
 
   public static class Limits {
     public static class Turret {
-      public static final double minPitch = 45; // degrees above horizontal
-      public static final double maxPitch = 80;
-      public static final double maxAngularVelocity = 30; // degrees per second
+      public static final double minPitch = 69.7;//45; // degrees above horizontal
+      public static final double maxPitch = 70.0;//80;
+      public static final double maxAngularVelocity = 1000000;//30; // degrees per second
 
       public static final double maxFuelVelocity = 15;
 

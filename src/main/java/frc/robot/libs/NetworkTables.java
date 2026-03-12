@@ -90,6 +90,8 @@ public class NetworkTables {
     
   private static NetworkTable misc = dash.getSubTable(Constants.NetworktablePaths.Misc);
     public static NetworkTableEntry flywheelTuningVoltage_d = misc.getEntry("flywheelTuningVoltage_d");
+    public static NetworkTableEntry flywheelRPMConversionConstant_d = misc.getEntry("flywheelRPMConversionConstant_d");
+    public static NetworkTableEntry hoodAngle_d = misc.getEntry("hoodAngle_d");
     public static NetworkTableEntry driveModeManual_b = misc.getEntry("driveModeManual_b");
     public static NetworkTableEntry fieldOriented_b = misc.getEntry("fieldOriented_b");
     public static NetworkTableEntry autoAimForCorral_b = misc.getEntry("autoAimForCorral_b");

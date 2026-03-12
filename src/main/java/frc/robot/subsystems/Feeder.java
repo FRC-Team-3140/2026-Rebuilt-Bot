@@ -4,7 +4,10 @@
 
 package frc.robot.subsystems;
 
+import com.revrobotics.PersistMode;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -17,6 +20,8 @@ public class Feeder extends SubsystemBase {
   private boolean feederActive = false;
 
   private final SparkMax feederMotor = new SparkMax(frc.robot.Constants.MotorIDs.feederMotor,
+      SparkMax.MotorType.kBrushless);
+  private final SparkMax rollerMotor = new SparkMax(frc.robot.Constants.MotorIDs.rollerMotor, 
       SparkMax.MotorType.kBrushless);
 
   public static Feeder getInstance() {
@@ -32,19 +37,26 @@ public class Feeder extends SubsystemBase {
 
   /** Creates a new Feeder. */
   public Feeder() {
+    SparkMaxConfig config = new SparkMaxConfig();
+    config.smartCurrentLimit(40);
+    feederMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    config.inverted(true);
+    rollerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (feederActive && TurretMain.getInstance().shouldShoot()) {
+    if (feederActive ){//&& TurretMain.getInstance().shouldShoot()) { //TODO: DON"T FORGET TO REMOVE
       feederMotor.set(Constants.MotorSpeeds.Feeder.feederSpeed);
+      rollerMotor.set(Constants.MotorSpeeds.Feeder.feederSpeed);
 
       if (Robot.isSimulation()) {
         TurretMain.getInstance().shootSimFuel();
       }
     } else {
       feederMotor.set(0);
+      rollerMotor.set(0);
     }
 
     

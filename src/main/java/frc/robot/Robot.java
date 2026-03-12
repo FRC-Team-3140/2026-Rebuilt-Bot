@@ -265,7 +265,7 @@ public class Robot extends LoggedRobot {
         / Constants.Bot.turretGearRatio;
     double turretAngleDeg = turretRotations * 360.0;
     turretAngleDeg = ((turretAngleDeg % 360.0) + 360.0) % 360.0;
-    TurretMain.getInstance().turretEncoderSim.set(turretAngleDeg);
+    //TurretMain.getInstance().turretEncoder.set(turretAngleDeg);
 
     double hoodRotations = TurretMain.getInstance().hoodMotorSim.getPosition() / Constants.Bot.hoodGearRatio;
     double hoodAngleDeg = hoodRotations * 360.0;
