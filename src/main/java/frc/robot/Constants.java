@@ -68,10 +68,10 @@ public final class Constants {
     public static final int intakeArmMotor = 13; // NEO 6
     public static final int intakeArmMotorFollower = 14; // NEO 7
 
-    public static final int feederMotor = 15; // NEO 8
+    public static final int feederMotor = 17; // NEO 8 
     public static final int rollerMotor = 16; // NEO 9
 
-    public static final int climberLeftMotor = 17; // NEO 10
+    public static final int climberLeftMotor = 19; // NEO 10
     public static final int climberRightMotor = 18; // NEO 10
   }
 
@@ -110,7 +110,8 @@ public final class Constants {
     }
 
     public static class Feeder {
-      public static final double feederSpeed = 1;
+      public static final double feederSpeed = 0.75;
+      public static final double rollerSpeed = 0.75;
     }
   }
 
@@ -128,8 +129,8 @@ public final class Constants {
 
     public static class Intake {
       public static final double intakeP = 0;//2;
-      public static final double intakeI = 0;//0.05;
-      public static final double intakeD = 0;//0;
+      public static final double intakeI = 0.0;//0.05;
+      public static final double intakeD = 0.00;//0;
     }
   }
   public static class FeedFoward {
@@ -238,8 +239,8 @@ public final class Constants {
     }
 
     public static class Intake {
-      public static final double deployedPosition = 0.0409; // rotations
-      public static final double stowedPosition = 0.784; // rotations
+      public static final double deployedPosition = 0.02;//0.0409; // rotations
+      public static final double stowedPosition = 0.8;//0.784; // rotations
     }
   }
 

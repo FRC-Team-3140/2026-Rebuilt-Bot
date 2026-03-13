@@ -46,7 +46,7 @@ public class TurretMain extends SubsystemBase {
   /////////////////////////////////////////////////////////////////////
   /// TUNING VOLTAGE OVERRIDE ///
   /////////////////////////////////////////////////////////////////////
-  private final boolean flywheelVoltOverride = true;
+  public static final boolean flywheelVoltOverride = true;
   private final boolean hoodAngleOverride = true;
 
   private Pose3d turretPose = Constants.SIM.turretMechOffset;
@@ -209,13 +209,13 @@ public class TurretMain extends SubsystemBase {
   /** Creates a new Turret. */
   public TurretMain() {
     if (flywheelVoltOverride) {
-      NetworkTables.flywheelTuningVoltage_d.setDouble(0);
+      NetworkTables.flywheelTuningVoltage_d.setDouble(5.000);
     }
     if (hoodAngleOverride) {
-      NetworkTables.hoodAngle_d.setDouble(70);
+      NetworkTables.hoodAngle_d.setDouble(40);
     }
 
-      NetworkTables.flywheelRPMConversionConstant_d.setDouble(1);
+      NetworkTables.flywheelRPMConversionConstant_d.setDouble(0.1);
     hoodPID.setPID(hoodPIDInputs.getP(), hoodPIDInputs.getI(), hoodPIDInputs.getD());
     rotationProfiledPID.setPID(rotationPIDInputs.getP(), rotationPIDInputs.getI(), rotationPIDInputs.getD());
     flywheelFeedforward = new SimpleMotorFeedforward(
@@ -228,7 +228,7 @@ public class TurretMain extends SubsystemBase {
     SparkMaxConfig turretConfig = new SparkMaxConfig();
     SparkFlexConfig flywheelConfig = new SparkFlexConfig();
     SparkMaxConfig hoodConfig = new SparkMaxConfig();
-    turretEncoder.setDistancePerPulse((Constants.Bot.turretGearRatio*Constants.Bot.turretGearRatio));
+    turretEncoder.setDistancePerPulse(1/(Constants.Bot.turretGearRatio*Constants.Bot.turretGearRatio));
     turretConfig.idleMode(IdleMode.kBrake).smartCurrentLimit(Constants.CurrentLimits.Turret.turretLimit);
     hoodConfig.idleMode(IdleMode.kBrake).inverted(true).smartCurrentLimit(Constants.CurrentLimits.Turret.hoodLimit);
     flywheelConfig.idleMode(IdleMode.kCoast).inverted(true).smartCurrentLimit(Constants.CurrentLimits.Turret.flywheelLimit);
@@ -239,7 +239,6 @@ public class TurretMain extends SubsystemBase {
     hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     flywheelMotor.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-    hoodPID.setSetpoint(hoodAngleOverride ? NetworkTables.hoodAngle_d.getDouble(70) : hoodSetpoint);
 
     aimTypes.put(AimOpt.AUTO, new AutoAim());
     aimTypes.put(AimOpt.MANUAL, new ManualAim());
@@ -364,7 +363,7 @@ public class TurretMain extends SubsystemBase {
     boolean stow = shouldStow();
     shouldShoot = shouldShootMode && !stow;
 
-    hoodPID.setSetpoint(stow ? 90 : hoodSetpoint);
+    hoodPID.setSetpoint(hoodAngleOverride ? NetworkTables.hoodAngle_d.getDouble(70) : stow ? 70: hoodSetpoint);
     rotationProfiledPID.setSetpoint(turretSetpoint);
 
     hoodMotor.set(hoodPID.calculate(getHoodEncoderAngle()));
@@ -375,7 +374,7 @@ public class TurretMain extends SubsystemBase {
     if(flywheelVoltOverride) {
         flywheelSetpoint = FlywheelSpeedToRPM(NetworkTables.flywheelTuningVoltage_d.getDouble(0)); 
     }
-    if (spinup || flywheelVoltOverride) {
+    if (spinup) {
       flywheelMotor.set(flywheelFeedforward.calculate(flywheelSetpoint) / 12);
     } else {
       flywheelMotor.setVoltage(0);

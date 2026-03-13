@@ -48,7 +48,7 @@ public class Feeder extends SubsystemBase {
   public void periodic() {
     // This method will be called once per scheduler run
     if (feederActive ){//&& TurretMain.getInstance().shouldShoot()) { //TODO: DON"T FORGET TO REMOVE
-      feederMotor.set(Constants.MotorSpeeds.Feeder.feederSpeed);
+      feederMotor.set(Constants.MotorSpeeds.Feeder.rollerSpeed);
       rollerMotor.set(Constants.MotorSpeeds.Feeder.feederSpeed);
 
       if (Robot.isSimulation()) {

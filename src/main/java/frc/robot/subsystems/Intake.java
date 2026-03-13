@@ -5,13 +5,16 @@
 package frc.robot.subsystems;
 
 import frc.robot.Robot;
+import frc.robot.libs.NetworkTables;
 import frc.robot.subsystems.Turret.TurretMain;
 
 import com.revrobotics.PersistMode;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.AlternateEncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -65,14 +68,15 @@ public class Intake extends SubsystemBase {
     SparkMaxConfig config = new SparkMaxConfig();
 
     intakePID.enableContinuousInput(0, 1);
+    
 
     intakeRollerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     config.inverted(true);
 
-    config.idleMode(IdleMode.kBrake).inverted(true);
 
+    config.idleMode(IdleMode.kBrake).inverted(true).smartCurrentLimit(15);
     intakeArmMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
+    
     config.follow(intakeArmMotor.getDeviceId(), true);
     intakeArmMotorFollower.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
@@ -126,7 +130,8 @@ public class Intake extends SubsystemBase {
     intakePID.setD(intakePIDInputs.getD());
     intakePIDInputs.update(intakeSetpoint, intakeEncoder.get());
     intakeArmMotor.set(intakePID.calculate(intakeEncoder.get(), intakeSetpoint));
-
+    NetworkTables.intakeMotorLeftEncoder.setDouble(intakeArmMotor.getEncoder().getPosition() * 360 / 125 );
+    NetworkTables.intakeMotorRightEncoder.setDouble(intakeArmMotorFollower.getEncoder().getPosition() * 360 / 125);
     armPose = new Pose3d(
         Constants.SIM.intakeMechOffset.getX(),
         Constants.SIM.intakeMechOffset.getY(),
