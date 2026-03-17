@@ -47,12 +47,12 @@ public class Camera extends SubsystemBase {
   private PhotonCamera one = new PhotonCamera("one");
   private PhotonCamera two = new PhotonCamera("two");
 
-  private Transform3d oneToBot = new Transform3d(0, Constants.CameraConstants.leftOffsetToCenter,
+  private Transform3d oneToBot = new Transform3d(Constants.CameraConstants.offsetToCenterHoriz, Constants.CameraConstants.leftOffsetToCenter,
       Constants.CameraConstants.offsetToCenterVert,
-      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-90)));
-  private Transform3d twoToBot = new Transform3d(0, Constants.CameraConstants.rightOffsetToCenter,
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-45)));
+  private Transform3d twoToBot = new Transform3d(Constants.CameraConstants.offsetToCenterHoriz, Constants.CameraConstants.rightOffsetToCenter,
       Constants.CameraConstants.offsetToCenterVert,
-      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(90)));
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(45)));
 
   private AprilTagFieldLayout layout = FieldAprilTags.getInstance().field;
   private PhotonPoseEstimator oneEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,

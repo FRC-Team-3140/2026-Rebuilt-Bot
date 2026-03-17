@@ -118,9 +118,9 @@ public final class Constants {
 
   public static class PID {
     public static class Turret {
-      public static final double hoodP = 0.01;//0.008;
-      public static final double hoodI = 0;//0.015;
-      public static final double hoodD = 0;//0.0001;
+      public static final double hoodP = 0.005; // PH TUNED
+      public static final double hoodI = 0; // PH TUNED
+      public static final double hoodD = 0.0001; // F TUNED
 
       public static final double rotationP = 0.01;//0.0075;
       public static final double rotationI = 0.001;//0.000;
@@ -129,16 +129,16 @@ public final class Constants {
     }
 
     public static class Intake {
-      public static final double intakeP = 0;//2;
-      public static final double intakeI = 0.0;//0.05;
-      public static final double intakeD = 0.00;//0;
+      public static final double intakeP = 1.5; // TUNED
+      public static final double intakeI = 0.008; // TUNED
+      public static final double intakeD = 0.00; // TUNED
     }
   }
   public static class FeedFoward {
     public static class Turret {
       public static final double flywheelS = 0.01; // PHISCIALLY TUNED
       public static final double flywheelV = 0.001855; // FISICALY TUNEED
-      public static final double flywheelA = 0.0;
+      public static final double flywheelA = 0.0; // TUNED
     }
 
   }
@@ -229,8 +229,8 @@ public final class Constants {
 
   public static class Limits {
     public static class Turret {
-      public static final double minPitch = 69.7;//45; // degrees above horizontal
-      public static final double maxPitch = 70.0;//80;
+      public static final double minPitch = 14.9;//0; // degrees above horizontal
+      public static final double maxPitch = 15.0;//45;
       public static final double maxAngularVelocity = 1000000;//30; // degrees per second
 
       public static final double maxFuelVelocity = 15;
@@ -240,8 +240,9 @@ public final class Constants {
     }
 
     public static class Intake {
-      public static final double deployedPosition = 0.191;// rotations
-      public static final double stowedPosition = 0.98;//0.93; // rotations
+      public static final double deployedPosition = 0.26;// rotations
+      public static final double stowedPosition = 0.00;//0.93; // rotations
+      public static final double leftOffset = 0.82;//0.93; // rotations
     }
   }
 
@@ -259,8 +260,9 @@ public final class Constants {
     // public static final double maxTimeBeteweenFrames = 0.1;
     public static final double leftOffsetToCenter = -Units.inchesToMeters(13);
     public static final double rightOffsetToCenter = Units.inchesToMeters(13);
-    public static final double offsetToCenterVert = Units.inchesToMeters(10);
-    public static final double pitch = Math.toRadians(-30);
+    public static final double offsetToCenterVert = Units.inchesToMeters(4);
+    public static final double offsetToCenterHoriz = Units.inchesToMeters(13);
+    public static final double pitch = Math.toRadians(-10);
     public static final double maxReprojectionError = 0.3;
   }
 

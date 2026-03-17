@@ -36,13 +36,14 @@ public class Intake extends SubsystemBase {
   private SparkMax intakeRollerMotor = new SparkMax(Constants.MotorIDs.intakeMotor, SparkMax.MotorType.kBrushless);
   public SparkMaxSim intakeArmMotorSim;
 
-  public DutyCycleEncoder intakeEncoderL = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderL, 1, 0);
-  public DutyCycleEncoder intakeEncoderR = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderR, 1, 0);
+  private double rightEncoderOffset = -0.132;
+  
+  public DutyCycleEncoder intakeEncoderL = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderL, 1, Constants.Limits.Intake.leftOffset);
+  public DutyCycleEncoder intakeEncoderR = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderR, 1, rightEncoderOffset);
   public DutyCycleEncoderSim intakeEncoderSim = new DutyCycleEncoderSim(intakeEncoderL);
 
-  public double rightEncoderOffset = 0.93-(1-0.76);
-  private double gravityFeedFowardConstant = 0;//0.02;
-  private double separationConstant = 0.00;
+  private double gravityFeedFowardConstant = 0.00;
+  private double separationConstant = 2;
   private double intakeSetpoint = Constants.Limits.Intake.stowedPosition;
 
   private TurretMain.LoggedPIDInputs intakePIDInputs = new TurretMain.LoggedPIDInputs(
@@ -92,6 +93,8 @@ public class Intake extends SubsystemBase {
     NetworkTables.intakeGravityConstant.setDouble(gravityFeedFowardConstant);
     NetworkTables.intakeSeparationConstant.setDouble(separationConstant);
 
+    
+
     if (RobotBase.isSimulation()) {
       intakeArmMotorSim = new SparkMaxSim(intakeArmMotorL, DCMotor.getNEO(1));
     }
@@ -114,7 +117,7 @@ public class Intake extends SubsystemBase {
   }
 
   public double getRightAngle() {
-    return ((1 - intakeEncoderR.get()) + rightEncoderOffset) % 1;
+    return 1 - intakeEncoderR.get();
   }
 
   /**
@@ -141,13 +144,19 @@ public class Intake extends SubsystemBase {
 
   // Angle to the horizontal
   public double getLeftSideAngle() {
-    return ((getAngle() * 360) + (Constants.Limits.Intake.deployedPosition * 360)) % 360; 
+    return getAngle() * 360;
   }
 
   // Angle to the horizontal
   public double getRightSideAngle() {
-    return ((getRightAngle() * 360) + (Constants.Limits.Intake.deployedPosition * 360)) % 360; 
+    return getRightAngle() * 360;
   }
+  private double getAngleDifference(double angleA, double angleB) {
+    double diff = angleA - angleB;
+    diff = ((diff + 180) % 360 + 360) % 360 - 180; // Normalize to [-180, 180]
+    return diff;
+  }
+
 
   @Override
   public void periodic() {
@@ -160,8 +169,8 @@ public class Intake extends SubsystemBase {
     intakePIDR.setD(intakePIDInputs.getD());
 
     intakePIDInputs.update(intakeSetpoint, intakeEncoderL.get());
-    intakeArmMotorL.set(separationConstant * ((getLeftSideAngle() - getRightSideAngle()) / 360) + intakePIDL.calculate(intakeEncoderL.get(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getLeftSideAngle() * Math.PI / 180));
-    intakeArmMotorR.set(separationConstant * ((getRightSideAngle() - getLeftSideAngle()) / 360) + intakePIDR.calculate(getRightAngle(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getRightSideAngle() * Math.PI / 180));
+    intakeArmMotorL.set(separationConstant * (getAngleDifference(getLeftSideAngle(), getRightSideAngle()) / 360) + intakePIDL.calculate(intakeEncoderL.get(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getLeftSideAngle() * Math.PI / 180));
+    intakeArmMotorR.set(separationConstant * (getAngleDifference(getRightSideAngle(), getLeftSideAngle()) / 360) + intakePIDR.calculate(getRightAngle(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getRightSideAngle() * Math.PI / 180));
 
     NetworkTables.intakeLeftEncoder.setDouble(intakeEncoderL.get());
     NetworkTables.intakeRightEncoder.setDouble(getRightAngle());
