@@ -165,7 +165,8 @@ public class AutoAim extends AimType {
                 verticalVelocity,
                 relativeTargetPosition,
                 currentTarget.targetHeight,
-                turretHeight);
+                turretHeight,
+                Constants.Limits.Turret.maxFuelVelocity);
 
         if (result.isPresent()) {
             hoodAngle = result.get().ShotAngle;
@@ -174,7 +175,7 @@ public class AutoAim extends AimType {
                     .toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
         }
 
-        return result.isPresent() && result.get().ShotSpeed <= Constants.Limits.Turret.maxFuelVelocity;
+        return result.isPresent();
     }
 
     private Pair<Boolean, Double> EstimateWillScore(double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {

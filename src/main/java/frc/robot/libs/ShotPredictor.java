@@ -133,7 +133,7 @@ public class ShotPredictor {
     }
 
     public Optional<Result> Update(boolean loose, double currentAngle, double deltaTime, Vector2 botVelocity,
-            double verticalVelocity, Vector2 relativeTargetPosition, double targetHeight, double shooterHeight) {
+            double verticalVelocity, Vector2 relativeTargetPosition, double targetHeight, double shooterHeight, double maxProjectileSpeed) {
         double min = loose ? MinAngle : Math.max(MinAngle, currentAngle - deltaTime * MaxAngleVelocity);
         double max = loose ? MaxAngle : Math.min(MaxAngle, currentAngle + deltaTime * MaxAngleVelocity);
 
@@ -159,7 +159,7 @@ public class ShotPredictor {
 
                 cache.put(angle, resultOpt);
 
-                if (resultOpt.isEmpty()) {
+                if (resultOpt.isEmpty() || resultOpt.get().ShotSpeed > maxProjectileSpeed) {
 
                     continue;
                 }
