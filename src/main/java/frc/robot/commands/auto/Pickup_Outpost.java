@@ -29,7 +29,6 @@ public class Pickup_Outpost extends SequentialCommandGroup {
       pathCommand = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("Outpost Approach"),
           Constants.PathplannerConstants.pathplannerConstraints);
     } catch (FileVersionException | IOException | ParseException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 

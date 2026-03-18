@@ -29,7 +29,6 @@ public class Depot extends SequentialCommandGroup {
       pathCommand = AutoBuilder.pathfindThenFollowPath(PathPlannerPath.fromPathFile("Depot Approach"),
           Constants.PathplannerConstants.pathplannerConstraints);
     } catch (FileVersionException | IOException | ParseException e) {
-      // TODO Auto-generated catch block
       e.printStackTrace();
     }
 

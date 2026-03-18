@@ -43,4 +43,11 @@ public class ManualAim extends AimType {
     public double getLookDirection() {
         return desiredRotationAngle;
     }
+
+    public void setDesiredRotationAngle(double angle) {
+        desiredRotationAngle = angle;
+    }
+    public void setHoodAngle(double angle) {
+        hoodAngle = angle;
+    }
 }

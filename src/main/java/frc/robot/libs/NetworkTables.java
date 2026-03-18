@@ -89,7 +89,7 @@ public class NetworkTables {
     public static NetworkTableEntry runningCommand = Debug.getEntry("Command");
     
   private static NetworkTable misc = dash.getSubTable(Constants.NetworktablePaths.Misc);
-    public static NetworkTableEntry flywheelTuningVoltage_d = misc.getEntry("flywheelTuningVoltage_d");
+    public static NetworkTableEntry flywheelRPMOverride_d = misc.getEntry("flywheelRPMOveride_d");
     public static NetworkTableEntry flywheelRPMConversionConstant_d = misc.getEntry("flywheelRPMConversionConstant_d");
     public static NetworkTableEntry hoodAngle_d = misc.getEntry("hoodAngle_d");
     public static NetworkTableEntry intakeLeftEncoder = misc.getEntry("intakeLeftEncoder_d");

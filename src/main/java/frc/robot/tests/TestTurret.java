@@ -43,7 +43,6 @@ public class TestTurret extends Test {
                 turret.setRotationAngle(90);
                 break;
             case 3:
-                // TODO: Correct angles to fit final bounds
                 turret.setRotationAngle(-90);
                 break;
         }

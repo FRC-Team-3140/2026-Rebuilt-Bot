@@ -149,15 +149,14 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousPeriodic() {
   }
-
+  public static boolean locked = false;
   @Override
   public void teleopInit() {
     m_testRunner.stopAll();
 
     RobotContainer.swerveDrive.setDefaultCommand(new SwerveDriveManualControl(RobotContainer.swerveDrive,
-        Constants.Bot.maxChassisSpeed, Constants.Bot.maxChassisTurnSpeed, true));
+        Constants.Bot.maxChassisSpeed, Constants.Bot.maxChassisTurnSpeed, true, locked));
 
-    // TODO: Determine if we want this to happen IRL as well
     // if (Robot.isSimulation())
     //   RobotContainer.turret.setDefaultCommand(new FireAway(RobotContainer.turret));
 

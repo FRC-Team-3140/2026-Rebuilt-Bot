@@ -18,6 +18,7 @@ public class Feeder extends SubsystemBase {
   private static Feeder m_instance = null;
 
   private boolean feederActive = false;
+  private boolean feederInverted = false;
 
   private final SparkMax feederMotor = new SparkMax(frc.robot.Constants.MotorIDs.feederMotor,
       SparkMax.MotorType.kBrushless);
@@ -34,6 +35,9 @@ public class Feeder extends SubsystemBase {
   public void setFeederActive(boolean active) {
     feederActive = active;
   }
+  public void setFeederInverted(boolean inverted) {
+    feederInverted = inverted;
+  }
 
   /** Creates a new Feeder. */
   public Feeder() {
@@ -47,9 +51,9 @@ public class Feeder extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (feederActive ){//&& TurretMain.getInstance().shouldShoot()) { //TODO: DON"T FORGET TO REMOVE
-      feederMotor.set(Constants.MotorSpeeds.Feeder.rollerSpeed);
-      rollerMotor.set(Constants.MotorSpeeds.Feeder.feederSpeed);
+    if (feederActive) {
+      feederMotor.set(Constants.MotorSpeeds.Feeder.rollerSpeed * (feederInverted ? -1 : 1));
+      rollerMotor.set(Constants.MotorSpeeds.Feeder.feederSpeed * (feederInverted ? -1 : 1));
 
       if (Robot.isSimulation()) {
         TurretMain.getInstance().shootSimFuel();

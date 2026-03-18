@@ -106,12 +106,24 @@ public class Intake extends SubsystemBase {
     intakeSetpoint = Constants.Limits.Intake.deployedPosition;
   }
 
+  public void feed() {
+    intakeSetpoint = Constants.Limits.Intake.feedPosition;
+  }
+
   public void stow() {
     intakeSetpoint = Constants.Limits.Intake.stowedPosition;
   }
 
   public boolean isStowed() {
     return intakeSetpoint == Constants.Limits.Intake.stowedPosition;
+  }
+
+  public boolean isFeeding() {
+    return intakeSetpoint == Constants.Limits.Intake.feedPosition;
+  }
+
+  public boolean isDeployed() {
+    return intakeSetpoint == Constants.Limits.Intake.deployedPosition;
   }
 
   public double getAngle() {

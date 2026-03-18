@@ -194,7 +194,6 @@ public final class Constants {
                                                  /////// END AI CODE ///////
 
     // Swerve Module Base Angles
-    // TODO: Update for this configuration
     public static final double FLZeroOffset = 343.5;
 
     public static final double FRZeroOffset = 291.15;
@@ -220,7 +219,7 @@ public final class Constants {
     };
 
     public static final double intakeGearRatio = 50;
-    public static final double turretGearRatio = 95/18.0; // TODO: FIX
+    public static final double turretGearRatio = 95/18.0;
     public static final double hoodGearRatio = 1;
     public static final double hoodZeroOffset = 52.856759 + 65.594380;
     public static final double flywheelGearRatio = 10;
@@ -241,6 +240,7 @@ public final class Constants {
 
     public static class Intake {
       public static final double deployedPosition = 0.26;// rotations
+      public static final double feedPosition = 0.16;// rotations
       public static final double stowedPosition = 0.0;//0.93; // rotations
       public static final double leftOffset = 0.82;//0.93; // rotations
     }

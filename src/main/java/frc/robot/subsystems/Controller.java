@@ -12,8 +12,11 @@ import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.RobotContainer;
+import frc.robot.Constants.CurrentLimits.Turret;
 import frc.robot.libs.NetworkTables;
+import frc.robot.subsystems.Turret.ManualAim;
 import frc.robot.subsystems.Turret.TurretMain;
 import frc.robot.subsystems.Turret.TurretMain.AimOpt;
 
@@ -49,7 +52,7 @@ public class Controller extends SubsystemBase {
     AUTO, MANUAL, OHNO_MANUAL
   }
 
-  private ControlMode curControlMode = ControlMode.AUTO; // Default to auto when auto is implemented
+  private ControlMode curControlMode = ControlMode.MANUAL;
 
   public static Controller getInstance() {
     if (instance == null) {
@@ -203,35 +206,37 @@ public class Controller extends SubsystemBase {
 
   /**
    * Reusable controls for all modes go here.
-   *
-   * <p>
    * 
    * Mapped Buttons:
-   * <ol>
-   * <li>Y - Reset Gyro</li>
-   * <li>A - Deploy Intake</li>
-   * <li>B - Stow Intake</li>
-   * <li>Left Bumper - Intake</li>
-   * <li>Right Bumper - Spinup Flywheel</li>
-   * <li>Start - Recalibrate Camera Pose</li>
-   * </ol>
+   *
+   * PRIMARY CONTROLLER:
+   * Y - Reset Gyro
+   * X - Toggle Intake Stowed/Deployed
+   * A - Hold to go to feed Position and release to deploy
+   * B - Lock Wheels 
+   * Left Bumper - Intake
+   * Right Bumper - Feed 
+   * Left Trigger - Reverse Feeder
+   * Right Trigger - Spinup Flywheel
+   * Start - Recalibrate Camera Pose
+   *
+   * SECONDARY CONTROLLER:
+   * Manual Mode only:
+   * Right Bumper - Hold for shoot setpoint
+   * Left Bumper - Hold for pickup setpoint
+   *
+   * Left Stick - Hood
+   * Right Stick - Turret Rotation
+   *
+   * A - Set Turret Rotation to 0
+   * B - Set Hood Angle to 0
    */
   private void reusableDefaultControls() {
-    if (primaryController.getYButtonPressed()) {
-      SwerveDrive.odometry.resetGyro();
-    }
+    if (primaryController.getYButtonPressed()) SwerveDrive.odometry.resetGyro();
 
-    if (primaryController.getStartButtonPressed()) {
-      RobotContainer.odometry.recalibrateCameraPose();
-    }
+    if (primaryController.getStartButtonPressed()) RobotContainer.odometry.recalibrateCameraPose();
 
-    if (primaryController.getLeftBumperButtonPressed()) {
-      if (Intake.getInstance().isActive()) {
-        Intake.getInstance().intake(0);
-      } else {
-        Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
-      }
-    }
+    Intake.getInstance().intake(primaryController.getLeftBumperButtonPressed() ? (Constants.MotorSpeeds.Intake.intakeSpeed) : 0);
 
     TurretMain.getInstance().setFlywheelActive(primaryController.getRightTriggerAxis() > triggerThreshold);
 
@@ -241,6 +246,26 @@ public class Controller extends SubsystemBase {
       } else {
         Intake.getInstance().stow();
       }
+    }
+
+    if (primaryController.getAButtonPressed()) {
+      Intake.getInstance().feed();
+    } else if (primaryController.getAButtonReleased()) {
+      Intake.getInstance().deploy();
+    }
+
+    if (primaryController.getBButtonPressed()) {
+      Robot.locked = true;
+    } else if (primaryController.getBButtonReleased()) {
+      Robot.locked = false;
+    }
+
+    Feeder.getInstance().setFeederActive(primaryController.getRightBumperButton() && TurretMain.getInstance().getFlywheelActive());
+    if (primaryController.getLeftTriggerAxis() > triggerThreshold) { 
+      Feeder.getInstance().setFeederActive(true);
+      Feeder.getInstance().setFeederInverted(true);
+    } else {
+      Feeder.getInstance().setFeederInverted(false);
     }
   }
 
@@ -276,13 +301,9 @@ public class Controller extends SubsystemBase {
     }
 
     reusableDefaultControls();
-
-    // System.out.println("Trigger: "+ (primaryController.getRightTriggerAxis()) +
-    // "\tBumper:" + primaryController.getRightBumperButton());
-    Feeder.getInstance()
-        .setFeederActive(primaryController.getRightBumperButton() && TurretMain.getInstance().getFlywheelActive());
   }
 
+  ManualAim manualAim = (ManualAim)TurretMain.getInstance().aimTypes.get(TurretMain.AimOpt.MANUAL);
   private void ManualMode() {
     if (secondaryController.getLeftStickButton() && secondaryController.getRightStickButton()) {
       updateControlMode();
@@ -291,8 +312,30 @@ public class Controller extends SubsystemBase {
 
     reusableDefaultControls();
 
-    Feeder.getInstance().setFeederActive(
-        primaryController.getRightBumperButton() && primaryController.getRightBumperButton());
+    if(secondaryController.getRightBumperButtonPressed()) {
+      TurretMain.hoodAngleOverride = true;
+      TurretMain.flywheelRPMOverride = true;
+      NetworkTables.hoodAngle_d.setDouble(25);
+      NetworkTables.flywheelRPMOverride_d.setDouble(5000);
+    } else {
+      TurretMain.hoodAngleOverride = false;
+    }
+
+    if(secondaryController.getLeftBumperButtonPressed()) {
+      TurretMain.hoodAngleOverride = true;
+      TurretMain.flywheelRPMOverride = true;
+      NetworkTables.hoodAngle_d.setDouble(35); // TODO: Tune values for passing
+      NetworkTables.flywheelRPMOverride_d.setDouble(6700); // TODO: Tune values for passing
+    } else {
+      TurretMain.hoodAngleOverride = false;
+    }
+
+    if(secondaryController.getAButton()) {
+      manualAim.setDesiredRotationAngle(0);
+    }
+    if(secondaryController.getBButton()) {
+      manualAim.setHoodAngle(0);
+    }
   }
 
   private void OHNOManualMode() {
