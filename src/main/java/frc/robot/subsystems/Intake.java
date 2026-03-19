@@ -186,9 +186,6 @@ public class Intake extends SubsystemBase {
     intakeArmMotorL.set(separationConstant * (getAngleDifference(getLeftSideAngle(), getRightSideAngle()) / 360) + intakePIDL.calculate(intakeEncoderL.get(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getLeftSideAngle() * Math.PI / 180));
     intakeArmMotorR.set(separationConstant * (getAngleDifference(getRightSideAngle(), getLeftSideAngle()) / 360) + intakePIDR.calculate(getRightAngle(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getRightSideAngle() * Math.PI / 180));
 
-    System.out.println("Separation Constant: " +separationConstant * (getAngleDifference(getLeftSideAngle(), getRightSideAngle()) / 360) );
-    System.out.println("PID Output: " +intakePIDL.calculate(intakeEncoderL.get(), intakeSetpoint));
-    System.out.println();
 
     NetworkTables.intakeLeftEncoder.setDouble(intakeEncoderL.get());
     NetworkTables.intakeRightEncoder.setDouble(getRightAngle());

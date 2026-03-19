@@ -34,6 +34,7 @@ import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.DutyCycleEncoderSim;
+import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -48,7 +49,7 @@ public class TurretMain extends SubsystemBase {
   /// TUNING VOLTAGE OVERRIDE ///
   /////////////////////////////////////////////////////////////////////
   public static boolean flywheelRPMOverride = true;
-  public static boolean hoodAngleOverride = false;
+  public static boolean hoodAngleOverride = true;
 
   private Pose3d turretPose = Constants.SIM.turretMechOffset;
 
@@ -62,9 +63,10 @@ public class TurretMain extends SubsystemBase {
   public SparkFlexSim flywheelMotorSim;
   public SparkMaxSim hoodMotorSim;
   // ROBOT WIN = TRUE
-  public DutyCycleEncoder hoodEncoder = new DutyCycleEncoder(Constants.SensorIDs.hoodEncoder, 360 / Constants.Bot.hoodGearRatio, -3);
+  public DutyCycleEncoder hoodEncoder = new DutyCycleEncoder(Constants.SensorIDs.hoodEncoder, 360 / Constants.Bot.hoodGearRatio, -21);
   public DutyCycleEncoderSim hoodEncoderSim = new DutyCycleEncoderSim(hoodEncoder);
   public Encoder turretEncoder = new Encoder(Constants.SensorIDs.turretEncoderA, Constants.SensorIDs.turretEncoderB);
+  public EncoderSim turretEncoderSim = new EncoderSim(turretEncoder);
   private double getAngleDifference(double angleA, double angleB) {
     double diff = angleA - angleB;
     diff = ((diff + 180) % 360 + 360) % 360 - 180; // Normalize to [-180, 180]
@@ -122,7 +124,7 @@ public class TurretMain extends SubsystemBase {
 
   public HashMap<AimOpt, AimType> aimTypes = new HashMap<AimOpt, AimType>();
 
-  private AimOpt currentMode = AimOpt.MANUAL;
+  private AimOpt currentMode = AimOpt.AUTO;
 
   private static TurretMain m_instance = null;
 
@@ -231,7 +233,7 @@ public class TurretMain extends SubsystemBase {
     // TODO: do the flywheel stuff. The angle and speed seem to be independent so we only need to test the RPM to speed at one angle
     projectileSpeedToFlywheelSpeed.put(9.18, 6000.0);
     //projectileSpeedToFlywheelSpeed.put(0.0, 0.0);
-    
+
     flywheelSpeedToProjectileSpeed.put(6000.0, 9.18);
     //flywheelSpeedToProjectileSpeed.put(0.0, 0.0);
 
@@ -251,7 +253,7 @@ public class TurretMain extends SubsystemBase {
     SparkFlexConfig flywheelConfig = new SparkFlexConfig();
     SparkMaxConfig hoodConfig = new SparkMaxConfig();
     turretEncoder.setDistancePerPulse(1.04/(Constants.Bot.turretGearRatio*Constants.Bot.turretGearRatio));
-    turretConfig.idleMode(IdleMode.kBrake).inverted(true);//.743-379smartCurrentLimit(Constants.CurrentLimits.Turret.turretLimit);
+    turretConfig.idleMode(IdleMode.kCoast).inverted(true);//.743-379smartCurrentLimit(Constants.CurrentLimits.Turret.turretLimit);
     hoodConfig.idleMode(IdleMode.kBrake).inverted(false).smartCurrentLimit(Constants.CurrentLimits.Turret.hoodLimit);
     flywheelConfig.idleMode(IdleMode.kCoast).inverted(true).smartCurrentLimit(Constants.CurrentLimits.Turret.flywheelLimit);
 
@@ -262,8 +264,9 @@ public class TurretMain extends SubsystemBase {
     flywheelMotor.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
 
-    aimTypes.put(AimOpt.AUTO, new AutoAim());
+    aimTypes.put(AimOpt.AUTO, new AutoAim(hoodAngleToProjectileAngle.get(Constants.Limits.Turret.maxPitch), hoodAngleToProjectileAngle.get(Constants.Limits.Turret.minPitch)));
     aimTypes.put(AimOpt.MANUAL, new ManualAim());
+    System.out.println("Min: " + hoodAngleToProjectileAngle.get(Constants.Limits.Turret.minPitch) + " Max: " + hoodAngleToProjectileAngle.get(Constants.Limits.Turret.maxPitch));
 
     turretSetpoint = getTurretEncoderAngle();
     clampTurretSetpoint();
@@ -339,7 +342,7 @@ public class TurretMain extends SubsystemBase {
     Vector2 turretPosition = botPosition.add(turretDirection);
 
     boolean shouldStow = Math.abs(turretPosition.X - Constants.PathplannerConstants.blueTrenchX) < stowRange ||
-        Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
+      Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
 
     return shouldStow;
   }
@@ -381,6 +384,9 @@ public class TurretMain extends SubsystemBase {
 
         flywheelSetpoint = SpeedToFlywheelRPM(type.flywheelSpeed); // convert from m/s to RPM
         hoodSetpoint = projectileAngleToHoodAngle.get(type.hoodAngle);
+        if(currentMode == AimOpt.MANUAL) {
+          hoodSetpoint = type.hoodAngle;
+        }
         hoodSetpoint = Math.max(Constants.Limits.Turret.minPitch, Math.min(Constants.Limits.Turret.maxPitch, hoodSetpoint));
         turretSetpoint = type.rotationAngle;
         boolean hadToClamp = clampTurretSetpoint();
@@ -400,7 +406,7 @@ public class TurretMain extends SubsystemBase {
     turretRotationMotor.set(output);
 
     if(flywheelRPMOverride) {
-        flywheelSetpoint = NetworkTables.flywheelRPMOverride_d.getDouble(0); 
+      flywheelSetpoint = NetworkTables.flywheelRPMOverride_d.getDouble(0); 
     }
     if (spinup) {
       flywheelMotor.set(flywheelFeedforward.calculate(flywheelSetpoint) / 12);
@@ -413,7 +419,7 @@ public class TurretMain extends SubsystemBase {
         Constants.SIM.hoodMechOffset.getY(),
         Constants.SIM.hoodMechOffset.getZ(),
         new Rotation3d(0, Math.toRadians(getHoodEncoderAngle()),
-            Math.toRadians(encoderValue)));
+          Math.toRadians(encoderValue)));
     turretPose = new Pose3d(
         Constants.SIM.turretMechOffset.getX(),
         Constants.SIM.turretMechOffset.getY(),
@@ -499,7 +505,7 @@ public class TurretMain extends SubsystemBase {
         0,
         Math.toRadians(getProjectileAngle()),
         Math.toRadians(
-            getTurretEncoderAngle() + robotFieldPose.getRotation().getDegrees()));
+          getTurretEncoderAngle() + robotFieldPose.getRotation().getDegrees()));
 
     Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
 
@@ -521,8 +527,8 @@ public class TurretMain extends SubsystemBase {
 
     // Add tangential velocity
     Vector2 turretPosition = new Vector2(turretPose.toPose2d().getX(), turretPose.toPose2d().getY())
-        .rotate(Odometry.getInstance().getRotation().getRadians() + (Math.PI / 2))
-        .mult(Odometry.getInstance().getAngularVelocity());
+      .rotate(Odometry.getInstance().getRotation().getRadians() + (Math.PI / 2))
+      .mult(Odometry.getInstance().getAngularVelocity());
 
     // Add robot velocity to projectile velocity
     double vx = projectileSpeed * dx + robotVelX + turretPosition.X;

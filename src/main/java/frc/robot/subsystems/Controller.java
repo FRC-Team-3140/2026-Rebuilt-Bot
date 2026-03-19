@@ -52,7 +52,7 @@ public class Controller extends SubsystemBase {
     AUTO, MANUAL, OHNO_MANUAL
   }
 
-  private ControlMode curControlMode = ControlMode.MANUAL;
+  private ControlMode curControlMode = ControlMode.AUTO;
 
   public static Controller getInstance() {
     if (instance == null) {
@@ -236,7 +236,7 @@ public class Controller extends SubsystemBase {
 
     if (primaryController.getStartButtonPressed()) RobotContainer.odometry.recalibrateCameraPose();
 
-    Intake.getInstance().intake(primaryController.getLeftBumperButtonPressed() ? (Constants.MotorSpeeds.Intake.intakeSpeed) : 0);
+    Intake.getInstance().intake(primaryController.getLeftBumperButton() ? (Constants.MotorSpeeds.Intake.intakeSpeed) : 0);
 
     TurretMain.getInstance().setFlywheelActive(primaryController.getRightTriggerAxis() > triggerThreshold);
 
@@ -260,13 +260,8 @@ public class Controller extends SubsystemBase {
       Robot.locked = false;
     }
 
-    Feeder.getInstance().setFeederActive(primaryController.getRightBumperButton() && TurretMain.getInstance().getFlywheelActive());
-    if (primaryController.getLeftTriggerAxis() > triggerThreshold) { 
-      Feeder.getInstance().setFeederActive(true);
-      Feeder.getInstance().setFeederInverted(true);
-    } else {
-      Feeder.getInstance().setFeederInverted(false);
-    }
+    Feeder.getInstance().setFeederActive(primaryController.getRightBumperButton());
+    Feeder.getInstance().setFeederInverted(!TurretMain.getInstance().getFlywheelActive());
   }
 
   private void updateControlMode() {
@@ -303,8 +298,8 @@ public class Controller extends SubsystemBase {
     reusableDefaultControls();
   }
 
-  ManualAim manualAim = (ManualAim)TurretMain.getInstance().aimTypes.get(TurretMain.AimOpt.MANUAL);
   private void ManualMode() {
+    ManualAim manualAim = (ManualAim)(TurretMain.getInstance().aimTypes.get(TurretMain.AimOpt.MANUAL));
     if (secondaryController.getLeftStickButton() && secondaryController.getRightStickButton()) {
       updateControlMode();
       return;
@@ -312,22 +307,24 @@ public class Controller extends SubsystemBase {
 
     reusableDefaultControls();
 
-    if(secondaryController.getRightBumperButtonPressed()) {
+    if(secondaryController.getRightBumperButton()) {
       TurretMain.hoodAngleOverride = true;
       TurretMain.flywheelRPMOverride = true;
       NetworkTables.hoodAngle_d.setDouble(25);
       NetworkTables.flywheelRPMOverride_d.setDouble(5000);
     } else {
       TurretMain.hoodAngleOverride = false;
+      TurretMain.flywheelRPMOverride = false;
     }
 
-    if(secondaryController.getLeftBumperButtonPressed()) {
+    if(secondaryController.getLeftBumperButton()) {
       TurretMain.hoodAngleOverride = true;
       TurretMain.flywheelRPMOverride = true;
       NetworkTables.hoodAngle_d.setDouble(35); // TODO: Tune values for passing
       NetworkTables.flywheelRPMOverride_d.setDouble(6700); // TODO: Tune values for passing
-    } else {
+    } else if (!secondaryController.getRightBumperButton()) {
       TurretMain.hoodAngleOverride = false;
+      TurretMain.flywheelRPMOverride = false;
     }
 
     if(secondaryController.getAButton()) {

@@ -87,8 +87,6 @@ public class Align extends SequentialCommandGroup {
       double driveX = xPID.calculate(currentPose.getX());
       double driveY = yPID.calculate(currentPose.getY());
       double driveTheta = thetaPID.calculate(odometry.getRotation().getRadians());
-      System.out.println("Driving to " + thetaPID.getSetpoint() + " from " + odometry.getRotation().getRadians()
-          + " by driving: " + driveTheta);
       swerveDrive.drive(driveX, driveY, driveTheta, true);
     }
 

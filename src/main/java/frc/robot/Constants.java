@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.libs.Vector2;
+import frc.robot.subsystems.Turret.TurretMain;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -104,7 +105,7 @@ public final class Constants {
 
   public static class MotorSpeeds {
     public static class Intake {
-      public static final double intakeSpeed = 1;
+      public static final double intakeSpeed = 0.5;
       public static final double outtakeSpeed = -0.7;
 
       public static final double agitateSpeed = 0.1;
@@ -122,8 +123,8 @@ public final class Constants {
       public static final double hoodI = 0; // PH TUNED
       public static final double hoodD = 0.0001; // F TUNED
 
-      public static final double rotationP = 0.01;//0.0075;
-      public static final double rotationI = 0.000;//0.000;
+      public static final double rotationP = 0.015;//0.0075;
+      public static final double rotationI = 0.0001;//0.000;
       public static final double rotationD = 0.0000;//.00015;
 
     }
@@ -240,7 +241,7 @@ public final class Constants {
 
     public static class Intake {
       public static final double deployedPosition = 0.26;// rotations
-      public static final double feedPosition = 0.16;// rotations
+      public static final double feedPosition = 0.1;// rotations
       public static final double stowedPosition = 0.0;//0.93; // rotations
       public static final double leftOffset = 0.82;//0.93; // rotations
     }

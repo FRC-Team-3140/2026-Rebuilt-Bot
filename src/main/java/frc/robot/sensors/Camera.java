@@ -165,16 +165,14 @@ public class Camera extends SubsystemBase {
                 multiResult));
             if (pose.isPresent()) {
               estimatedPoseOne = pose.get().estimatedPose;
-              System.out.println("Pose 1 exists");
             }
 
             } else {
               // Update pose one with single tag estimation if it is available
-              if (!result.getTargets().isEmpty()) {
+              if (!result.getTargets().isEmpty() && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
                 Optional<EstimatedRobotPose> pose = oneEstimator.update(result);
                 if (pose.isPresent()) {
                   estimatedPoseOne = pose.get().estimatedPose;
-                  System.out.println("Pose 1 single tag exists");
                 }
               }
             }
@@ -190,15 +188,13 @@ public class Camera extends SubsystemBase {
                 multiResult));
             if (pose.isPresent()) {
               estimatedPoseTwo = pose.get().estimatedPose;
-              System.out.println("Pose 2 exists");
             }
             } else {
               // Update pose two with single tag estimation if it is available
-              if (!result.getTargets().isEmpty()) {
+              if (!result.getTargets().isEmpty() && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
                 Optional<EstimatedRobotPose> pose = twoEstimator.update(result);
                 if (pose.isPresent()) {
                   estimatedPoseTwo = pose.get().estimatedPose;
-                  System.out.println("Pose 2 single tag exists");
                 }
               }
             }

@@ -250,7 +250,7 @@ public class Robot extends LoggedRobot {
     // --- SIMULATED TURRET ---
     double turretDuty = TurretMain.getInstance().turretRotationMotorSim.getAppliedOutput();
     double turretRPM = turretDuty * neoFreeRPM;
-    TurretMain.getInstance().turretRotationMotorSim.iterate(turretRPM, vbus, dt);
+    TurretMain.getInstance().turretRotationMotorSim.iterate(-turretRPM, vbus, dt);
 
     double hoodDuty = TurretMain.getInstance().hoodMotorSim.getAppliedOutput();
     double hoodRPM = hoodDuty * neoFreeRPM;
@@ -264,7 +264,7 @@ public class Robot extends LoggedRobot {
         / Constants.Bot.turretGearRatio;
     double turretAngleDeg = turretRotations * 360.0;
     turretAngleDeg = ((turretAngleDeg % 360.0) + 360.0) % 360.0;
-    //TurretMain.getInstance().turretEncoder.set(turretAngleDeg);
+    TurretMain.getInstance().turretEncoderSim.setDistance(turretAngleDeg);
 
     double hoodRotations = TurretMain.getInstance().hoodMotorSim.getPosition() / Constants.Bot.hoodGearRatio;
     double hoodAngleDeg = hoodRotations * 360.0;
