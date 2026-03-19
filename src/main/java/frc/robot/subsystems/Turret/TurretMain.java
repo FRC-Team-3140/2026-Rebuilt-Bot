@@ -231,10 +231,12 @@ public class TurretMain extends SubsystemBase {
     projectileAngleToHoodAngle.put(56.15, 37.5);
 
     // TODO: do the flywheel stuff. The angle and speed seem to be independent so we only need to test the RPM to speed at one angle
-    projectileSpeedToFlywheelSpeed.put(9.18, 6000.0);
+    projectileSpeedToFlywheelSpeed.put(4.6, 3000.0);
+    projectileSpeedToFlywheelSpeed.put(9.15, 6000.0);
     //projectileSpeedToFlywheelSpeed.put(0.0, 0.0);
 
-    flywheelSpeedToProjectileSpeed.put(6000.0, 9.18);
+    flywheelSpeedToProjectileSpeed.put(6000.0, 4.6);
+    flywheelSpeedToProjectileSpeed.put(6000.0, 9.15);
     //flywheelSpeedToProjectileSpeed.put(0.0, 0.0);
 
     NetworkTables.flywheelRPMOverride_d.setDouble(5000);
@@ -397,6 +399,7 @@ public class TurretMain extends SubsystemBase {
     boolean stow = shouldStow();
     shouldShoot = shouldShootMode && !stow;
 
+    hoodAngleOverride = true;
     hoodPID.setSetpoint(hoodAngleOverride ? NetworkTables.hoodAngle_d.getDouble(0) : stow ? 0 : hoodSetpoint);
     rotationProfiledPID.setSetpoint(turretSetpoint);
     hoodMotor.set(hoodPID.calculate(getHoodEncoderAngle()));
@@ -405,7 +408,8 @@ public class TurretMain extends SubsystemBase {
     double output = rotationProfiledPID.calculate(encoderValue);
     turretRotationMotor.set(output);
 
-    if(flywheelRPMOverride) {
+
+    if(true || flywheelRPMOverride) {
       flywheelSetpoint = NetworkTables.flywheelRPMOverride_d.getDouble(0); 
     }
     if (spinup) {
