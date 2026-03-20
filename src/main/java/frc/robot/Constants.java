@@ -15,7 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.robot.libs.Vector2;
-import frc.robot.subsystems.Turret.TurretMain;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
@@ -69,7 +68,7 @@ public final class Constants {
     public static final int intakeArmMotor = 13; // NEO 6
     public static final int intakeArmMotorFollower = 14; // NEO 7
 
-    public static final int feederMotor = 17; // NEO 8 
+    public static final int feederMotor = 17; // NEO 8
     public static final int rollerMotor = 16; // NEO 9
 
     public static final int climberLeftMotor = 19; // NEO 10
@@ -105,8 +104,8 @@ public final class Constants {
 
   public static class MotorSpeeds {
     public static class Intake {
-      public static final double intakeSpeed = 0.5;
-      public static final double outtakeSpeed = -0.7;
+      public static final double intakeSpeed = 0.75;
+      public static final double outtakeSpeed = -0.75;
 
       public static final double agitateSpeed = 0.1;
     }
@@ -123,9 +122,9 @@ public final class Constants {
       public static final double hoodI = 0; // PH TUNED
       public static final double hoodD = Robot.isReal() ? 0.0001 : 0.000; // F TUNED
 
-      public static final double rotationP = Robot.isReal() ? 0.015 : 0.0015;//0.0075;
-      public static final double rotationI = Robot.isReal() ? 0.0001 : 0;//0.000;
-      public static final double rotationD = 0.0000;//.00015;
+      public static final double rotationP = Robot.isReal() ? 0.015 : 0.0015;// 0.0075;
+      public static final double rotationI = Robot.isReal() ? 0.0001 : 0;// 0.000;
+      public static final double rotationD = 0.0000;// .00015;
 
     }
 
@@ -135,6 +134,7 @@ public final class Constants {
       public static final double intakeD = 0.00; // TUNED
     }
   }
+
   public static class FeedFoward {
     public static class Turret {
       public static final double flywheelS = 0.01; // PHISCIALLY TUNED
@@ -220,7 +220,7 @@ public final class Constants {
     };
 
     public static final double intakeGearRatio = 50;
-    public static final double turretGearRatio = 95/18.0;
+    public static final double turretGearRatio = 95 / 18.0;
     public static final double hoodGearRatio = 1;
     public static final double hoodZeroOffset = 52.856759 + 65.594380;
     public static final double flywheelGearRatio = 10;
@@ -231,7 +231,7 @@ public final class Constants {
     public static class Turret {
       public static final double minPitch = 0; // degrees above horizontal
       public static final double maxPitch = 45;
-      public static final double maxAngularVelocity = 1000000;//30; // degrees per second
+      public static final double maxAngularVelocity = 1000000;// 30; // degrees per second
 
       public static final double maxFuelVelocity = 9.18;
 
@@ -240,10 +240,10 @@ public final class Constants {
     }
 
     public static class Intake {
-      public static final double deployedPosition = 0.26;// rotations
+      public static final double deployedPosition = 0.262776;// rotations
       public static final double feedPosition = 0.1;// rotations
-      public static final double stowedPosition = 0.0;//0.93; // rotations
-      public static final double leftOffset = 0.82;//0.93; // rotations
+      public static final double stowedPosition = 0.0;// 0.93; // rotations
+      public static final double leftOffset = 0.82;// 0.93; // rotations
     }
   }
 
@@ -315,7 +315,7 @@ public final class Constants {
     public static final double redAllianceShootPreventionX = 11.9;
     public static final double blueAllianceShootPreventionX = 4.65;
     public static final double neutralZoneDivision = 4.65;
-    public static final double middleY = FieldWidth/2;
+    public static final double middleY = FieldWidth / 2;
   }
 
   public static class NetworktablePaths {

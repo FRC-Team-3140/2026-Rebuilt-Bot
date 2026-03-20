@@ -9,12 +9,10 @@ import frc.robot.libs.NetworkTables;
 import frc.robot.subsystems.Turret.TurretMain;
 
 import com.revrobotics.PersistMode;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.sim.SparkMaxSim;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.AlternateEncoderConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
@@ -37,9 +35,11 @@ public class Intake extends SubsystemBase {
   public SparkMaxSim intakeArmMotorSim;
 
   private double rightEncoderOffset = -0.132;
-  
-  public DutyCycleEncoder intakeEncoderL = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderL, 1, Constants.Limits.Intake.leftOffset);
-  public DutyCycleEncoder intakeEncoderR = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderR, 1, rightEncoderOffset);
+
+  public DutyCycleEncoder intakeEncoderL = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderL, 1,
+      Constants.Limits.Intake.leftOffset);
+  public DutyCycleEncoder intakeEncoderR = new DutyCycleEncoder(Constants.SensorIDs.intakeEncoderR, 1,
+      rightEncoderOffset);
   public DutyCycleEncoderSim intakeEncoderSim = new DutyCycleEncoderSim(intakeEncoderL);
 
   private double gravityFeedFowardConstant = 0;
@@ -47,22 +47,19 @@ public class Intake extends SubsystemBase {
   private double intakeSetpoint = Constants.Limits.Intake.stowedPosition;
 
   private TurretMain.LoggedPIDInputs intakePIDInputs = new TurretMain.LoggedPIDInputs(
-    "Intake",
+      "Intake",
       Constants.PID.Intake.intakeP,
       Constants.PID.Intake.intakeI,
-      Constants.PID.Intake.intakeD
-      );
-  
+      Constants.PID.Intake.intakeD);
+
   private PIDController intakePIDL = new PIDController(
       Constants.PID.Intake.intakeP,
       Constants.PID.Intake.intakeI,
-      Constants.PID.Intake.intakeD
-      );
+      Constants.PID.Intake.intakeD);
   private PIDController intakePIDR = new PIDController(
       Constants.PID.Intake.intakeP,
       Constants.PID.Intake.intakeI,
-      Constants.PID.Intake.intakeD
-      );
+      Constants.PID.Intake.intakeD);
 
   private static Intake m_instance = null;
 
@@ -79,13 +76,12 @@ public class Intake extends SubsystemBase {
 
     intakePIDL.enableContinuousInput(0, 1);
     intakePIDR.enableContinuousInput(0, 1);
-    
+
     intakePIDL.setTolerance(0.1);
     intakePIDR.setTolerance(0.1);
 
     intakeRollerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     config.inverted(true);
-
 
     config.idleMode(IdleMode.kBrake).inverted(true).smartCurrentLimit(15);
     intakeArmMotorL.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -94,8 +90,6 @@ public class Intake extends SubsystemBase {
     intakeArmMotorR.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     NetworkTables.intakeGravityConstant.setDouble(gravityFeedFowardConstant);
     NetworkTables.intakeSeparationConstant.setDouble(separationConstant);
-
-    
 
     if (RobotBase.isSimulation()) {
       intakeArmMotorSim = new SparkMaxSim(intakeArmMotorL, DCMotor.getNEO(1));
@@ -165,12 +159,12 @@ public class Intake extends SubsystemBase {
   public double getRightSideAngle() {
     return getRightAngle() * 360;
   }
+
   private double getAngleDifference(double angleA, double angleB) {
     double diff = angleA - angleB;
     diff = ((diff + 180) % 360 + 360) % 360 - 180; // Normalize to [-180, 180]
     return diff;
   }
-
 
   @Override
   public void periodic() {
@@ -183,9 +177,12 @@ public class Intake extends SubsystemBase {
     intakePIDR.setD(intakePIDInputs.getD());
 
     intakePIDInputs.update(intakeSetpoint, intakeEncoderL.get());
-    intakeArmMotorL.set(separationConstant * (getAngleDifference(getLeftSideAngle(), getRightSideAngle()) / 360) + intakePIDL.calculate(intakeEncoderL.get(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getLeftSideAngle() * Math.PI / 180));
-    intakeArmMotorR.set(separationConstant * (getAngleDifference(getRightSideAngle(), getLeftSideAngle()) / 360) + intakePIDR.calculate(getRightAngle(), intakeSetpoint) - gravityFeedFowardConstant * Math.sin(getRightSideAngle() * Math.PI / 180));
-
+    intakeArmMotorL.set(separationConstant * (getAngleDifference(getLeftSideAngle(), getRightSideAngle()) / 360)
+        + intakePIDL.calculate(intakeEncoderL.get(), intakeSetpoint)
+        - gravityFeedFowardConstant * Math.sin(getLeftSideAngle() * Math.PI / 180));
+    intakeArmMotorR.set(separationConstant * (getAngleDifference(getRightSideAngle(), getLeftSideAngle()) / 360)
+        + intakePIDR.calculate(getRightAngle(), intakeSetpoint)
+        - gravityFeedFowardConstant * Math.sin(getRightSideAngle() * Math.PI / 180));
 
     NetworkTables.intakeLeftEncoder.setDouble(intakeEncoderL.get());
     NetworkTables.intakeRightEncoder.setDouble(getRightAngle());
@@ -193,7 +190,6 @@ public class Intake extends SubsystemBase {
     NetworkTables.intakeRightSideHorizontalAngle.setDouble(getRightSideAngle());
     gravityFeedFowardConstant = NetworkTables.intakeGravityConstant.getDouble(gravityFeedFowardConstant);
     separationConstant = NetworkTables.intakeSeparationConstant.getDouble(separationConstant);
-
 
     armPose = new Pose3d(
         Constants.SIM.intakeMechOffset.getX(),

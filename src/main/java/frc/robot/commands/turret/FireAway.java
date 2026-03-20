@@ -36,7 +36,9 @@ public class FireAway extends Command {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(this.turret);
   }
+
   boolean bypassDistance = false;
+
   public FireAway(TurretMain turret, boolean bypassDistance) {
     this(turret);
     this.bypassDistance = bypassDistance;
