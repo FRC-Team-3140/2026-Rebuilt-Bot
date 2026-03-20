@@ -90,6 +90,7 @@ public class Intake extends SubsystemBase {
     intakeArmMotorR.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     NetworkTables.intakeGravityConstant.setDouble(gravityFeedFowardConstant);
     NetworkTables.intakeSeparationConstant.setDouble(separationConstant);
+    NetworkTables.intakeRollerSpeed_d.setDouble(Constants.MotorSpeeds.Intake.intakeSpeed);
 
     if (RobotBase.isSimulation()) {
       intakeArmMotorSim = new SparkMaxSim(intakeArmMotorL, DCMotor.getNEO(1));
