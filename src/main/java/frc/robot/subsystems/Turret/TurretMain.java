@@ -63,10 +63,12 @@ public class TurretMain extends SubsystemBase {
   public SparkFlexSim flywheelMotorSim;
   public SparkMaxSim hoodMotorSim;
   // ROBOT WIN = TRUE
-  public DutyCycleEncoder hoodEncoder = new DutyCycleEncoder(Constants.SensorIDs.hoodEncoder, 360 / Constants.Bot.hoodGearRatio, -21);
+  public DutyCycleEncoder hoodEncoder = new DutyCycleEncoder(Constants.SensorIDs.hoodEncoder,
+      360 / Constants.Bot.hoodGearRatio, -21);
   public DutyCycleEncoderSim hoodEncoderSim = new DutyCycleEncoderSim(hoodEncoder);
   public Encoder turretEncoder = new Encoder(Constants.SensorIDs.turretEncoderA, Constants.SensorIDs.turretEncoderB);
   public EncoderSim turretEncoderSim = new EncoderSim(turretEncoder);
+
   private double getAngleDifference(double angleA, double angleB) {
     double diff = angleA - angleB;
     diff = ((diff + 180) % 360 + 360) % 360 - 180; // Normalize to [-180, 180]
@@ -78,7 +80,6 @@ public class TurretMain extends SubsystemBase {
 
   public InterpolatingDoubleTreeMap flywheelSpeedToProjectileSpeed = new InterpolatingDoubleTreeMap();
   public InterpolatingDoubleTreeMap projectileSpeedToFlywheelSpeed = new InterpolatingDoubleTreeMap();
-
 
   double lastUpdateTimestamp = 0;
 
@@ -114,8 +115,8 @@ public class TurretMain extends SubsystemBase {
       Constants.FeedFoward.Turret.flywheelA);
   private boolean spinup = false;
 
-  //private static double RPMSpeedConversion = 0.0015302774; // DESMOOOOOOOS TODO: replace with interpolation map, this was calculated for 6000 rpm
-
+  // private static double RPMSpeedConversion = 0.0015302774; // DESMOOOOOOOS
+  // TODO: replace with interpolation map, this was calculated for 6000 rpm
 
   public enum AimOpt {
     AUTO,
@@ -230,14 +231,15 @@ public class TurretMain extends SubsystemBase {
     projectileAngleToHoodAngle.put(80.0, 20.0);
     projectileAngleToHoodAngle.put(56.15, 37.5);
 
-    // TODO: do the flywheel stuff. The angle and speed seem to be independent so we only need to test the RPM to speed at one angle
+    // TODO: do the flywheel stuff. The angle and speed seem to be independent so we
+    // only need to test the RPM to speed at one angle
     projectileSpeedToFlywheelSpeed.put(4.6, 3000.0);
     projectileSpeedToFlywheelSpeed.put(9.15, 6000.0);
-    //projectileSpeedToFlywheelSpeed.put(0.0, 0.0);
+    // projectileSpeedToFlywheelSpeed.put(0.0, 0.0);
 
     flywheelSpeedToProjectileSpeed.put(6000.0, 4.6);
     flywheelSpeedToProjectileSpeed.put(6000.0, 9.15);
-    //flywheelSpeedToProjectileSpeed.put(0.0, 0.0);
+    // flywheelSpeedToProjectileSpeed.put(0.0, 0.0);
 
     NetworkTables.flywheelRPMOverride_d.setDouble(5000);
     NetworkTables.hoodAngle_d.setDouble(0);
@@ -250,14 +252,14 @@ public class TurretMain extends SubsystemBase {
         flywheelFeedfowardInputs.getI(),
         flywheelFeedfowardInputs.getD());
 
-
     SparkMaxConfig turretConfig = new SparkMaxConfig();
     SparkFlexConfig flywheelConfig = new SparkFlexConfig();
     SparkMaxConfig hoodConfig = new SparkMaxConfig();
-    turretEncoder.setDistancePerPulse(1.04/(Constants.Bot.turretGearRatio*Constants.Bot.turretGearRatio));
-    turretConfig.idleMode(IdleMode.kCoast).inverted(true);//.743-379smartCurrentLimit(Constants.CurrentLimits.Turret.turretLimit);
+    turretEncoder.setDistancePerPulse(1.04 / (Constants.Bot.turretGearRatio * Constants.Bot.turretGearRatio));
+    turretConfig.idleMode(IdleMode.kCoast).inverted(true);// .743-379smartCurrentLimit(Constants.CurrentLimits.Turret.turretLimit);
     hoodConfig.idleMode(IdleMode.kBrake).inverted(false).smartCurrentLimit(Constants.CurrentLimits.Turret.hoodLimit);
-    flywheelConfig.idleMode(IdleMode.kCoast).inverted(true).smartCurrentLimit(Constants.CurrentLimits.Turret.flywheelLimit);
+    flywheelConfig.idleMode(IdleMode.kCoast).inverted(true)
+        .smartCurrentLimit(Constants.CurrentLimits.Turret.flywheelLimit);
 
     rotationProfiledPID.setIntegratorRange(-0.15, 0.15);
 
@@ -265,10 +267,11 @@ public class TurretMain extends SubsystemBase {
     hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     flywheelMotor.configure(flywheelConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-
-    aimTypes.put(AimOpt.AUTO, new AutoAim(hoodAngleToProjectileAngle.get(Constants.Limits.Turret.maxPitch), hoodAngleToProjectileAngle.get(Constants.Limits.Turret.minPitch)));
+    aimTypes.put(AimOpt.AUTO, new AutoAim(hoodAngleToProjectileAngle.get(Constants.Limits.Turret.maxPitch),
+        hoodAngleToProjectileAngle.get(Constants.Limits.Turret.minPitch)));
     aimTypes.put(AimOpt.MANUAL, new ManualAim());
-    System.out.println("Min: " + hoodAngleToProjectileAngle.get(Constants.Limits.Turret.minPitch) + " Max: " + hoodAngleToProjectileAngle.get(Constants.Limits.Turret.maxPitch));
+    System.out.println("Min: " + hoodAngleToProjectileAngle.get(Constants.Limits.Turret.minPitch) + " Max: "
+        + hoodAngleToProjectileAngle.get(Constants.Limits.Turret.maxPitch));
 
     turretSetpoint = getTurretEncoderAngle();
     clampTurretSetpoint();
@@ -276,7 +279,8 @@ public class TurretMain extends SubsystemBase {
     hoodSetpoint = 0;
     flywheelSetpoint = 0;
 
-    aimTypes.get(currentMode).activate(turretSetpoint, hoodAngleToProjectileAngle.get(hoodSetpoint), FlywheelRPMToSpeed(flywheelSetpoint));
+    aimTypes.get(currentMode).activate(turretSetpoint, hoodAngleToProjectileAngle.get(hoodSetpoint),
+        FlywheelRPMToSpeed(flywheelSetpoint));
 
     if (RobotBase.isSimulation()) {
       turretRotationMotorSim = new SparkMaxSim(turretRotationMotor, DCMotor.getNEO(1));
@@ -289,7 +293,8 @@ public class TurretMain extends SubsystemBase {
     if (mode != currentMode) {
       aimTypes.get(currentMode).deactivate();
       currentMode = mode;
-      aimTypes.get(currentMode).activate(turretSetpoint, hoodAngleToProjectileAngle.get(hoodSetpoint), FlywheelRPMToSpeed(flywheelSetpoint));
+      aimTypes.get(currentMode).activate(turretSetpoint, hoodAngleToProjectileAngle.get(hoodSetpoint),
+          FlywheelRPMToSpeed(flywheelSetpoint));
     }
   }
 
@@ -303,7 +308,7 @@ public class TurretMain extends SubsystemBase {
 
   public boolean shouldShoot() {
     return shouldShoot;
-    //&& Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <=
+    // && Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <=
     // flywheelSpeedTolerance;
   }
 
@@ -321,6 +326,7 @@ public class TurretMain extends SubsystemBase {
   private double getHoodEncoderAngle() {
     return hoodEncoder.get();
   }
+
   private double getProjectileAngle() {
     return hoodAngleToProjectileAngle.get(hoodEncoder.get());
   }
@@ -344,7 +350,7 @@ public class TurretMain extends SubsystemBase {
     Vector2 turretPosition = botPosition.add(turretDirection);
 
     boolean shouldStow = Math.abs(turretPosition.X - Constants.PathplannerConstants.blueTrenchX) < stowRange ||
-      Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
+        Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
 
     return shouldStow;
   }
@@ -386,10 +392,11 @@ public class TurretMain extends SubsystemBase {
 
         flywheelSetpoint = SpeedToFlywheelRPM(type.flywheelSpeed); // convert from m/s to RPM
         hoodSetpoint = projectileAngleToHoodAngle.get(type.hoodAngle);
-        if(currentMode == AimOpt.MANUAL) {
+        if (currentMode == AimOpt.MANUAL) {
           hoodSetpoint = type.hoodAngle;
         }
-        hoodSetpoint = Math.max(Constants.Limits.Turret.minPitch, Math.min(Constants.Limits.Turret.maxPitch, hoodSetpoint));
+        hoodSetpoint = Math.max(Constants.Limits.Turret.minPitch,
+            Math.min(Constants.Limits.Turret.maxPitch, hoodSetpoint));
         turretSetpoint = type.rotationAngle;
         boolean hadToClamp = clampTurretSetpoint();
         shouldShootMode = type.shouldShoot && hadToClamp;
@@ -400,16 +407,16 @@ public class TurretMain extends SubsystemBase {
     shouldShoot = shouldShootMode && !stow;
 
     hoodPID.setSetpoint(hoodAngleOverride ? NetworkTables.hoodAngle_d.getDouble(0) : stow ? 0 : hoodSetpoint);
-    rotationProfiledPID.setSetpoint(Math.min(Constants.Limits.Turret.maxYaw, Math.max(turretSetpoint, Constants.Limits.Turret.minYaw)));
+    rotationProfiledPID.setSetpoint(
+        Math.min(Constants.Limits.Turret.maxYaw, Math.max(turretSetpoint, Constants.Limits.Turret.minYaw)));
     hoodMotor.set(hoodPID.calculate(getHoodEncoderAngle()));
 
     double encoderValue = getTurretEncoderAngle();
     double output = rotationProfiledPID.calculate(encoderValue);
     turretRotationMotor.set(output);
 
-
-    if(flywheelRPMOverride) {
-      flywheelSetpoint = NetworkTables.flywheelRPMOverride_d.getDouble(0); 
+    if (flywheelRPMOverride) {
+      flywheelSetpoint = NetworkTables.flywheelRPMOverride_d.getDouble(0);
     }
     if (spinup) {
       flywheelMotor.set(flywheelFeedforward.calculate(flywheelSetpoint) / 12);
@@ -422,7 +429,7 @@ public class TurretMain extends SubsystemBase {
         Constants.SIM.hoodMechOffset.getY(),
         Constants.SIM.hoodMechOffset.getZ(),
         new Rotation3d(0, Math.toRadians(getHoodEncoderAngle()),
-          Math.toRadians(encoderValue)));
+            Math.toRadians(encoderValue)));
     turretPose = new Pose3d(
         Constants.SIM.turretMechOffset.getX(),
         Constants.SIM.turretMechOffset.getY(),
@@ -431,7 +438,6 @@ public class TurretMain extends SubsystemBase {
 
     Robot.mecanismPoses[1] = turretPose;
     Robot.mecanismPoses[2] = hoodPose;
-
 
   }
 
@@ -508,7 +514,7 @@ public class TurretMain extends SubsystemBase {
         0,
         Math.toRadians(getProjectileAngle()),
         Math.toRadians(
-          getTurretEncoderAngle() + robotFieldPose.getRotation().getDegrees()));
+            getTurretEncoderAngle() + robotFieldPose.getRotation().getDegrees()));
 
     Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
 
@@ -530,8 +536,8 @@ public class TurretMain extends SubsystemBase {
 
     // Add tangential velocity
     Vector2 turretPosition = new Vector2(turretPose.toPose2d().getX(), turretPose.toPose2d().getY())
-      .rotate(Odometry.getInstance().getRotation().getRadians() + (Math.PI / 2))
-      .mult(Odometry.getInstance().getAngularVelocity());
+        .rotate(Odometry.getInstance().getRotation().getRadians() + (Math.PI / 2))
+        .mult(Odometry.getInstance().getAngularVelocity());
 
     // Add robot velocity to projectile velocity
     double vx = projectileSpeed * dx + robotVelX + turretPosition.X;

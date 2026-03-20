@@ -2,7 +2,6 @@ package frc.robot.subsystems.Turret;
 
 import edu.wpi.first.wpilibj.XboxController;
 import frc.robot.subsystems.Controller;
-import frc.robot.subsystems.odometry.Odometry;
 
 public class ManualAim extends AimType {
     private XboxController controller = Controller.getInstance().secondaryController;
@@ -25,7 +24,7 @@ public class ManualAim extends AimType {
         desiredRotationAngle += -controller.getRightX() * manualAimRotationSpeed * deltaTime;
         hoodAngle += -controller.getLeftY() * manualAimHoodSpeed * deltaTime;
         desiredRotationAngle = Math.max(-90, Math.min(desiredRotationAngle, 90));
-        rotationAngle = desiredRotationAngle; //- Odometry.getInstance().getRotation().getDegrees();
+        rotationAngle = desiredRotationAngle; // - Odometry.getInstance().getRotation().getDegrees();
 
     }
 
@@ -47,6 +46,7 @@ public class ManualAim extends AimType {
     public void setDesiredRotationAngle(double angle) {
         desiredRotationAngle = angle;
     }
+
     public void setHoodAngle(double angle) {
         hoodAngle = angle;
     }

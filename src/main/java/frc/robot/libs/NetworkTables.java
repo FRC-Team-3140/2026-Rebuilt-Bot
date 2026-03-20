@@ -104,5 +104,6 @@ public class NetworkTables {
     public static NetworkTableEntry autoAimForCorral_b = misc.getEntry("autoAimForCorral_b");
     public static NetworkTableEntry shouldShoot_b = misc.getEntry("shouldShoot_b");
     public static NetworkTableEntry lookTowardsTarget_b = misc.getEntry("lookTowardsTarget_b");
+    public static NetworkTableEntry intakeRollerSpeed_d = misc.getEntry("intakeRollerSpeed_d");
 }
   

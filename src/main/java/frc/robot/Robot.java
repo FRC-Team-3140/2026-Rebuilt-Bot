@@ -150,7 +150,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousPeriodic() {
   }
+
   public static boolean locked = false;
+
   @Override
   public void teleopInit() {
     m_testRunner.stopAll();
@@ -159,8 +161,8 @@ public class Robot extends LoggedRobot {
         Constants.Bot.maxChassisSpeed, Constants.Bot.maxChassisTurnSpeed, true, locked));
     TurretMain.flywheelRPMOverride = true;
 
-     if (Robot.isSimulation())
-       RobotContainer.turret.setDefaultCommand(new FireAway(RobotContainer.turret));
+    if (Robot.isSimulation())
+      RobotContainer.turret.setDefaultCommand(new FireAway(RobotContainer.turret));
 
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to

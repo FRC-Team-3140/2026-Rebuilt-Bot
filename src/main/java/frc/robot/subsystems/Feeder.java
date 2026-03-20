@@ -22,7 +22,7 @@ public class Feeder extends SubsystemBase {
 
   private final SparkMax feederMotor = new SparkMax(frc.robot.Constants.MotorIDs.feederMotor,
       SparkMax.MotorType.kBrushless);
-  private final SparkMax rollerMotor = new SparkMax(frc.robot.Constants.MotorIDs.rollerMotor, 
+  private final SparkMax rollerMotor = new SparkMax(frc.robot.Constants.MotorIDs.rollerMotor,
       SparkMax.MotorType.kBrushless);
 
   public static Feeder getInstance() {
@@ -35,6 +35,7 @@ public class Feeder extends SubsystemBase {
   public void setFeederActive(boolean active) {
     feederActive = active;
   }
+
   public void setFeederInverted(boolean inverted) {
     feederInverted = inverted;
   }
@@ -63,6 +64,5 @@ public class Feeder extends SubsystemBase {
       rollerMotor.set(0);
     }
 
-    
   }
 }

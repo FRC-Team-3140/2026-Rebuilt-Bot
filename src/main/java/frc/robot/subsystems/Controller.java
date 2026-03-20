@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.RobotContainer;
-import frc.robot.Constants.CurrentLimits.Turret;
 import frc.robot.libs.NetworkTables;
 import frc.robot.subsystems.Turret.ManualAim;
 import frc.robot.subsystems.Turret.TurretMain;
@@ -213,9 +212,9 @@ public class Controller extends SubsystemBase {
    * Y - Reset Gyro
    * X - Toggle Intake Stowed/Deployed
    * A - Hold to go to feed Position and release to deploy
-   * B - Lock Wheels 
+   * B - Lock Wheels
    * Left Bumper - Intake
-   * Right Bumper - Feed 
+   * Right Bumper - Feed
    * Left Trigger - Reverse Feeder
    * Right Trigger - Spinup Flywheel
    * Start - Recalibrate Camera Pose
@@ -232,11 +231,14 @@ public class Controller extends SubsystemBase {
    * B - Set Hood Angle to 0
    */
   private void reusableDefaultControls() {
-    if (primaryController.getYButtonPressed()) SwerveDrive.odometry.resetGyro();
+    if (primaryController.getYButtonPressed())
+      SwerveDrive.odometry.resetGyro();
 
-    if (primaryController.getStartButtonPressed()) RobotContainer.odometry.recalibrateCameraPose();
+    if (primaryController.getStartButtonPressed())
+      RobotContainer.odometry.recalibrateCameraPose();
 
-    Intake.getInstance().intake(primaryController.getLeftBumperButton() ? (Constants.MotorSpeeds.Intake.intakeSpeed) : 0);
+    Intake.getInstance()
+        .intake(primaryController.getLeftBumperButton() ? (NetworkTables.intakeRollerSpeed_d.getDouble(Constants.MotorSpeeds.Intake.intakeSpeed)) : 0);
 
     TurretMain.getInstance().setFlywheelActive(primaryController.getRightTriggerAxis() > triggerThreshold);
 
@@ -299,7 +301,7 @@ public class Controller extends SubsystemBase {
   }
 
   private void ManualMode() {
-    ManualAim manualAim = (ManualAim)(TurretMain.getInstance().aimTypes.get(TurretMain.AimOpt.MANUAL));
+    ManualAim manualAim = (ManualAim) (TurretMain.getInstance().aimTypes.get(TurretMain.AimOpt.MANUAL));
     if (secondaryController.getLeftStickButton() && secondaryController.getRightStickButton()) {
       updateControlMode();
       return;
@@ -307,7 +309,7 @@ public class Controller extends SubsystemBase {
 
     reusableDefaultControls();
 
-    if(secondaryController.getRightBumperButton()) {
+    if (secondaryController.getRightBumperButton()) {
       TurretMain.hoodAngleOverride = true;
       TurretMain.flywheelRPMOverride = true;
       NetworkTables.hoodAngle_d.setDouble(25);
@@ -317,7 +319,7 @@ public class Controller extends SubsystemBase {
       TurretMain.flywheelRPMOverride = false;
     }
 
-    if(secondaryController.getLeftBumperButton()) {
+    if (secondaryController.getLeftBumperButton()) {
       TurretMain.hoodAngleOverride = true;
       TurretMain.flywheelRPMOverride = true;
       NetworkTables.hoodAngle_d.setDouble(35); // TODO: Tune values for passing
@@ -327,10 +329,10 @@ public class Controller extends SubsystemBase {
       TurretMain.flywheelRPMOverride = false;
     }
 
-    if(secondaryController.getAButton()) {
+    if (secondaryController.getAButton()) {
       manualAim.setDesiredRotationAngle(0);
     }
-    if(secondaryController.getBButton()) {
+    if (secondaryController.getBButton()) {
       manualAim.setHoodAngle(0);
     }
   }

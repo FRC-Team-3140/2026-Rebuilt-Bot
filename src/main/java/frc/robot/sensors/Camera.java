@@ -47,12 +47,14 @@ public class Camera extends SubsystemBase {
   private PhotonCamera one = new PhotonCamera("one");
   private PhotonCamera two = new PhotonCamera("two");
 
-  private Transform3d oneToBot = new Transform3d(Constants.CameraConstants.offsetToCenterHoriz, Constants.CameraConstants.leftOffsetToCenter,
+  private Transform3d oneToBot = new Transform3d(Constants.CameraConstants.offsetToCenterHoriz,
+      Constants.CameraConstants.rightOffsetToCenter,
       Constants.CameraConstants.offsetToCenterVert,
-      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(115)));
-  private Transform3d twoToBot = new Transform3d(Constants.CameraConstants.offsetToCenterHoriz, Constants.CameraConstants.rightOffsetToCenter,
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(45 + 180)));
+  private Transform3d twoToBot = new Transform3d(Constants.CameraConstants.offsetToCenterHoriz,
+      Constants.CameraConstants.leftOffsetToCenter,
       Constants.CameraConstants.offsetToCenterVert,
-      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-115)));
+      new Rotation3d(0, Constants.CameraConstants.pitch, Math.toRadians(-45 + 180)));
 
   private AprilTagFieldLayout layout = FieldAprilTags.getInstance().field;
   private PhotonPoseEstimator oneEstimator = new PhotonPoseEstimator(layout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
@@ -161,15 +163,16 @@ public class Camera extends SubsystemBase {
           if (multiResult.isPresent()
               && multiResult.get().estimatedPose.bestReprojErr < Constants.CameraConstants.maxReprojectionError) {
             Optional<EstimatedRobotPose> pose = oneEstimator.update(new PhotonPipelineResult(result.metadata,
-                  result.getTargets(),
-                  multiResult));
+                result.getTargets(),
+                multiResult));
             if (pose.isPresent()) {
               estimatedPoseOne = pose.get().estimatedPose;
             }
 
           } else {
             // Update pose one with single tag estimation if it is available
-            if (!result.getTargets().isEmpty() && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
+            if (!result.getTargets().isEmpty()
+                && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
               Optional<EstimatedRobotPose> pose = oneEstimator.update(result);
               if (pose.isPresent()) {
                 estimatedPoseOne = pose.get().estimatedPose;
@@ -184,14 +187,15 @@ public class Camera extends SubsystemBase {
           if (multiResult.isPresent()
               && multiResult.get().estimatedPose.bestReprojErr < Constants.CameraConstants.maxReprojectionError) {
             Optional<EstimatedRobotPose> pose = twoEstimator.update(new PhotonPipelineResult(result.metadata,
-                  result.getTargets(),
-                  multiResult));
+                result.getTargets(),
+                multiResult));
             if (pose.isPresent()) {
               estimatedPoseTwo = pose.get().estimatedPose;
             }
           } else {
             // Update pose two with single tag estimation if it is available
-            if (!result.getTargets().isEmpty() && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
+            if (!result.getTargets().isEmpty()
+                && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
               Optional<EstimatedRobotPose> pose = twoEstimator.update(result);
               if (pose.isPresent()) {
                 estimatedPoseTwo = pose.get().estimatedPose;
@@ -208,7 +212,7 @@ public class Camera extends SubsystemBase {
             (estimatedPoseOne.getX() + estimatedPoseTwo.getX()) / 2,
             (estimatedPoseOne.getY() + estimatedPoseTwo.getY()) / 2,
             new Rotation2d(
-              (estimatedPoseOne.getRotation().getAngle() + estimatedPoseTwo.getRotation().getAngle()) / 2));
+                (estimatedPoseOne.getRotation().getAngle() + estimatedPoseTwo.getRotation().getAngle()) / 2));
       } else if (estimatedPoseOne != Pose3d.kZero) {
         estimatedPose = new Pose2d(estimatedPoseOne.getX(), estimatedPoseOne.getY(),
             estimatedPoseOne.getRotation().toRotation2d());
@@ -255,14 +259,14 @@ public class Camera extends SubsystemBase {
   private void setDebugPoses(boolean one, boolean two, Pose3d onePose, Pose3d twoPose) {
     if (one) {
       NetworkTables.oneCameraPose.setDoubleArray(new double[] {
-        onePose.getX(),
+          onePose.getX(),
           onePose.getY(),
           Math.toDegrees(onePose.getRotation().getAngle()) });
       Logger.recordOutput("Odometry/cameraOnePrediction", onePose.toPose2d());
     }
     if (two) {
       NetworkTables.twoCameraPose.setDoubleArray(new double[] {
-        twoPose.getX(),
+          twoPose.getX(),
           twoPose.getY(),
           Math.toDegrees(twoPose.getRotation().getAngle()) });
       Logger.recordOutput("Odometry/cameraTwoPrediction", twoPose.toPose2d());

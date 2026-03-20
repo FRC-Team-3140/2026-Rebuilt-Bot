@@ -1,4 +1,5 @@
 package frc.robot.subsystems.Turret;
+
 import java.util.Optional;
 
 //import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
@@ -19,7 +20,8 @@ public class AutoAim extends AimType {
   private static double predictForwardTime = 0;
   private static double predictForwardWhenCheckingMultiplier = 1; // Multiplies predict forward time when checking if
                                                                   // a shot will go in for should shoot
-                                                                  //private LoggedNetworkNumber errorLog = new LoggedNetworkNumber("AutoAim/error", 0);
+                                                                  // private LoggedNetworkNumber errorLog = new
+                                                                  // LoggedNetworkNumber("AutoAim/error", 0);
 
   public static class Target {
     private Vector2 position;
@@ -47,47 +49,48 @@ public class AutoAim extends AimType {
       Units.inchesToMeters(Constants.PathplannerConstants.TopOfHubHeightInches - 3),
       true,
       new ShotPredictor.HeightBounds(
-        Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
-        Units.inchesToMeters(5 + Constants.PathplannerConstants.TopOfHubHeightInches
-          + Constants.PathplannerConstants.FuelRadiusInches), // desired height
-        Units.inchesToMeters(1 + Constants.PathplannerConstants.TopOfHubHeightInches
-          + Constants.PathplannerConstants.FuelRadiusInches) // min height
-        ),
+          Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
+          Units.inchesToMeters(5 + Constants.PathplannerConstants.TopOfHubHeightInches
+              + Constants.PathplannerConstants.FuelRadiusInches), // desired height
+          Units.inchesToMeters(1 + Constants.PathplannerConstants.TopOfHubHeightInches
+              + Constants.PathplannerConstants.FuelRadiusInches) // min height
+      ),
       Units.inchesToMeters(21 - 5) // radius of hub top but less forgiving
-      );
+  );
   private Target leftZoneTarget = new Target(
       new Vector2(2.065, 6.219),
       Units.inchesToMeters(Constants.PathplannerConstants.FuelRadiusInches),
       true,
       new ShotPredictor.HeightBounds(
-        2.6, // meters from score point to place we have to shoot over
-        3, // desired meter height
-        1 // minimum height in meters
-        ),
+          2.6, // meters from score point to place we have to shoot over
+          3, // desired meter height
+          1 // minimum height in meters
+      ),
       1 // meters of leeway (radius)
-      );
+  );
   private Target rightZoneTarget = new Target(
       new Vector2(2.065, 1.787),
       Units.inchesToMeters(Constants.PathplannerConstants.FuelRadiusInches),
       true,
       new ShotPredictor.HeightBounds(
-        2.6, // meters from score point to place we have to shoot over
-        3, // desired meter height
-        1 // minimum height in meters
-        ),
+          2.6, // meters from score point to place we have to shoot over
+          3, // desired meter height
+          1 // minimum height in meters
+      ),
       1 // meters of leeway (radius)
-      );
+  );
   private Target corralRightTarget = new Target(
       new Vector2(0, 0.675),
       Units.inchesToMeters(Constants.PathplannerConstants.FuelRadiusInches),
       true,
       new ShotPredictor.HeightBounds(
-        4.7, // meters from score point to place we have to shoot over
-        2.5, // desired meter height
-        1 // minimum height in meters
-        ),
-      1 // I loosened the accuracy requirement so its ok to miss // 0.3 // meters of leeway (radius)
-      );
+          4.7, // meters from score point to place we have to shoot over
+          2.5, // desired meter height
+          1 // minimum height in meters
+      ),
+      1 // I loosened the accuracy requirement so its ok to miss // 0.3 // meters of
+        // leeway (radius)
+  );
   private Vector2 neutralDeadZoneMin = new Vector2(5.239, 3.434);
   private Vector2 neutralDeadZoneMax = new Vector2(6.22, 4.572);
 
@@ -120,7 +123,7 @@ public class AutoAim extends AimType {
     Vector2 rotatedTurretPosition = turretPosition.rotate(futureRotation);
 
     Vector2 centripetalVelocity = new Vector2(-rotatedTurretPosition.Y, rotatedTurretPosition.X)
-      .mult(odometry.getAngularVelocity());
+        .mult(odometry.getAngularVelocity());
     Vector2 futureTurretVelocity = futureBotVelocity.add(centripetalVelocity);
     Vector2 shotOrigin = futureBotPosition.add(rotatedTurretPosition);
 
@@ -173,15 +176,16 @@ public class AutoAim extends AimType {
       hoodAngle = result.get().ShotAngle;
       flywheelSpeed = result.get().ShotSpeed; // Convereted to RPM in TurretMain
       rotationAngle = Math
-        .toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
+          .toDegrees(Math.atan2(result.get().AimPosition.Y, result.get().AimPosition.X) - futureRotation);
     }
 
     return result.isPresent();
   }
 
-  private Pair<Boolean, Double> EstimateWillScore(double hoodMeasurement, double flywheelMeasurement, double rotationMeasurement) {
+  private Pair<Boolean, Double> EstimateWillScore(double hoodMeasurement, double flywheelMeasurement,
+      double rotationMeasurement) {
     if (currentTargetOpt.isEmpty()) {
-      return new Pair<Boolean,Double>(false, Double.MAX_VALUE);
+      return new Pair<Boolean, Double>(false, Double.MAX_VALUE);
     }
 
     Target currentTarget = currentTargetOpt.get();
@@ -197,10 +201,10 @@ public class AutoAim extends AimType {
     Vector2 inheritedVelocity = futureState.getSecond();
 
     Vector2 horizontalVelocity = new Vector2(Math.cos(Math.toRadians(hoodMeasurement)) * flywheelMeasurement, 0)
-      .rotate(rotation + Math.toRadians(rotationMeasurement))
-      .add(inheritedVelocity);
+        .rotate(rotation + Math.toRadians(rotationMeasurement))
+        .add(inheritedVelocity);
     double verticalVelocity = Math.sin(Math.toRadians(hoodMeasurement)) * flywheelMeasurement
-      + getBotVerticalVelocity();
+        + getBotVerticalVelocity();
 
     double relativeTargetHeight = currentTarget.targetHeight - initialHeight;
     Vector2 targetPosition = currentTarget.getPosition();
@@ -215,7 +219,7 @@ public class AutoAim extends AimType {
 
     if (desc < 0) {
       // System.out.println("Never reaches height!");
-      return new Pair<Boolean,Double>(false, Double.MAX_VALUE);
+      return new Pair<Boolean, Double>(false, Double.MAX_VALUE);
     }
 
     // the times that the ball is at the right height
@@ -250,7 +254,7 @@ public class AutoAim extends AimType {
 
     if (bestT.isEmpty()) {
       // System.out.println("No good score time!");
-      return new Pair<Boolean,Double>(false, bestDistSq);
+      return new Pair<Boolean, Double>(false, bestDistSq);
     }
 
     double scoreT = bestT.get();
@@ -267,7 +271,7 @@ public class AutoAim extends AimType {
 
     if (desc < 0) {
       // System.out.println("Never enters ring!");
-      return new Pair<Boolean,Double>(false, Math.sqrt(bestDistSq));
+      return new Pair<Boolean, Double>(false, Math.sqrt(bestDistSq));
     }
 
     // the times that the ball passes the height check radius for the target
@@ -286,13 +290,13 @@ public class AutoAim extends AimType {
       double height = initialHeight + verticalVelocity * t + 0.5 * ShotPredictor.gravity * t * t;
       if (!currentTarget.heightBounds.IsInBounds(height)) {
         // System.out.println("Passes ring out of height bounds!!");
-        return new Pair<Boolean,Double>(false, Math.sqrt(bestDistSq));
+        return new Pair<Boolean, Double>(false, Math.sqrt(bestDistSq));
       }
 
       success = true;
     }
 
-    return new Pair<Boolean,Double>(success, Math.sqrt(bestDistSq));
+    return new Pair<Boolean, Double>(success, Math.sqrt(bestDistSq));
   }
 
   public void updateTarget() {
@@ -311,10 +315,7 @@ public class AutoAim extends AimType {
 
     if (flippedBotPos.Y < Constants.PathplannerConstants.middleY) {
       currentTargetOpt = Optional.of(
-          NetworkTables.autoAimForCorral_b.getBoolean(true) ?
-          corralRightTarget :
-          rightZoneTarget
-          );
+          NetworkTables.autoAimForCorral_b.getBoolean(true) ? corralRightTarget : rightZoneTarget);
       return;
     }
 
@@ -333,7 +334,7 @@ public class AutoAim extends AimType {
     } else {
       Pair<Boolean, Double> resultPair = EstimateWillScore(hoodMeasurement, flywheelMeasurement, rotationMeasurement);
       shouldShoot = resultPair.getFirst();
-      //errorLog.set(resultPair.getSecond());
+      // errorLog.set(resultPair.getSecond());
     }
 
   }
