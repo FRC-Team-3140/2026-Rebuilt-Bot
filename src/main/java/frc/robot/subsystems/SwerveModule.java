@@ -70,7 +70,7 @@ public class SwerveModule extends SubsystemBase {
 
         SparkFlexConfig driveMotorConfig = new SparkFlexConfig();
 
-        driveMotorConfig.idleMode(IdleMode.kBrake).inverted(driveInverted).smartCurrentLimit(40);
+        driveMotorConfig.idleMode(IdleMode.kBrake).inverted(driveInverted).smartCurrentLimit(60);
 
         driveMotor = new SparkFlex(driveMotorID, MotorType.kBrushless);
 
@@ -78,7 +78,7 @@ public class SwerveModule extends SubsystemBase {
 
         SparkMaxConfig turnMotorConfig = new SparkMaxConfig();
 
-        driveMotorConfig.idleMode(IdleMode.kBrake).inverted(false).smartCurrentLimit(30);
+        turnMotorConfig.idleMode(IdleMode.kBrake).inverted(false).smartCurrentLimit(40);
 
         turnMotor = new SparkMax(turnMotorID, MotorType.kBrushless);
 
