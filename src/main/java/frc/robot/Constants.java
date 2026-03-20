@@ -262,7 +262,7 @@ public final class Constants {
     public static final double leftOffsetToCenter = Units.inchesToMeters(8.5);
     public static final double rightOffsetToCenter = -Units.inchesToMeters(8.5);
     public static final double offsetToCenterVert = Units.inchesToMeters(8);
-    public static final double offsetToCenterHoriz = Units.inchesToMeters(9);
+    public static final double offsetToCenterHoriz = Units.inchesToMeters(-9);
     public static final double pitch = Math.toRadians(-10);
     public static final double maxReprojectionError = 0.3;
   }
