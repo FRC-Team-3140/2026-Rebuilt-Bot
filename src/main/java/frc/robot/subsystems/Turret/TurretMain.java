@@ -82,7 +82,7 @@ public class TurretMain extends SubsystemBase {
   public InterpolatingDoubleTreeMap flywheelSpeedToProjectileSpeed = new InterpolatingDoubleTreeMap();
   public InterpolatingDoubleTreeMap projectileSpeedToFlywheelSpeed = new InterpolatingDoubleTreeMap();
 
-  public double flywheelAdjustmantConstantM = 0.7; 
+  public double flywheelAdjustmantConstantM = 1; 
   public double flywheelAdjustmantConstantB = 0; 
 
   double lastUpdateTimestamp = 0;

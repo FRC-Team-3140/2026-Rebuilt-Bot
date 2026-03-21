@@ -240,7 +240,7 @@ public class Controller extends SubsystemBase {
       RobotContainer.odometry.recalibrateCameraPose();
 
     Intake.getInstance()
-        .intake(primaryController.getLeftBumperButton() ? (NetworkTables.intakeRollerSpeed_d.getDouble(Constants.MotorSpeeds.Intake.intakeSpeed)) : 0);
+        .intake(primaryController.getLeftBumperButton() ? (NetworkTables.intakeRollerSpeed_d.getDouble(Constants.MotorSpeeds.Intake.intakeSpeed)) : (primaryController.getPOV() == 0 ? Constants.MotorSpeeds.Intake.outtakeSpeed: 0));
 
     TurretMain.getInstance().setFlywheelActive(primaryController.getRightTriggerAxis() > triggerThreshold);
 
