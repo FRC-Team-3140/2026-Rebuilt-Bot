@@ -40,6 +40,7 @@ import frc.robot.Constants;
 import frc.robot.Robot;
 import frc.robot.libs.NetworkTables;
 import frc.robot.libs.Vector2;
+import frc.robot.subsystems.Controller;
 import frc.robot.subsystems.TestRunner;
 import frc.robot.subsystems.TestRunner.TestType;
 import frc.robot.subsystems.odometry.Odometry;
@@ -48,7 +49,7 @@ public class TurretMain extends SubsystemBase {
   /////////////////////////////////////////////////////////////////////
   /// TUNING VOLTAGE OVERRIDE ///
   /////////////////////////////////////////////////////////////////////
-  public static boolean flywheelRPMOverride = false;
+  public static boolean flywheelRPMOverride = true;
   public static boolean hoodAngleOverride = false;
 
   private Pose3d turretPose = Constants.SIM.turretMechOffset;
@@ -81,6 +82,9 @@ public class TurretMain extends SubsystemBase {
   public InterpolatingDoubleTreeMap flywheelSpeedToProjectileSpeed = new InterpolatingDoubleTreeMap();
   public InterpolatingDoubleTreeMap projectileSpeedToFlywheelSpeed = new InterpolatingDoubleTreeMap();
 
+  public double flywheelAdjustmantConstantM = 0.7; 
+  public double flywheelAdjustmantConstantB = 0; 
+
   double lastUpdateTimestamp = 0;
 
   public static final double stowRange = 0.6; // meters
@@ -90,7 +94,7 @@ public class TurretMain extends SubsystemBase {
   @AutoLogOutput
   double flywheelSetpoint = 0; // RPM
   @AutoLogOutput
-  double turretSetpoint = 0; // degrees
+  public double turretSetpoint = 0; // degrees
   @AutoLogOutput
   boolean shouldShoot = false;
 
@@ -114,9 +118,8 @@ public class TurretMain extends SubsystemBase {
       Constants.FeedFoward.Turret.flywheelV,
       Constants.FeedFoward.Turret.flywheelA);
   private boolean spinup = false;
+  private double flywheelSpeedTolerance = 500; // RPM
 
-  // private static double RPMSpeedConversion = 0.0015302774; // DESMOOOOOOOS
-  // TODO: replace with interpolation map, this was calculated for 6000 rpm
 
   public enum AimOpt {
     AUTO,
@@ -242,6 +245,8 @@ public class TurretMain extends SubsystemBase {
     // flywheelSpeedToProjectileSpeed.put(0.0, 0.0);
 
     NetworkTables.flywheelRPMOverride_d.setDouble(5000);
+    NetworkTables.flywheelAdjustmantConstantM_d.setDouble(flywheelAdjustmantConstantM);
+    NetworkTables.flywheelAdjustmantConstantB_d.setDouble(flywheelAdjustmantConstantB);
     NetworkTables.hoodAngle_d.setDouble(0);
 
     hoodPID.setPID(hoodPIDInputs.getP(), hoodPIDInputs.getI(), hoodPIDInputs.getD());
@@ -307,10 +312,10 @@ public class TurretMain extends SubsystemBase {
   }
 
   public boolean shouldShoot() {
-    return shouldShoot;
-    // && Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <=
-    // flywheelSpeedTolerance;
+    return shouldShoot
+     && flywheelAtSpeed();
   }
+  public boolean flywheelAtSpeed() { return Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance; }
 
   private double getTurretEncoderAngle() {
     double encoderValue = -turretEncoder.getDistance();
@@ -352,7 +357,7 @@ public class TurretMain extends SubsystemBase {
     boolean shouldStow = Math.abs(turretPosition.X - Constants.PathplannerConstants.blueTrenchX) < stowRange ||
         Math.abs(turretPosition.X - Constants.PathplannerConstants.redTrenchX) < stowRange;
 
-    return shouldStow;
+    return shouldStow || Controller.getInstance().secondaryController.getBButton();
   }
 
   @SuppressWarnings("unused")
@@ -364,6 +369,9 @@ public class TurretMain extends SubsystemBase {
     flywheelFeedforward.setKs(flywheelFeedfowardInputs.getP());
     flywheelFeedforward.setKv(flywheelFeedfowardInputs.getI());
     flywheelFeedforward.setKa(flywheelFeedfowardInputs.getD());
+
+    flywheelAdjustmantConstantB = NetworkTables.flywheelAdjustmantConstantB_d.getDouble(0);
+    flywheelAdjustmantConstantM = NetworkTables.flywheelAdjustmantConstantM_d.getDouble(1);
 
     double turretEnc = getTurretEncoderAngle();
     hoodPIDInputs.update(hoodSetpoint, getHoodEncoderAngle());
@@ -399,7 +407,7 @@ public class TurretMain extends SubsystemBase {
             Math.min(Constants.Limits.Turret.maxPitch, hoodSetpoint));
         turretSetpoint = type.rotationAngle;
         boolean hadToClamp = clampTurretSetpoint();
-        shouldShootMode = type.shouldShoot && hadToClamp;
+        shouldShootMode = type.shouldShoot && !hadToClamp;
       }
     }
 
@@ -465,11 +473,11 @@ public class TurretMain extends SubsystemBase {
   }
 
   public double FlywheelRPMToSpeed(double RPM) {
-    return flywheelSpeedToProjectileSpeed.get(RPM);
+    return flywheelSpeedToProjectileSpeed.get(RPM) * flywheelAdjustmantConstantM + flywheelAdjustmantConstantB;
   }
 
   public double SpeedToFlywheelRPM(double speed) {
-    return projectileSpeedToFlywheelSpeed.get(speed);
+    return (projectileSpeedToFlywheelSpeed.get(speed) - flywheelAdjustmantConstantB) / flywheelAdjustmantConstantM;
   }
 
   public void simFuel(double dt) {
@@ -487,9 +495,10 @@ public class TurretMain extends SubsystemBase {
     Logger.recordOutput("GamePieces", publishedGamePieces.toArray(new Pose3d[0]));
   }
 
+
   public void shootSimFuel() {
-    if (!shouldShoot())
-      return;
+    //if (!shouldShoot())
+      //return;
 
     // Get robot's field pose (x, y, rotation)
     Pose2d robotFieldPose = Odometry.getInstance().getRealSimPose();

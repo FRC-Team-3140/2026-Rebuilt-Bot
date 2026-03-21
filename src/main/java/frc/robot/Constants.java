@@ -130,7 +130,7 @@ public final class Constants {
     }
 
     public static class Intake {
-      public static final double intakeP = Robot.isReal() ? 1.5 : 0.15; // TUNED
+      public static final double intakeP = Robot.isReal() ? 1.5 : 0.015; // TUNED
       public static final double intakeI = Robot.isReal() ? 0.008 : 0.000; // TUNED
       public static final double intakeD = 0.00; // TUNED
     }
@@ -139,7 +139,7 @@ public final class Constants {
   public static class FeedFoward {
     public static class Turret {
       public static final double flywheelS = 0.01; // PHISCIALLY TUNED
-      public static final double flywheelV = 0.001855; // FISICALY TUNEED
+      public static final double flywheelV = Robot.isReal() ? 0.001855 : 0.001755; // FISICALY TUNEED
       public static final double flywheelA = 0.0; // TUNED
     }
 

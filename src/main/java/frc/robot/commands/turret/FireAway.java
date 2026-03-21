@@ -56,10 +56,11 @@ public class FireAway extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    Feeder.getInstance().setFeederInverted(false);
     System.out.println("Shooting, " + bypassDistance);
     if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
       // BLUE ALLIANCE --> is closer to x = 0
-      if (swerve.getPose().getX() < Constants.PathplannerConstants.blueAllianceShootPreventionX || bypassDistance) {
+      if ((swerve.getPose().getX() < Constants.PathplannerConstants.blueAllianceShootPreventionX || bypassDistance) && TurretMain.getInstance().flywheelAtSpeed()) {
 
         if (Robot.isSimulation())
           tryShootSimFuel();
@@ -72,7 +73,7 @@ public class FireAway extends Command {
       }
     } else {
       // RED ALLIANCE
-      if (swerve.getPose().getX() > Constants.PathplannerConstants.redAllianceShootPreventionX || bypassDistance) {
+      if ((swerve.getPose().getX() > Constants.PathplannerConstants.redAllianceShootPreventionX || bypassDistance) && TurretMain.getInstance().flywheelAtSpeed()) {
 
         if (Robot.isSimulation())
           tryShootSimFuel();

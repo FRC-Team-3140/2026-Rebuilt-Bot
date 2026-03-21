@@ -159,7 +159,8 @@ public class Robot extends LoggedRobot {
 
     RobotContainer.swerveDrive.setDefaultCommand(new SwerveDriveManualControl(RobotContainer.swerveDrive,
         Constants.Bot.maxChassisSpeed, Constants.Bot.maxChassisTurnSpeed, true, locked));
-    TurretMain.flywheelRPMOverride = true;
+    TurretMain.flywheelRPMOverride = false;
+    TurretMain.hoodAngleOverride = false;
 
     if (Robot.isSimulation())
       RobotContainer.turret.setDefaultCommand(new FireAway(RobotContainer.turret));

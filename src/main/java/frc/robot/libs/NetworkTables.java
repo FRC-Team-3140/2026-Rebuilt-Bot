@@ -90,7 +90,8 @@ public class NetworkTables {
     
   private static NetworkTable misc = dash.getSubTable(Constants.NetworktablePaths.Misc);
     public static NetworkTableEntry flywheelRPMOverride_d = misc.getEntry("flywheelRPMOveride_d");
-    public static NetworkTableEntry flywheelRPMConversionConstant_d = misc.getEntry("flywheelRPMConversionConstant_d");
+    public static NetworkTableEntry flywheelAdjustmantConstantM_d = misc.getEntry("flywheelAdjustmantConstantM_d");
+    public static NetworkTableEntry flywheelAdjustmantConstantB_d = misc.getEntry("flywheelAdjustmantConstantB_d");
     public static NetworkTableEntry hoodAngle_d = misc.getEntry("hoodAngle_d");
     public static NetworkTableEntry intakeLeftEncoder = misc.getEntry("intakeLeftEncoder_d");
     public static NetworkTableEntry intakeRightEncoder = misc.getEntry("intakeRightEncoder_d");
@@ -105,5 +106,7 @@ public class NetworkTables {
     public static NetworkTableEntry shouldShoot_b = misc.getEntry("shouldShoot_b");
     public static NetworkTableEntry lookTowardsTarget_b = misc.getEntry("lookTowardsTarget_b");
     public static NetworkTableEntry intakeRollerSpeed_d = misc.getEntry("intakeRollerSpeed_d");
+
+    
 }
   

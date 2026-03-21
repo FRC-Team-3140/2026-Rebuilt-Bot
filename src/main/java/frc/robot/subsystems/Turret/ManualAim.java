@@ -26,6 +26,7 @@ public class ManualAim extends AimType {
         desiredRotationAngle = Math.max(-90, Math.min(desiredRotationAngle, 90));
         rotationAngle = desiredRotationAngle; // - Odometry.getInstance().getRotation().getDegrees();
 
+        this.shouldShoot = true;
     }
 
     @Override

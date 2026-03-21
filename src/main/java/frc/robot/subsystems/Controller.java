@@ -5,6 +5,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -217,7 +218,6 @@ public class Controller extends SubsystemBase {
    * Right Bumper - Feed
    * Left Trigger - Reverse Feeder
    * Right Trigger - Spinup Flywheel
-   * Start - Recalibrate Camera Pose
    *
    * SECONDARY CONTROLLER:
    * Manual Mode only:
@@ -229,12 +229,14 @@ public class Controller extends SubsystemBase {
    *
    * A - Set Turret Rotation to 0
    * B - Set Hood Angle to 0
+   *
+   * Y - Recalibrate Camera Pose
    */
   private void reusableDefaultControls() {
     if (primaryController.getYButtonPressed())
       SwerveDrive.odometry.resetGyro();
 
-    if (primaryController.getStartButtonPressed())
+    if (secondaryController.getYButtonPressed())
       RobotContainer.odometry.recalibrateCameraPose();
 
     Intake.getInstance()
@@ -351,6 +353,7 @@ public class Controller extends SubsystemBase {
   }
 
   public void periodic() {
+    if (DriverStation.isAutonomous()) return;
     NetworkTables.driveModeManual_b.setBoolean(curControlMode == ControlMode.MANUAL);
     if (testing) {
       testingMode();
