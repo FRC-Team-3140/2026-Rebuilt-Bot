@@ -28,6 +28,7 @@ public class Controller extends SubsystemBase {
   public final XboxController secondaryController;
 
   static boolean linuxSim = Robot.isSimulation();
+
   enum AxisMapping {
     LEFT_X(linuxSim ? 0 : 0),
     RIGHT_X(linuxSim ? 3 : 4),
@@ -220,7 +221,9 @@ public class Controller extends SubsystemBase {
       RobotContainer.odometry.recalibrateCameraPose();
 
     Intake.getInstance()
-        .intake(primaryController.getLeftBumperButton() ? (NetworkTables.intakeRollerSpeed_d.getDouble(Constants.MotorSpeeds.Intake.intakeSpeed)) : (primaryController.getPOV() == 0 ? Constants.MotorSpeeds.Intake.outtakeSpeed: 0));
+        .intake(primaryController.getLeftBumperButton()
+            ? (NetworkTables.intakeRollerSpeed_d.getDouble(Constants.MotorSpeeds.Intake.intakeSpeed))
+            : (primaryController.getPOV() == 0 ? Constants.MotorSpeeds.Intake.outtakeSpeed : 0));
 
     TurretMain.getInstance().setFlywheelActive(getRightTriggerTriggered(controllers.PRIMARY));
 
@@ -244,7 +247,12 @@ public class Controller extends SubsystemBase {
       Robot.locked = false;
     }
 
-    Feeder.getInstance().setFeederActive(primaryController.getRightBumperButton()/* && (TurretMain.getInstance().shouldShoot() || !TurretMain.getInstance().getFlywheelActive())*/);
+    Feeder.getInstance().setFeederActive(primaryController.getRightBumperButton()/*
+                                                                                  * && (TurretMain.getInstance().
+                                                                                  * shouldShoot() ||
+                                                                                  * !TurretMain.getInstance().
+                                                                                  * getFlywheelActive())
+                                                                                  */);
     Feeder.getInstance().setFeederInverted(!TurretMain.getInstance().getFlywheelActive());
   }
 
@@ -333,7 +341,8 @@ public class Controller extends SubsystemBase {
   }
 
   public void periodic() {
-    if (DriverStation.isAutonomous()) return;
+    if (DriverStation.isAutonomous())
+      return;
     NetworkTables.driveModeManual_b.setBoolean(curControlMode == ControlMode.MANUAL);
     if (testing) {
       testingMode();

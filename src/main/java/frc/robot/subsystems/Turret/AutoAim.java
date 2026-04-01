@@ -50,7 +50,7 @@ public class AutoAim extends AimType {
       true,
       new ShotPredictor.HeightBounds(
           Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
-                                                                // p
+                                    // p
           Units.inchesToMeters(10 + Constants.PathplannerConstants.TopOfHubHeightInches
               + Constants.PathplannerConstants.FuelRadiusInches), // desired height
           Units.inchesToMeters(5 + Constants.PathplannerConstants.TopOfHubHeightInches
@@ -220,7 +220,7 @@ public class AutoAim extends AimType {
 
     if (desc < 0) {
       System.out.println("Never reaches height!");
-      //return new Pair<Boolean, Double>(false, Double.MAX_VALUE);
+      // return new Pair<Boolean, Double>(false, Double.MAX_VALUE);
     }
 
     // the times that the ball is at the right height

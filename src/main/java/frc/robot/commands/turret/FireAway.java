@@ -5,7 +5,6 @@
 package frc.robot.commands.turret;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants;
 import frc.robot.Robot;
@@ -17,7 +16,6 @@ import frc.robot.subsystems.Turret.TurretMain;
 public class FireAway extends Command {
   private final SwerveDrive swerve = SwerveDrive.getInstance();
   private final TurretMain turret;
-
 
   /**
    * Creates a new Unload.
@@ -53,9 +51,11 @@ public class FireAway extends Command {
     Feeder.getInstance().setFeederInverted(false);
     if (DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
       // BLUE ALLIANCE --> is closer to x = 0
-      if ((swerve.getPose().getX() < Constants.PathplannerConstants.blueAllianceShootPreventionX || bypassDistance) && TurretMain.getInstance().flywheelAtSpeed()) {
+      if ((swerve.getPose().getX() < Constants.PathplannerConstants.blueAllianceShootPreventionX || bypassDistance)
+          && TurretMain.getInstance().flywheelAtSpeed()) {
 
-        if (Robot.isSimulation()) turret.shootSimFuel();
+        if (Robot.isSimulation())
+          turret.shootSimFuel();
 
         if (Robot.isReal())
           Feeder.getInstance().setFeederActive(true);
@@ -65,8 +65,10 @@ public class FireAway extends Command {
       }
     } else {
       // RED ALLIANCE
-      if ((swerve.getPose().getX() > Constants.PathplannerConstants.redAllianceShootPreventionX || bypassDistance) && TurretMain.getInstance().flywheelAtSpeed()) {
-        if (Robot.isSimulation()) turret.shootSimFuel();
+      if ((swerve.getPose().getX() > Constants.PathplannerConstants.redAllianceShootPreventionX || bypassDistance)
+          && TurretMain.getInstance().flywheelAtSpeed()) {
+        if (Robot.isSimulation())
+          turret.shootSimFuel();
 
         if (Robot.isReal())
           Feeder.getInstance().setFeederActive(true);
