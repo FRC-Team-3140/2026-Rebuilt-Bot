@@ -275,12 +275,15 @@ public class Robot extends LoggedRobot {
     double hoodAngleDeg = hoodRotations * 360.0;
     TurretMain.getInstance().hoodEncoderSim.set(hoodAngleDeg);
 
-    TurretMain.getInstance().simFuel(dt);
+    //TurretMain.getInstance().simFuel(dt);
 
     // --- SIMULATED GYRO ---
     // compute chassis speeds from wheel positions
     SwerveModuleState[] positions = SwerveDrive.getInstance().getModuleStates();
     ChassisSpeeds speeds = SwerveDrive.getInstance().kinematics.toChassisSpeeds(positions);
     NavXSim.getInstance().update(speeds.omegaRadiansPerSecond, dt);
+
+    RobotContainer.fuelSim.updateSim();
   }
+
 }

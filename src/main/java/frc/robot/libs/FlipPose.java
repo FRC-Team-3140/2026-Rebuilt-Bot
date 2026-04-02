@@ -12,6 +12,8 @@ import frc.robot.Constants.PathplannerConstants;
 /** Used to flip poses accross the Reefscape field */
 public class FlipPose {
     public static Pose2d flipIfRed(Pose2d pose) {
+
+
         var alliance = DriverStation.getAlliance();
         if (alliance.isPresent() && alliance.get() == DriverStation.Alliance.Red) {
             // X must be flipped, but Y stays the same.

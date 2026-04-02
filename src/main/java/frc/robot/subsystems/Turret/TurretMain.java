@@ -5,6 +5,11 @@
 
 package frc.robot.subsystems.Turret;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -28,10 +33,15 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -41,6 +51,7 @@ import edu.wpi.first.wpilibj.simulation.EncoderSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.libs.NetworkTables;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.Controller;
@@ -517,7 +528,7 @@ public class TurretMain extends SubsystemBase {
   }
 
   public void simFuel(double dt) {
-
+    
     for (int i = 0; i < gamePieces.size(); i++) {
       publishedGamePieces.set(i, gamePieces.get(i).position);
       if (gamePieces.get(i).position.getZ() > 0) {
@@ -536,9 +547,9 @@ public class TurretMain extends SubsystemBase {
   public void shootSimFuel() {
     if (Timer.getFPGATimestamp() - lastShotTime < shotDelay) return; 
     lastShotTime = Timer.getFPGATimestamp();
-    if (!shouldShoot())
-      return;
-
+    //if (!shouldShoot())
+      //return;
+    System.out.println("Shooting fuel!");
 
     // Get robot's field pose (x, y, rotation)
     Pose2d robotFieldPose = Odometry.getInstance().getRealSimPose();
@@ -574,11 +585,12 @@ public class TurretMain extends SubsystemBase {
 
     // Calculate projectile speed (magnitude)
     double projectileSpeed = FlywheelRPMToSpeed(flywheelMotor.getEncoder().getVelocity());
-
+    
     // Calculate launch direction from shooter pose
     Rotation3d rot = shooterPose.getRotation();
     double pitch = rot.getY(); // radians
     double yaw = rot.getZ(); // radians
+                             /*
     double dx = Math.cos(pitch) * Math.cos(yaw);
     double dy = Math.cos(pitch) * Math.sin(yaw);
     double dz = Math.sin(pitch);
@@ -596,8 +608,15 @@ public class TurretMain extends SubsystemBase {
     Fuel fuel = new Fuel(shooterPose, 0);
     fuel.vx = vx;
     fuel.vy = vy;
-    fuel.vz = vz;
-    gamePieces.add(fuel);
-    publishedGamePieces.add(shooterPose);
+    fuel.vz = vz;*/
+
+    RobotContainer.fuelSim.launchFuel(
+        LinearVelocity.ofRelativeUnits(5, MetersPerSecond),
+        Angle.ofRelativeUnits(pitch, Radians), 
+        Angle.ofRelativeUnits(yaw + robotFieldPose.getRotation().getRadians(), Radians), 
+        Distance.ofRelativeUnits(14, Inches));
+    //gamePieces.add(fuel);
+    //
+    //publishedGamePieces.add(shooterPose);
   }
 }

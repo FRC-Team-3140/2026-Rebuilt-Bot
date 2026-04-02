@@ -7,6 +7,7 @@ package frc.robot.subsystems.odometry;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
+import frc.robot.libs.FlipPose;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.SwerveModule;
@@ -22,7 +23,7 @@ import edu.wpi.first.math.filter.LinearFilter;
 import org.littletonrobotics.junction.Logger;
 
 public class PoseOdometry extends Odometry {
-  Pose2d simStartingPose = new Pose2d(14, 2, new Rotation2d(Units.degreesToRadians(75)));
+  Pose2d simStartingPose = FlipPose.flipIfRed(new Pose2d(3.661, 6.0692, new Rotation2d(Units.degreesToRadians(90))));
 
   protected SwerveDrivePoseEstimator estimator = null;
   protected SwerveDrivePoseEstimator simEstimator = null;

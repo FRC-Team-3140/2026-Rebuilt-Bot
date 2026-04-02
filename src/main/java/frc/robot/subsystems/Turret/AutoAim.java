@@ -219,7 +219,7 @@ public class AutoAim extends AimType {
     double desc = b * b - 4 * a * c;
 
     if (desc < 0) {
-      System.out.println("Never reaches height!");
+      //System.out.println("Never reaches height!");
       //return new Pair<Boolean, Double>(false, Double.MAX_VALUE);
     }
 
@@ -254,7 +254,7 @@ public class AutoAim extends AimType {
     }
 
     if (bestT.isEmpty()) {
-      System.out.println("No good score time!");
+      //System.out.println("No good score time!");
       return new Pair<Boolean, Double>(false, bestDistSq);
     }
 
