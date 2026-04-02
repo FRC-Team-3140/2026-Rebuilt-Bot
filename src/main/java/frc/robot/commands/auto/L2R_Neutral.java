@@ -31,7 +31,9 @@ public class L2R_Neutral extends SequentialCommandGroup {
       e.printStackTrace();
     }
 
-    // TODO: ADD SHOOT LOGIC WITH CHECKBOX TO TACK ON CLIMBING (WHILE SHOOTING)
-    this.addCommands(pathCommand.alongWith(new InstantCommand(() -> Intake.getInstance().deploy())));
+    this.addCommands(pathCommand.alongWith(new InstantCommand(() -> {
+      Intake.getInstance().deploy();
+      Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
+    })));
   }
 }

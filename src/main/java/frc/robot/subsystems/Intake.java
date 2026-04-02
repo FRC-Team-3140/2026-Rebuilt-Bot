@@ -179,12 +179,16 @@ public class Intake extends SubsystemBase {
     intakePIDR.setD(intakePIDInputs.getD());
 
     intakePIDInputs.update(intakeSetpoint, intakeEncoderL.get());
-    intakeArmMotorL.set((Math.abs(getAngleDifference(getLeftSideAngle(), getRightSideAngle())) < separationConstantThreshold? 0 : 1) *separationConstant * (getAngleDifference(getLeftSideAngle(), getRightSideAngle()) / 360)
-        + intakePIDL.calculate( intakeEncoderL.get(), intakeSetpoint)
-        - gravityFeedFowardConstant * Math.sin(getLeftSideAngle() * Math.PI / 180));
-    intakeArmMotorR.set((Math.abs(getAngleDifference(getLeftSideAngle(), getRightSideAngle())) < separationConstantThreshold? 0 : 1) * separationConstant * (getAngleDifference(getRightSideAngle(), getLeftSideAngle()) / 360)
-        + intakePIDR.calculate(getRightAngle(), intakeSetpoint)
-        - gravityFeedFowardConstant * Math.sin(getRightSideAngle() * Math.PI / 180));
+    intakeArmMotorL.set(
+        (Math.abs(getAngleDifference(getLeftSideAngle(), getRightSideAngle())) < separationConstantThreshold ? 0 : 1)
+            * separationConstant * (getAngleDifference(getLeftSideAngle(), getRightSideAngle()) / 360)
+            + intakePIDL.calculate(intakeEncoderL.get(), intakeSetpoint)
+            - gravityFeedFowardConstant * Math.sin(getLeftSideAngle() * Math.PI / 180));
+    intakeArmMotorR.set(
+        (Math.abs(getAngleDifference(getLeftSideAngle(), getRightSideAngle())) < separationConstantThreshold ? 0 : 1)
+            * separationConstant * (getAngleDifference(getRightSideAngle(), getLeftSideAngle()) / 360)
+            + intakePIDR.calculate(getRightAngle(), intakeSetpoint)
+            - gravityFeedFowardConstant * Math.sin(getRightSideAngle() * Math.PI / 180));
 
     NetworkTables.intakeLeftEncoder.setDouble(intakeEncoderL.get());
     NetworkTables.intakeRightEncoder.setDouble(getRightAngle());
@@ -192,7 +196,6 @@ public class Intake extends SubsystemBase {
     NetworkTables.intakeRightSideHorizontalAngle.setDouble(getRightSideAngle());
     gravityFeedFowardConstant = NetworkTables.intakeGravityConstant.getDouble(gravityFeedFowardConstant);
     separationConstant = NetworkTables.intakeSeparationConstant.getDouble(separationConstant);
-
 
     armPose = new Pose3d(
         Constants.SIM.intakeMechOffset.getX(),

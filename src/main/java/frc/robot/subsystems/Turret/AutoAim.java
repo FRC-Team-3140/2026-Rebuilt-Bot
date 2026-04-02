@@ -50,7 +50,7 @@ public class AutoAim extends AimType {
       true,
       new ShotPredictor.HeightBounds(
           Units.inchesToMeters(21), // radius of hub top (flat side to flat side of hexagon)
-                                                                // p
+                                    // p
           Units.inchesToMeters(10 + Constants.PathplannerConstants.TopOfHubHeightInches
               + Constants.PathplannerConstants.FuelRadiusInches), // desired height
           Units.inchesToMeters(5 + Constants.PathplannerConstants.TopOfHubHeightInches

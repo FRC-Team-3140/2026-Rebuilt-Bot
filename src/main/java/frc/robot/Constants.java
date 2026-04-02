@@ -93,7 +93,6 @@ public final class Constants {
     public static final int turretEncoderA = 2;
     public static final int turretEncoderB = 3;
 
-    
     public static final int hoodEncoder = 1;
 
     public static class Digital {

@@ -96,8 +96,8 @@ public class TurretMain extends SubsystemBase {
   public InterpolatingDoubleTreeMap flywheelSpeedToProjectileSpeed = new InterpolatingDoubleTreeMap();
   public InterpolatingDoubleTreeMap projectileSpeedToFlywheelSpeed = new InterpolatingDoubleTreeMap();
 
-  public double flywheelAdjustmantConstantM = 0.263157894737; 
-  public double flywheelAdjustmantConstantB = 2633; 
+  public double flywheelAdjustmantConstantM = 0.263157894737;
+  public double flywheelAdjustmantConstantB = 2633;
 
   double lastUpdateTimestamp = 0;
 
@@ -140,9 +140,8 @@ public class TurretMain extends SubsystemBase {
       Constants.FeedFoward.Turret.flywheelA);
   private boolean spinup = false;
   private double flywheelSpeedTolerance = 500; // RPM
-  
-  private double flywheelFeedbackP = Constants.PID.Turret.flywheelP;
 
+  private double flywheelFeedbackP = Constants.PID.Turret.flywheelP;
 
   public enum AimOpt {
     AUTO,
@@ -262,16 +261,15 @@ public class TurretMain extends SubsystemBase {
     projectileAngleToHoodAngle.put(56.15, 37.5);
     projectileAngleToHoodAngle.put(50.00, 42.5);
 
-
-    projectileSpeedToFlywheelSpeed.put( 0.0, 1000.0);
-    projectileSpeedToFlywheelSpeed.put( 5.18226, 3000.0);
-    projectileSpeedToFlywheelSpeed.put( 6.4485563, 3500.0);
-    projectileSpeedToFlywheelSpeed.put( 7.7033197, 4000.0);
-    projectileSpeedToFlywheelSpeed.put( 8.6498802, 4500.0);
-    projectileSpeedToFlywheelSpeed.put( 9.7442698, 5000.0);
-    projectileSpeedToFlywheelSpeed.put( 10.557472, 5500.0);
-    projectileSpeedToFlywheelSpeed.put( 11.04, 6000.0);
-    projectileSpeedToFlywheelSpeed.put( 11.5, 7000.0);
+    projectileSpeedToFlywheelSpeed.put(0.0, 1000.0);
+    projectileSpeedToFlywheelSpeed.put(5.18226, 3000.0);
+    projectileSpeedToFlywheelSpeed.put(6.4485563, 3500.0);
+    projectileSpeedToFlywheelSpeed.put(7.7033197, 4000.0);
+    projectileSpeedToFlywheelSpeed.put(8.6498802, 4500.0);
+    projectileSpeedToFlywheelSpeed.put(9.7442698, 5000.0);
+    projectileSpeedToFlywheelSpeed.put(10.557472, 5500.0);
+    projectileSpeedToFlywheelSpeed.put(11.04, 6000.0);
+    projectileSpeedToFlywheelSpeed.put(11.5, 7000.0);
 
     flywheelSpeedToProjectileSpeed.put(1000.0, 0.0);
     flywheelSpeedToProjectileSpeed.put(3000.0, 5.18226);
@@ -310,7 +308,6 @@ public class TurretMain extends SubsystemBase {
     hoodConfig.idleMode(IdleMode.kBrake).inverted(false).smartCurrentLimit(Constants.CurrentLimits.Turret.hoodLimit);
     flywheelConfig.idleMode(IdleMode.kCoast).inverted(true)
         .smartCurrentLimit(Constants.CurrentLimits.Turret.flywheelLimit);
-
 
     turretRotationMotor.configure(turretConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
@@ -358,7 +355,10 @@ public class TurretMain extends SubsystemBase {
   public boolean shouldShoot() {
     return shouldShoot;
   }
-  public boolean flywheelAtSpeed() { return Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance; }
+
+  public boolean flywheelAtSpeed() {
+    return Math.abs(flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()) <= flywheelSpeedTolerance;
+  }
 
   private double getTurretEncoderAngle() {
     double encoderValue = -turretEncoder.getDistance();
@@ -427,7 +427,6 @@ public class TurretMain extends SubsystemBase {
     flywheelFeedforwardInputs.update(flywheelSetpoint, flywheelMotor.getEncoder().getVelocity());
     flywheelFeedforwardInputs.update(flywheelSetpoint, flywheelMotor.getEncoder().getVelocity());
 
-
     if (!TestRunner.getInstance().isRunning(TestType.TURRET)) {
       if (lastUpdateTimestamp == 0) {
         lastUpdateTimestamp = Timer.getFPGATimestamp();
@@ -455,7 +454,7 @@ public class TurretMain extends SubsystemBase {
             Math.min(Constants.Limits.Turret.maxPitch, hoodSetpoint));
         turretSetpoint = type.rotationAngle;
         boolean hadToClamp = clampTurretSetpoint();
-        shouldShootMode = type.shouldShoot;//&& !hadToClamp;
+        shouldShootMode = type.shouldShoot;// && !hadToClamp;
       }
     }
 
@@ -466,7 +465,8 @@ public class TurretMain extends SubsystemBase {
     hoodMotor.set(hoodPID.calculate(getHoodEncoderAngle()));
 
     double encoderValue = getTurretEncoderAngle();
-    double output = turretPID.calculate(encoderValue, Math.min(Constants.Limits.Turret.maxYaw, Math.max(turretSetpoint, Constants.Limits.Turret.minYaw)));
+    double output = turretPID.calculate(encoderValue,
+        Math.min(Constants.Limits.Turret.maxYaw, Math.max(turretSetpoint, Constants.Limits.Turret.minYaw)));
     output += turretFeedforward.calculate(turretPID.getSetpoint().velocity);
     turretRotationMotor.set(output);
 
@@ -475,7 +475,8 @@ public class TurretMain extends SubsystemBase {
     }
 
     if (spinup) {
-      flywheelMotor.set(flywheelFeedforward.calculate(flywheelSetpoint) / 12 + flywheelFeedbackP * (flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()));
+      flywheelMotor.set(flywheelFeedforward.calculate(flywheelSetpoint) / 12
+          + flywheelFeedbackP * (flywheelSetpoint - flywheelMotor.getEncoder().getVelocity()));
     } else {
       flywheelMotor.setVoltage(0);
     }
@@ -544,12 +545,13 @@ public class TurretMain extends SubsystemBase {
 
   double lastShotTime = 0;
   double shotDelay = 0.2;
+
   public void shootSimFuel() {
-    if (Timer.getFPGATimestamp() - lastShotTime < shotDelay) return; 
+    if (Timer.getFPGATimestamp() - lastShotTime < shotDelay)
+      return;
     lastShotTime = Timer.getFPGATimestamp();
     //if (!shouldShoot())
       //return;
-    System.out.println("Shooting fuel!");
 
     // Get robot's field pose (x, y, rotation)
     Pose2d robotFieldPose = Odometry.getInstance().getRealSimPose();
