@@ -107,7 +107,10 @@ public class PoseOdometry extends Odometry {
 
         module.simTurnMotor.setPosition(0);
       }*/
+    } else {
+      resetGyroCamera(pose.getRotation().getRadians());
     }
+
 
     System.out.println("[Odometry] Reset Pose to " + pose);
   }
@@ -161,7 +164,7 @@ public class PoseOdometry extends Odometry {
 
   public void resetGyroCamera(double correctAngle) {
     angleOffset = -readRotationRaw() + correctAngle;
-
+    NavXSim.getInstance().reset(correctAngle);
   }
 
   public void recalibrateCameraPose() {
