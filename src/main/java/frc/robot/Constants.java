@@ -176,7 +176,7 @@ public final class Constants {
     public static final double maxChassisSpeedPathplanner = 4;
     public static final double maxModuleSpeed = maxChassisSpeed / (Math.PI * wheelDiameter);
     public static final double maxTurnSpeed = Double.MAX_VALUE; // These are basically infinite for our purposes
-    public static final double maxAcceleration = 7.8;
+    public static final double maxAcceleration = 19;
     public static final double botRadius = Math.hypot(botLength, botLength);
     // Max Speed divided by the circumference a circle determined by the distance of
     // the module from the center, divided by 2 pi to convert to radians
@@ -269,13 +269,13 @@ public final class Constants {
     public static final double offsetToCenterVert = Units.inchesToMeters(8);
     public static final double offsetToCenterHoriz = Units.inchesToMeters(-9);
     public static final double pitch = Math.toRadians(-10);
-    public static final double maxReprojectionError = 0.3;
+    public static final double maxReprojectionError = 0.05;
   }
 
   public static class Odometry {
-    public static final double TagCorrectionSpeed = 8;
+    public static final double TagCorrectionSpeed = 12.5;
     public static final double maxCorrectionDistance = 1;
-    public static final int startingCameraPasses = 50;
+    public static final int startingCameraPasses = 25;
   }
 
   public static class PathplannerConstants {

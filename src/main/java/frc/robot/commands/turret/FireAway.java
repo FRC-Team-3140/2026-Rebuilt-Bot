@@ -36,11 +36,11 @@ public class FireAway extends LoggedCommand {
     addRequirements(this.turret);
   }
 
-  boolean bypassDistance = false;
+  boolean lockWheels = false;
 
-  public FireAway(TurretMain turret, boolean bypassDistance) {
+  public FireAway(TurretMain turret, boolean lockWheels) {
     this(turret);
-    this.bypassDistance = bypassDistance;
+    this.lockWheels = lockWheels;
 
   }
 
@@ -71,7 +71,7 @@ public class FireAway extends LoggedCommand {
     if(Math.abs(Math.abs(Intake.getInstance().getAngle()) - Constants.Limits.Intake.feedPosition) < (1.0 / 360.0))  {
       Intake.getInstance().deploy();
     }
-    //SwerveDrive.getInstance().setSwerveModuleStates(SwerveDrive.getInstance().getModuleStates(), true);
+    if (lockWheels) SwerveDrive.getInstance().setSwerveModuleStates(SwerveDrive.getInstance().getModuleStates(), true);
   }
 
   // Called once the command ends or is interrupted.

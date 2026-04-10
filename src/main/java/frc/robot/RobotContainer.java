@@ -103,7 +103,7 @@ public class RobotContainer {
     Path.addOption("Outpost", "O");
     Path.addOption("Depot", "D");
     
-    NamedCommands.registerCommand("FireAway", new FireAway(turret));
+    NamedCommands.registerCommand("FireAway", new FireAway(turret, true));
     NamedCommands.registerCommand("Climb", new Retract());
     NamedCommands.registerCommand("ExtendClimber", new Extend());
     NamedCommands.registerCommand("DeployIntake", new InstantCommand(()->intake.deploy()));
@@ -117,7 +117,7 @@ public class RobotContainer {
 
     NetworkTables.shouldShoot_b.setBoolean(false);
     if (Robot.isSimulation()) {
-      //fuelSim.spawnStartingFuel(); // spawns fuel in the depots and neutral zone
+      fuelSim.spawnStartingFuel(); // spawns fuel in the depots and neutral zone
 
       // Register a robot for collision with fuel
       fuelSim.registerRobot(
@@ -141,7 +141,7 @@ public class RobotContainer {
       fuelSim.start(); // enables the simulation to run (updateSim must still be called periodically)
                        //     fuelSim.stop(); // stops the simulation running (updateSim will do nothing until start is called again)
 
-      fuelSim.enableAirResistance(); // an additional drag force will be applied to fuel in physics update step
+      //fuelSim.enableAirResistance(); // an additional drag force will be applied to fuel in physics update step
     }
   }
 

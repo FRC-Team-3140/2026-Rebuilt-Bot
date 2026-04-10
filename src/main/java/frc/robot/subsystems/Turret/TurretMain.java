@@ -6,9 +6,6 @@
 package frc.robot.subsystems.Turret;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Inches;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,9 +36,6 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.Encoder;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -470,7 +464,7 @@ public class TurretMain extends SubsystemBase {
     boolean stow = shouldStow() || !spinup;
     shouldShoot = shouldShootMode && !stow;
 
-    hoodPID.setSetpoint(hoodAngleOverride ? NetworkTables.hoodAngle_d.getDouble(0) : stow ? 0 : hoodSetpoint);
+    hoodPID.setSetpoint(hoodAngleOverride ? NetworkTables.hoodAngle_d.getDouble(0) : stow ? 352 : hoodSetpoint);
     hoodMotor.set(hoodPID.calculate(getHoodEncoderAngle()));
 
     double encoderValue = getTurretEncoderAngle();
@@ -562,66 +556,14 @@ public class TurretMain extends SubsystemBase {
     //if (!shouldShoot())
       //return;
 
-    // Get robot's field pose (x, y, rotation)
-    Pose2d robotFieldPose = Odometry.getInstance().getRealSimPose();
-    Pose3d turretOffset = Constants.SIM.hoodMechOffset;
+    double projectileSpeed = flywheelSpeedToProjectileSpeed.get(flywheelMotor.getEncoder().getVelocity());
+    double pitch = Math.toRadians(getProjectileAngle());
+    double turretYaw = Math.toRadians(getTurretEncoderAngle());
 
-    // Rotate turret offset by robot heading (about Z axis)
-    double headingRad = robotFieldPose.getRotation().getRadians();
-    double cosH = Math.cos(headingRad);
-    double sinH = Math.sin(headingRad);
-    double offsetX = turretOffset.getX() * cosH - turretOffset.getY() * sinH;
-    double offsetY = turretOffset.getX() * sinH + turretOffset.getY() * cosH;
-    double offsetZ = turretOffset.getZ();
-
-    // Add to robot's field position
-    double fieldX = robotFieldPose.getX() + offsetX;
-    double fieldY = robotFieldPose.getY() + offsetY;
-    double fieldZ = offsetZ;
-
-    // Build the shooter pose at the correct field position, with turret/hood
-    // rotation
-    Rotation3d shooterRot = new Rotation3d(
-        0,
-        Math.toRadians(getProjectileAngle()),
-        Math.toRadians(
-            getTurretEncoderAngle() + robotFieldPose.getRotation().getDegrees()));
-
-    Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
-
-    // Calculate robot's velocity direction (field-relative)
-    double robotVelX = Odometry.getInstance().getBotVelocity(true).X; // implement or replace with your method
-    double robotVelY = Odometry.getInstance().getBotVelocity(true).Y; // implement or replace with your method
-    double robotVelZ = 0; // usually 0 unless you have a swerve module that can jump :)
-
-    // Calculate projectile speed (magnitude)
-    double projectileSpeed = flywheelSpeedToProjectileSpeed.get(flywheelMotor.getEncoder().getVelocity());    
-    // Calculate launch direction from shooter pose
-    Rotation3d rot = shooterPose.getRotation();
-    double pitch = rot.getY(); // radians
-    double yaw = rot.getZ(); // radians
-    double dx = Math.cos(pitch) * Math.cos(yaw);
-    double dy = Math.cos(pitch) * Math.sin(yaw);
-    double dz = Math.sin(pitch);
-
-    // Add tangential velocity
-    Vector2 turretPosition = new Vector2(turretPose.toPose2d().getX(), turretPose.toPose2d().getY())
-        .rotate(Odometry.getInstance().getRotation().getRadians() + Math.PI / 2)
-        .mult(Odometry.getInstance().getAngularVelocity());
-
-    // Add robot velocity to projectile velocity
-    double vx = projectileSpeed * dx + robotVelX + turretPosition.X;
-    double vy = projectileSpeed * dy + robotVelY + turretPosition.Y;
-    double vz = projectileSpeed * dz + robotVelZ;
-
-
-    Translation3d launchPos = new Translation3d(fieldX, fieldY, fieldZ);
-    Translation3d launchVel = new Translation3d(vx, vy, vz).rotateBy( new Rotation3d(0,  0, 0));
-    //RobotContainer.fuelSim.spawnFuel(launchPos, launchVel);
     RobotContainer.fuelSim.launchFuel(
-        LinearVelocity.ofRelativeUnits(flywheelSpeedToProjectileSpeed.get(flywheelMotor.getEncoder().getVelocity()), MetersPerSecond),
-        Angle.ofRelativeUnits(pitch, Radians), 
-        Angle.ofRelativeUnits(yaw - robotFieldPose.getRotation().getRadians(), Radians), 
-        Distance.ofRelativeUnits(14, Inches));
+        projectileSpeed,
+        pitch,
+        turretYaw,
+        Units.inchesToMeters(14));
   }
 }

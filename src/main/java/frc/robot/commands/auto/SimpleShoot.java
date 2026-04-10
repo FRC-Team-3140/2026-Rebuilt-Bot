@@ -35,6 +35,6 @@ public class SimpleShoot extends SequentialCommandGroup {
     this.addCommands(
         pathCommand,
         new InstantCommand(() -> TurretMain.getInstance().setHoodAngle(Constants.Limits.Turret.minPitch)),
-        new FireAway(TurretMain.getInstance()));
+        new FireAway(TurretMain.getInstance(), true));
   }
 }
