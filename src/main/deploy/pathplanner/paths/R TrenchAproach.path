@@ -3,13 +3,13 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 3.661,
-        "y": 2.001
+        "x": 3.6,
+        "y": 0.62
       },
       "prevControl": null,
       "nextControl": {
-        "x": 3.0535690846662034,
-        "y": 1.3267269536682886
+        "x": 3.85,
+        "y": 0.62
       },
       "isLocked": false,
       "linkedName": "R Initial"
@@ -17,11 +17,11 @@
     {
       "anchor": {
         "x": 4.2540000000000004,
-        "y": 0.749
+        "y": 0.62
       },
       "prevControl": {
-        "x": 3.226169011557049,
-        "y": 0.5660449705024513
+        "x": 4.004656827491765,
+        "y": 0.6381102822597636
       },
       "nextControl": null,
       "isLocked": false,

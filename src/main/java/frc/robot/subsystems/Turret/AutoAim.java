@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import frc.robot.Constants;
+import frc.robot.Robot;
+import frc.robot.RobotContainer;
 import frc.robot.libs.FlipPose;
 import frc.robot.libs.NetworkTables;
 import frc.robot.libs.ShotPredictor;
@@ -17,7 +19,7 @@ import frc.robot.libs.Vector2;
 import frc.robot.subsystems.odometry.Odometry;
 
 public class AutoAim extends AimType {
-  private static double predictForwardTime = 0.4;
+  private static double predictForwardTime = Robot.isReal() ? 0.4 : 0.0;
   private static double predictForwardWhenCheckingMultiplier = 1; // Multiplies predict forward time when checking if
                                                                   // a shot will go in for should shoot
                                                                   // private LoggedNetworkNumber errorLog = new

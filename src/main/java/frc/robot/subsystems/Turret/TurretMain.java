@@ -553,9 +553,67 @@ public class TurretMain extends SubsystemBase {
     if (Timer.getFPGATimestamp() - lastShotTime < shotDelay)
       return;
     lastShotTime = Timer.getFPGATimestamp();
-    //if (!shouldShoot())
-      //return;
 
+    Pose2d robotFieldPose = Odometry.getInstance().getRealSimPose();
+    Pose3d turretOffset = Constants.SIM.hoodMechOffset;
+
+    // Rotate turret offset by robot heading (about Z axis)
+    double headingRad = robotFieldPose.getRotation().getRadians();
+    double cosH = Math.cos(headingRad);
+    double sinH = Math.sin(headingRad);
+    double offsetX = turretOffset.getX() * cosH - turretOffset.getY() * sinH;
+    double offsetY = turretOffset.getX() * sinH + turretOffset.getY() * cosH;
+    double offsetZ = turretOffset.getZ();
+
+    // Add to robot's field position
+    double fieldX = robotFieldPose.getX() + offsetX;
+    double fieldY = robotFieldPose.getY() + offsetY;
+    double fieldZ = offsetZ;
+
+    // Build the shooter pose at the correct field position, with turret/hood
+    // rotation
+    Rotation3d shooterRot = new Rotation3d(
+        0,
+        Math.toRadians(getProjectileAngle()),
+        Math.toRadians(
+            getTurretEncoderAngle() + robotFieldPose.getRotation().getDegrees()));
+
+    Pose3d shooterPose = new Pose3d(fieldX, fieldY, fieldZ, shooterRot);
+
+    // Calculate robot's velocity direction (field-relative)
+    double robotVelX = Odometry.getInstance().getBotVelocity(true).X; // implement or replace with your method
+    double robotVelY = Odometry.getInstance().getBotVelocity(true).Y; // implement or replace with your method
+    double robotVelZ = 0; // usually 0 unless you have a swerve module that can jump :)
+
+    // Calculate projectile speed (magnitude)
+    double projectileSpeed = flywheelSpeedToProjectileSpeed.get(flywheelMotor.getEncoder().getVelocity()) * 0.5 + 3.5;
+
+    // Calculate launch direction from shooter pose
+    Rotation3d rot = shooterPose.getRotation();
+    double pitch = rot.getY(); // radians
+    double yaw = rot.getZ(); // radians
+    double dx = Math.cos(pitch) * Math.cos(yaw);
+    double dy = Math.cos(pitch) * Math.sin(yaw);
+    double dz = Math.sin(pitch);
+
+    // Add tangential velocity
+    Vector2 turretPosition = new Vector2(turretPose.toPose2d().getX(), turretPose.toPose2d().getY())
+        .rotate(Odometry.getInstance().getRotation().getRadians() + (Math.PI / 2))
+        .mult(Odometry.getInstance().getAngularVelocity());
+
+    // Add robot velocity to projectile velocity
+    double vx = projectileSpeed * dx + robotVelX + turretPosition.X;
+    double vy = projectileSpeed * dy + robotVelY + turretPosition.Y;
+    double vz = projectileSpeed * dz + robotVelZ;
+
+    Fuel fuel = new Fuel(shooterPose, 0);
+    fuel.vx = vx;
+    fuel.vy = vy;
+    fuel.vz = vz;
+    gamePieces.add(fuel);
+    publishedGamePieces.add(shooterPose);
+
+    /*
     double projectileSpeed = flywheelSpeedToProjectileSpeed.get(flywheelMotor.getEncoder().getVelocity());
     double pitch = Math.toRadians(getProjectileAngle());
     double turretYaw = Math.toRadians(getTurretEncoderAngle());
@@ -565,5 +623,6 @@ public class TurretMain extends SubsystemBase {
         pitch,
         turretYaw,
         Units.inchesToMeters(14));
+        */
   }
 }

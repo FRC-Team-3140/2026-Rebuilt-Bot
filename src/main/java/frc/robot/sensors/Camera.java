@@ -64,8 +64,9 @@ public class Camera extends SubsystemBase {
 
   VisionSystemSim visionSim = new VisionSystemSim("main");
   SimCameraProperties cameraProp = new SimCameraProperties();
+  SimCameraProperties cameraPropTwo = new SimCameraProperties();
   PhotonCameraSim oneCameraSim = new PhotonCameraSim(one, cameraProp);
-  PhotonCameraSim twoCameraSim = new PhotonCameraSim(two, cameraProp);
+  PhotonCameraSim twoCameraSim = new PhotonCameraSim(two, cameraPropTwo);
 
   boolean newMeasurement = false;
   boolean calculatRotation = false;
@@ -121,10 +122,16 @@ public class Camera extends SubsystemBase {
   private Camera() {
     visionSim.addAprilTags(layout);
     
-    cameraProp.setCalibration(640, 480, Rotation2d.fromDegrees(100));
+    cameraProp.setCalibration(1024, 768, Rotation2d.fromDegrees(129));
     cameraProp.setCalibError(0.25, 0.08);
-    cameraProp.setFPS(60);
-    cameraProp.setAvgLatencyMs(35);
+    cameraProp.setFPS(20);
+    cameraProp.setAvgLatencyMs(43);
+    cameraProp.setLatencyStdDevMs(5);
+
+    cameraProp.setCalibration(1280, 960, Rotation2d.fromDegrees(129));
+    cameraProp.setCalibError(0.25, 0.08);
+    cameraProp.setFPS(20);
+    cameraProp.setAvgLatencyMs(43);
     cameraProp.setLatencyStdDevMs(5);
     
     visionSim.addCamera(oneCameraSim, oneToBot);
@@ -172,7 +179,7 @@ public class Camera extends SubsystemBase {
           } else {
             // Update pose one with single tag estimation if it is available
             if (!result.getTargets().isEmpty()
-                && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
+                && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxAmb) {
               Optional<EstimatedRobotPose> pose = oneEstimator.update(result);
               if (pose.isPresent()) {
                 estimatedPoseOne = pose.get().estimatedPose;
@@ -195,7 +202,7 @@ public class Camera extends SubsystemBase {
           } else {
             // Update pose two with single tag estimation if it is available
             if (!result.getTargets().isEmpty()
-                && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxReprojectionError) {
+                && result.getTargets().get(0).poseAmbiguity < Constants.CameraConstants.maxAmb) {
               Optional<EstimatedRobotPose> pose = twoEstimator.update(result);
               if (pose.isPresent()) {
                 estimatedPoseTwo = pose.get().estimatedPose;

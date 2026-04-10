@@ -7,6 +7,7 @@ package frc.robot.subsystems.odometry;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.libs.FlipPose;
 import frc.robot.libs.Vector2;
 import frc.robot.subsystems.SwerveDrive;
@@ -23,7 +24,7 @@ import edu.wpi.first.math.filter.LinearFilter;
 import org.littletonrobotics.junction.Logger;
 
 public class PoseOdometry extends Odometry {
-  Pose2d simStartingPose = FlipPose.flipIfRed(new Pose2d(12.80, 1.9, new Rotation2d(Units.degreesToRadians(90))));
+  Pose2d simStartingPose = FlipPose.flipIfRed(new Pose2d(12.80, 1, new Rotation2d(Units.degreesToRadians(180))));
 
   protected SwerveDrivePoseEstimator estimator = null;
   protected SwerveDrivePoseEstimator simEstimator = null;
@@ -97,12 +98,13 @@ public class PoseOdometry extends Odometry {
     if (RobotBase.isSimulation()) {
       NavXSim.getInstance().reset(pose.getRotation().getRadians());
 
+      /*
       // Reset all the module encoders to 0
       for (SwerveModule module : SwerveDrive.getInstance().modules) {
         module.simDriveMotor.setPosition(0);
 
         module.simTurnMotor.setPosition(0);
-      }
+      }*/
     }
 
     System.out.println("[Odometry] Reset Pose to " + pose);
@@ -167,14 +169,14 @@ public class PoseOdometry extends Odometry {
   @Override
   public void updatePosition(SwerveModulePosition[] positions) {
     SwerveDrive drive = SwerveDrive.getInstance();
-    double stdDev = 3.0;
+    double stdDev = Constants.CameraConstants.stdDev;
     if (estimator == null) {
       estimator = new SwerveDrivePoseEstimator(
           drive.kinematics,
           getGyroRotation(),
           positions,
           new Pose2d());
-      estimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(10)));
+      estimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(1000000000)));
 
       if (RobotBase.isSimulation()) {
         simEstimator = new SwerveDrivePoseEstimator(
@@ -187,22 +189,19 @@ public class PoseOdometry extends Odometry {
             getGyroRotation(),
             positions,
             simStartingPose);
-        simDriftEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(10)));
+        simDriftEstimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(1000000000)));
       }
     }
 
     if (RobotBase.isSimulation()) {
       simEstimator.update(getGyroRotation(), positions);
-      positions[0].distanceMeters *= 1.03;
-      positions[1].distanceMeters *= 1.03;
-      positions[2].distanceMeters *= 1.03;
-      positions[3].distanceMeters *= 1.03;
-      simDriftEstimator.update(getGyroRotation(), positions);
-      Logger.recordOutput("Odometry/simRealPosition", simEstimator.getEstimatedPosition());
-      Logger.recordOutput("Odometry/realisticOdometryBot", simDriftEstimator.getEstimatedPosition());
+      positions[0].angle.plus(Rotation2d.fromDegrees(2 * Math.sin(Timer.getFPGATimestamp()))); 
+      estimator.update(getGyroRotation().plus(Rotation2d.fromDegrees(Math.random() - 0.5)), positions);
+    } else {
+      estimator.update(getGyroRotation(), positions);
     }
-    estimator.update(getGyroRotation(), positions);
 
+    Logger.recordOutput("Odometry/simRealPosition", Robot.isSimulation() ? simEstimator.getEstimatedPosition() : estimator.getEstimatedPosition());
     Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());
   }
 
@@ -226,7 +225,7 @@ public class PoseOdometry extends Odometry {
         cameraPasses++;
       } else {
         if (estimator.getEstimatedPosition().getTranslation()
-            .getDistance(pose.getTranslation()) < Constants.Odometry.maxCorrectionDistance) {
+            .getDistance(pose.getTranslation()) < Constants.Odometry.maxCorrectionDistance && Math.abs(estimator.getEstimatedPosition().getRotation().getDegrees() - pose.getRotation().getDegrees()) < 5) {
           estimator.addVisionMeasurement(
               pose,
               Timer.getFPGATimestamp());

@@ -171,8 +171,6 @@ public class Robot extends LoggedRobot {
     TurretMain.flywheelRPMOverride = false;
     TurretMain.hoodAngleOverride = false;
 
-    if (Robot.isSimulation())
-      RobotContainer.turret.setDefaultCommand(new FireAway(RobotContainer.turret));
 
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
@@ -278,7 +276,7 @@ public class Robot extends LoggedRobot {
     double hoodAngleDeg = hoodRotations * 360.0;
     TurretMain.getInstance().hoodEncoderSim.set(hoodAngleDeg);
 
-    //TurretMain.getInstance().simFuel(dt);
+    TurretMain.getInstance().simFuel(dt);
 
     // --- SIMULATED GYRO ---
     // compute chassis speeds from wheel positions
@@ -286,7 +284,7 @@ public class Robot extends LoggedRobot {
     ChassisSpeeds speeds = SwerveDrive.getInstance().kinematics.toChassisSpeeds(positions);
     NavXSim.getInstance().update(speeds.omegaRadiansPerSecond, dt);
 
-    RobotContainer.fuelSim.updateSim();
+    //RobotContainer.fuelSim.updateSim();
   }
 
 }

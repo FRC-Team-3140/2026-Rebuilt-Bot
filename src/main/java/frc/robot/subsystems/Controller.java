@@ -241,7 +241,7 @@ public class Controller extends SubsystemBase {
       if(Math.abs(Math.abs(Intake.getInstance().getAngle()) - Constants.Limits.Intake.deployedPosition) < (35.0 / 360.0)) {
         Intake.getInstance().stow();
       }
-      if(Math.abs(Math.abs(Intake.getInstance().getAngle()) - Constants.Limits.Intake.feedPosition) < (1.0 / 360.0))  {
+      if(Math.abs(Intake.getInstance().getAngle()) < Constants.Limits.Intake.feedPosition)  {
         Intake.getInstance().deploy();
       }
     } else if (primaryController.getAButtonReleased()) {
@@ -273,6 +273,8 @@ public class Controller extends SubsystemBase {
       setRumbleBoth(controllers.SECONDARY, 0.1, 1);
     } else if (secondaryController.getLeftBumperButtonPressed()) {
 
+      TurretMain.hoodAngleOverride = false;
+      TurretMain.flywheelRPMOverride = false;
       TurretMain.getInstance().setAimMode(AimOpt.AUTO);
 
       curControlMode = ControlMode.AUTO;
@@ -315,7 +317,6 @@ public class Controller extends SubsystemBase {
       NetworkTables.flywheelRPMOverride_d.setDouble(5000);
     } else {
       TurretMain.hoodAngleOverride = false;
-      TurretMain.flywheelRPMOverride = false;
     }
 
     if (secondaryController.getLeftBumperButton()) {
@@ -325,7 +326,6 @@ public class Controller extends SubsystemBase {
       NetworkTables.flywheelRPMOverride_d.setDouble(6700); // TODO: Tune values for passing
     } else if (!secondaryController.getRightBumperButton()) {
       TurretMain.hoodAngleOverride = false;
-      TurretMain.flywheelRPMOverride = false;
     }
 
     if (secondaryController.getAButton()) {

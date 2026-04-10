@@ -49,6 +49,8 @@ public class FireAway extends LoggedCommand {
   public void initialize() {
     turret.setFlywheelActive(true);
 
+    Intake.getInstance().intake(Constants.MotorSpeeds.Intake.intakeSpeed);
+
     Feeder.getInstance().setFeederInverted(false);
     super.initialize();
   }
@@ -68,7 +70,7 @@ public class FireAway extends LoggedCommand {
     if(Math.abs(Math.abs(Intake.getInstance().getAngle()) - Constants.Limits.Intake.deployedPosition) < (35.0 / 360.0)) {
       Intake.getInstance().stow();
     }
-    if(Math.abs(Math.abs(Intake.getInstance().getAngle()) - Constants.Limits.Intake.feedPosition) < (1.0 / 360.0))  {
+    if(Intake.getInstance().getAngle() < Constants.Limits.Intake.feedPosition) {
       Intake.getInstance().deploy();
     }
     if (lockWheels) SwerveDrive.getInstance().setSwerveModuleStates(SwerveDrive.getInstance().getModuleStates(), true);
@@ -83,8 +85,7 @@ public class FireAway extends LoggedCommand {
     Intake.getInstance().deploy();
     super.end(interrupted);
 
-    if (Robot.isReal())
-      Feeder.getInstance().setFeederActive(false);
+    Feeder.getInstance().setFeederActive(false);
   }
 
   // Returns true when the command should end.

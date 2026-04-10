@@ -131,7 +131,7 @@ public final class Constants {
     }
 
     public static class Intake {
-      public static final double intakeP = Robot.isReal() ? 1.5 : 0.015; // TUNED
+      public static final double intakeP = Robot.isReal() ? 1.5 : 0.0035; // TUNED
       public static final double intakeI = Robot.isReal() ? 0.008 : 0.000; // TUNED
       public static final double intakeD = 0.00; // TUNED
     }
@@ -269,13 +269,16 @@ public final class Constants {
     public static final double offsetToCenterVert = Units.inchesToMeters(8);
     public static final double offsetToCenterHoriz = Units.inchesToMeters(-9);
     public static final double pitch = Math.toRadians(-10);
-    public static final double maxReprojectionError = 0.05;
+    public static final double maxReprojectionError = 0.2;
+    public static final double maxAmb = 0.3;
+    public static final double stdDev = 0.3;
   }
 
   public static class Odometry {
-    public static final double TagCorrectionSpeed = 12.5;
-    public static final double maxCorrectionDistance = 1;
-    public static final int startingCameraPasses = 25;
+    public static final double TagCorrectionSpeed = 25;
+
+    public static final double maxCorrectionDistance = 3;
+    public static final int startingCameraPasses = 20;
   }
 
   public static class PathplannerConstants {

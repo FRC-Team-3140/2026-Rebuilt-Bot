@@ -89,6 +89,7 @@ public class RobotContainer {
   private RobotContainer() {
     Path.setDefaultOption("Normal - No PathPlanner", null);
     Path.addOption("L-Center - Premade Auto", "AL");
+    Path.addOption("L-Double-Center - Premade Auto", "AL2");
     Path.addOption("R-Center - Premade Auto", "AR");
     Path.addOption("LR-Center - Premade Auto", "ALR");
     Path.addOption("RL-Center - Premade Auto", "ARL");
@@ -117,6 +118,7 @@ public class RobotContainer {
 
     NetworkTables.shouldShoot_b.setBoolean(false);
     if (Robot.isSimulation()) {
+      /*
       fuelSim.spawnStartingFuel(); // spawns fuel in the depots and neutral zone
 
       // Register a robot for collision with fuel
@@ -142,6 +144,7 @@ public class RobotContainer {
                        //     fuelSim.stop(); // stops the simulation running (updateSim will do nothing until start is called again)
 
       //fuelSim.enableAirResistance(); // an additional drag force will be applied to fuel in physics update step
+      */
     }
   }
 
@@ -161,6 +164,8 @@ public class RobotContainer {
     switch (selectedPath) {
       case "AL":
         return new PathPlannerAuto("L Center Pickup");
+      case "AL2":
+        return new PathPlannerAuto("L Double");
       case "AR":
         return new PathPlannerAuto("R Center Pickup");
       case "ALR":
