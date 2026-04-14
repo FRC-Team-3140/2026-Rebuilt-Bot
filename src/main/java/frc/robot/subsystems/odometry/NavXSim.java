@@ -1,12 +1,14 @@
 package frc.robot.subsystems.odometry;
 
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.SwerveDrive;
 
 public class NavXSim {
     private static NavXSim instance;
     private double yawRadians = 0.0;
     private double angularVelocity = 0.0;
+    private double realBotAngleOffset = Units.degreesToRadians(180);
 
     private NavXSim() {
     }
@@ -19,11 +21,20 @@ public class NavXSim {
     }
 
     public void reset(double yawRadians) {
+        this.realBotAngleOffset += this.yawRadians - yawRadians;
+        this.yawRadians = yawRadians;
+    }
+
+    public void setRealAngle(double yawRadians) {
         this.yawRadians = yawRadians;
     }
 
     public Rotation2d getRotation2d() {
         return new Rotation2d(yawRadians);
+    }
+
+    public Rotation2d getRealRotation() {
+        return new Rotation2d(yawRadians - realBotAngleOffset);
     }
 
     /**

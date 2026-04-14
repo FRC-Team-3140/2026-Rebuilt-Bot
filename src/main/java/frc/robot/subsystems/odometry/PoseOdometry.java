@@ -25,7 +25,7 @@ import edu.wpi.first.math.filter.LinearFilter;
 import org.littletonrobotics.junction.Logger;
 
 public class PoseOdometry extends Odometry {
-  Pose2d simStartingPose = FlipPose.flipIfRed(new Pose2d(12.80, 1, new Rotation2d(Units.degreesToRadians(180))));
+  Pose2d simStartingPose = FlipPose.flipIfRed(new Pose2d(12.80, 1, new Rotation2d(Units.degreesToRadians(45))));
 
   protected SwerveDrivePoseEstimator estimator = null;
   protected SwerveDrivePoseEstimator simEstimator = null;
@@ -52,7 +52,7 @@ public class PoseOdometry extends Odometry {
 
   protected PoseOdometry() {
     super();
-    NavXSim.getInstance().reset(simStartingPose.getRotation().getRadians());
+    NavXSim.getInstance().setRealAngle(simStartingPose.getRotation().getRadians());
     NetworkTables.standardDeviation_d.setDouble(Constants.CameraConstants.stdDev);
   }
 
@@ -97,8 +97,9 @@ public class PoseOdometry extends Odometry {
       estimator.resetPose(pose);
     }
 
+    angleOffset = pose.getRotation().getRadians();
     if (RobotBase.isSimulation()) {
-      NavXSim.getInstance().reset(pose.getRotation().getRadians());
+      NavXSim.getInstance().reset(0);
 
       /*
       // Reset all the module encoders to 0
@@ -108,9 +109,8 @@ public class PoseOdometry extends Odometry {
         module.simTurnMotor.setPosition(0);
       }*/
     } else {
-      resetGyroCamera(pose.getRotation().getRadians());
+      gyro.reset();
     }
-
 
     System.out.println("[Odometry] Reset Pose to " + pose);
   }
@@ -164,7 +164,7 @@ public class PoseOdometry extends Odometry {
 
   public void resetGyroCamera(double correctAngle) {
     angleOffset = -readRotationRaw() + correctAngle;
-    NavXSim.getInstance().reset(correctAngle);
+
   }
 
   public void recalibrateCameraPose() {
@@ -186,7 +186,7 @@ public class PoseOdometry extends Odometry {
       if (RobotBase.isSimulation()) {
         simEstimator = new SwerveDrivePoseEstimator(
             drive.kinematics,
-            getGyroRotation(),
+          NavXSim.getInstance().getRealRotation(),
             positions,
             simStartingPose);
         simDriftEstimator = new SwerveDrivePoseEstimator(
@@ -198,13 +198,8 @@ public class PoseOdometry extends Odometry {
       }
     }
 
-    if (RobotBase.isSimulation()) {
-      simEstimator.update(getGyroRotation(), positions);
-      positions[0].angle.plus(Rotation2d.fromDegrees(2 * Math.sin(Timer.getFPGATimestamp()))); 
-      estimator.update(getGyroRotation().plus(Rotation2d.fromDegrees(Math.random() - 0.5)), positions);
-    } else {
-      estimator.update(getGyroRotation(), positions);
-    }
+    if (RobotBase.isSimulation()) simEstimator.update(NavXSim.getInstance().getRealRotation(), positions);
+    estimator.update(getGyroRotation(), positions);
 
     Logger.recordOutput("Odometry/simRealPosition", Robot.isSimulation() ? simEstimator.getEstimatedPosition() : estimator.getEstimatedPosition());
     Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());

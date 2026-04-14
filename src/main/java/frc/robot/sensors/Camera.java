@@ -268,14 +268,14 @@ public class Camera extends SubsystemBase {
       NetworkTables.oneCameraPose.setDoubleArray(new double[] {
           onePose.getX(),
           onePose.getY(),
-          Math.toDegrees(onePose.getRotation().getAngle()) });
+          Math.toDegrees(onePose.getRotation().getZ()) });
       Logger.recordOutput("Odometry/cameraOnePrediction", onePose.toPose2d());
     }
     if (two) {
       NetworkTables.twoCameraPose.setDoubleArray(new double[] {
           twoPose.getX(),
           twoPose.getY(),
-          Math.toDegrees(twoPose.getRotation().getAngle()) });
+          Math.toDegrees(twoPose.getRotation().getZ()) });
       Logger.recordOutput("Odometry/cameraTwoPrediction", twoPose.toPose2d());
     }
   }
