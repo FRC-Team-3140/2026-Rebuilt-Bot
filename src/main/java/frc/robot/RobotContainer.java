@@ -131,17 +131,18 @@ public class RobotContainer {
 
       // Register an intake to remove fuel from the field as a rectangular bounding box
       fuelSim.registerIntake(
-          Constants.Bot.botLength / 2.0,
-          Constants.Bot.botLength / 2.0 + Units.inchesToMeters(6.0),
+          Constants.Bot.botLength / 2.0 + Units.inchesToMeters(3.0), 
+          Constants.Bot.botLength / 2.0 + Units.inchesToMeters(10.0),
           -Constants.Bot.botLength / 2.0 + Units.inchesToMeters(3.0),
           Constants.Bot.botLength / 2.0 - Units.inchesToMeters(3.0),
-          () -> ((Intake.getInstance().isDeployed() || Intake.getInstance().isActive()) && !Intake.getInstance().isFull()),
+          () -> ((Intake.getInstance().isDeployed() && Intake.getInstance().isActive()) && !Intake.getInstance().isFull()),
           (Intake.getInstance()::addBall)
           );
 
       fuelSim.start(); // enables the simulation to run (updateSim must still be called periodically)
 
-      fuelSim.enableAirResistance();
+      //fuelSim.enableAirResistance();
+      fuelSim.setLogEveryNTicks(7);
     }
   }
 
