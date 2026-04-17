@@ -335,8 +335,5 @@ public class SwerveDrive extends SubsystemBase {
 
   public void resetPose(Pose2d pose) {
     odometry.resetPose(pose);
-    if (Robot.isSimulation()){
-      PoseOdometry.getInstance().resetPose(pose);
-    }
   }
 }

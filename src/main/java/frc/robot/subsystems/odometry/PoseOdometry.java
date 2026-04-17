@@ -26,6 +26,7 @@ public class PoseOdometry extends Odometry {
   Pose2d simStartingPose = FlipPose.flipIfRed(new Pose2d(12.80, 1, new Rotation2d(Units.degreesToRadians(45))));
 
   protected SwerveDrivePoseEstimator estimator = null;
+  protected SwerveDrivePoseEstimator simEstimator = null;
   private LinearFilter velXFilter = LinearFilter.movingAverage(4);
   private LinearFilter velYFilter = LinearFilter.movingAverage(4);
   private LinearFilter rotVelFilter = LinearFilter.movingAverage(4);
@@ -108,10 +109,9 @@ public class PoseOdometry extends Odometry {
     return estimator == null ? nullPose : estimator.getEstimatedPosition();
   }
 
-  /** In simulation, returns the same estimator pose (no separate "real" sim estimator). */
   @Override
   public Pose2d getRealSimPose() {
-    return getPose();
+    return simEstimator == null ? nullPose : simEstimator.getEstimatedPosition();
   }
 
   @Override
@@ -172,11 +172,21 @@ public class PoseOdometry extends Odometry {
           positions,
           initialPose);
       estimator.setVisionMeasurementStdDevs(VecBuilder.fill(stdDev, stdDev, Units.degreesToRadians(1000000000)));
+
+      if (RobotBase.isSimulation()) {
+        simEstimator = new SwerveDrivePoseEstimator(
+            drive.kinematics,
+          NavXSim.getInstance().getRealRotation(),
+            positions,
+            simStartingPose);
+      }
     }
 
+    if (RobotBase.isSimulation()) simEstimator.update(NavXSim.getInstance().getRealRotation(), positions);
     estimator.update(getGyroRotation(), positions);
 
-    Logger.recordOutput("Odometry/Position", estimator.getEstimatedPosition());
+    Logger.recordOutput("Odometry/simRealPosition", RobotBase.isSimulation() ? simEstimator.getEstimatedPosition() : estimator.getEstimatedPosition());
+    Logger.recordOutput("Odometry/simVisionBot", estimator.getEstimatedPosition());
   }
 
   @Override
